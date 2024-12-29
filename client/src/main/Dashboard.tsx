@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Message, User } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import useSocketConfig from "../config/SocketConfig";
+import PusherUtil from "../utilities/PusherUtil";
 
 export default function Dashboard({ serverUrl }: { serverUrl: string }) {
     const socket = useSocketConfig();
@@ -47,12 +48,12 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
                 return [...prev, data.typingUserId];
             });
         };
-        
+
         const handleStoppedTypingUsers = (data: { typingUserId: string }) => {
             console.log("User stopped typing:", data.typingUserId);
             setTypingUsers(prev => prev.filter(id => id !== data.typingUserId));
         };
-        
+
 
         socket.on("messageSent", handleSocketMessage);
         socket.on("messageReceived", handleReceivedMessage);
@@ -117,6 +118,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
 
     return (
         <div className="bg-slate-700 h-screen p-3 flex space-x-4 overflow-hidden">
+            <PusherUtil />
             <div className="w-fit sm:w-fit xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto">
                 <Navigator socket={socket} initialCurrentUser={currentUser} />
             </div>

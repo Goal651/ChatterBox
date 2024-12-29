@@ -7,12 +7,9 @@ import path from 'path';
 
 import validator from '../validator/validator';
 import model from '../model/model';
-import { User, Message, Group, GroupMember } from '../interface/interface'
-import { populate } from 'dotenv';
-
+import { User,  Group, GroupMember } from '../interface/interface'
 
 const AES_KEY_LENGTH = 32;
-
 const generateKeyPair = async () => {
     return new Promise((resolve, reject) => {
         crypto.generateKeyPair('rsa', {
@@ -208,11 +205,11 @@ const getUsers = async (req: Request, res: Response) => {
             .select('email username names image  lastActiveTime latestMessage unreads')
             .populate('latestMessage')
             .skip(numberOfUsersToSkip)
-            .limit(10);
+            .limit(10)
 
-        res.status(200).json({ users });
+        res.status(200).json({ users })
     } catch (err) {
-        res.status(500).json({ message: 'Server error ' + err });
+        res.status(500).json({ message: 'Server error ' + err })
     }
 };
 

@@ -2,6 +2,7 @@ import './index.css'
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import LoadingPage from './main/LoadingPage'
+import PusherUtil from './utilities/PusherUtil'
 
 
 const Dashboard = lazy(() => import('./main/Dashboard'))
@@ -13,9 +14,10 @@ const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
 
 export default function App() {
-  const serverUrl = 'https://chatterbox-production-bb1f.up.railway.app/api'
+  const serverUrl = 'http://localhost:3001/api'
   return (
     <Router>
+      <PusherUtil />
         <Suspense fallback={<div><LoadingPage /></div>}>
           <Routes>
             <Route path="/" element={<Auth serverUrl={serverUrl} />} />

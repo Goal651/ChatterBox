@@ -1,6 +1,7 @@
 import { Socket, Server } from 'socket.io';
 import SocketAuthController from '../auth/SocketAuthController';
 import model from '../model/model';
+import pusher from '../config/PusherConfig';
 
 interface SentMessages {
     receiverId: string;
@@ -39,7 +40,17 @@ const SocketController = (io: Server) => {
             if (userSockets[userId]) {
                 userSockets[userId].forEach((id) => socket.to(id).emit(event, data));
             }
+        }
+
+        const broadcastToPusher = async (channel: string, event: string, data: string) => {
+            try {
+                await pusher.trigger(channel, event, data);
+                console.log(`Pusher Event Sent: ${event}`, data);
+            } catch (err) {
+                console.error(`Pusher Error: ${err}`);
+            }
         };
+
 
         // Handle message sending
         socket.on('message', async (data: SentMessages) => {
@@ -56,13 +67,13 @@ const SocketController = (io: Server) => {
                 ...newMessage.toObject(),
                 sender: newMessage.sender.toString(),
                 receiver: newMessage.receiver.toString(),
-            };
+            }
 
             try {
                 await newMessage.save();
                 await model.User.findByIdAndUpdate(receiverId, { latestMessage: newMessage._id });
                 await model.User.findByIdAndUpdate(userId, { latestMessage: newMessage._id });
-
+                await broadcastToPusher(`my-channel`, 'test', 'test')
                 // Notify sender
                 io.to(socket.id).emit('messageSent', { messageId, sentMessage });
                 emitToUserSockets(userId, 'receiveMessage', sentMessage);
@@ -70,14 +81,14 @@ const SocketController = (io: Server) => {
                 // Notify receiver
                 if (userSockets[receiverId]) {
                     emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
-                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageReceived: true });
+                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageReceived: true })
 
                     //notify that message received
-                    io.to(socket.id).emit('messageReceived', { messageId: sentMessage._id });
-                    emitToUserSockets(userId, 'messageReceived', { messageId: sentMessage._id });
-
+                    io.to(socket.id).emit('messageReceived', { messageId: sentMessage._id })
+                    emitToUserSockets(userId, 'messageReceived', { messageId: sentMessage._id })
                 } else {
-                    await model.User.findByIdAndUpdate(receiverId, { $addToSet: { unreads: newMessage._id } });
+                    await model.User.findByIdAndUpdate(receiverId, { $addToSet: { unreads: newMessage._id } })
+                    await broadcastToPusher('my-channel', 'new-message', 'new-message')
                 }
             } catch (error) {
                 console.error(error);
@@ -111,7 +122,6 @@ const SocketController = (io: Server) => {
             }
         })
 
-        // Handle disconnect
         socket.on('disconnect', () => {
             if (userSockets[userId]) {
                 userSockets[userId] = userSockets[userId].filter((id) => id !== socket.id);
