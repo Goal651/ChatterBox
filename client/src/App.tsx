@@ -13,7 +13,7 @@ const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
 
 export default function App() {
-  const serverUrl = 'http://localhost:3001/api'
+  const serverUrl = 'https://chatterbox-production-bb1f.up.railway.app/api'
   return (
     <Router>
         <Suspense fallback={<div><LoadingPage /></div>}>
