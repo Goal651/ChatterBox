@@ -18,7 +18,7 @@ export default function App() {
     <Router>
         <Suspense fallback={<div><LoadingPage /></div>}>
           <Routes>
-            <Route path="/" element={<Auth />} />
+            <Route path="/" element={<Auth serverUrl={serverUrl} />} />
             <Route path="/chat/:id" element={<Dashboard serverUrl={serverUrl} />} />
             <Route path="/chat/" element={<Dashboard serverUrl={serverUrl} />} />
             <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import LoadingPage from "../main/LoadingPage";
 
-export default function Auth() {
+export default function Auth({ serverUrl }: { serverUrl: string }) {
     const savedToken = localStorage.getItem("token");
     const [token, setToken] = useState(savedToken);
     const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ export default function Auth() {
         const checkAuth = async () => {
             try {
                 axios.defaults.headers.common['accesstoken'] = `${token}`;
-                const response = await axios.get('http://localhost:3001/api/auth');
+                const response = await axios.get(serverUrl + '/auth');
                 if (response.status === 200) {
                     navigate('/chat');
                 }
@@ -68,7 +68,7 @@ export default function Auth() {
         };
 
         checkAuth();
-    }, [token, navigate]); 
+    }, [token, navigate]);
 
     return (
         <div>
