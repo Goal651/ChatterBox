@@ -5,9 +5,9 @@ export default function GroupContent() {
             <div className="w-full ">
                 <div className="flex justify-between">
                     <div className="flex space-x-4">
-                        <div className="bg-transparent rounded-full">
+                        <div className="bg-white rounded-full">
                             <img
-                                src="/b.jpg"
+                                src="/group.png"
                                 alt=""
                                 className="w-14 h-14 rounded-full object-cover" />
                         </div>

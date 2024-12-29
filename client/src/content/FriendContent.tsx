@@ -54,7 +54,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
                             <div className="flex space-x-4">
                                 <div>
                                     <img
-                                        src="/b.jpg"
+                                        src="/image.png"
                                         alt="Friend Avatar"
                                         className="w-14 h-14 rounded-full object-cover"
                                     />

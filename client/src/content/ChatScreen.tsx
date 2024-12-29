@@ -85,7 +85,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
             <div className="flex justify-between border-b border-slate-700 pb-6">
                 <div className="flex space-x-4 items-center">
                     <img
-                        src={user?.image || "/image.png"}
+                        src={user?.imageData || "/image.png"}
                         alt="User Avatar"
                         className="w-16 h-16 object-cover rounded-full"
                     />

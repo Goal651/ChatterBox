@@ -29,6 +29,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
     const [recordedAudio, setRecordedAudio] = useState<Blob | null>(null)
     const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null)
     const [isTakingPhoto, setIsTakingPhoto] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     const { id } = useParams()
 
 
@@ -71,19 +72,29 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
     }
 
     const handleFileUploads = async (): Promise<string[]> => {
-        if (!fileData || fileData.length <= 0) return []
+        setIsUploading(true)
+        if (!fileData || fileData.length <= 0) {
+            setIsUploading(false)
+            return []
+        }
         const result = await Promise.all(fileData.map(async (file) => {
             const data = await FileUploader({ fileToSend: file, serverUrl })
             return data
         }))
+        setIsUploading(false)
         return result
     }
 
     const uploadRecordedAudio = async () => {
-        if (!recordedAudio) return ''
+        setIsUploading(true)
+        if (!recordedAudio) {
+            setIsUploading(false)
+            return ''
+        }
         const fileName = `recording_${Date.now()}.mp3`; // Generate a unique name for the file
         const audioFile = new File([recordedAudio], fileName, { type: recordedAudio.type });
         const audio = await FileUploader({ fileToSend: audioFile, serverUrl })
+        setIsUploading(false)
         return audio ? audio : ''
     }
 
@@ -144,10 +155,11 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
         <div className="flex w-full space-x-4">
             {isTakingPhoto && <PhotoCapture onPhotoCapture={handleCapturedPhoto} />}
             {recordedAudio ? (
-                <div className=" bg-slate-700 w-full p-4 rounded-lg space-y-4">
+                <div className=" bg-slate-700 w-full p-4 rounded-lg space-y-4 flex space-x-4">
                     <StyledAudioPlayer
                         url={recordedAudioUrl || ''}
                     />
+                    <button className="btn btn-error text-white  w-14" onClick={() => setRecordedAudio(null)}>cancel</button>
                 </div>
             ) : (
                 <div className=" bg-slate-700 w-full p-4 rounded-lg space-y-4">
@@ -180,7 +192,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
                             />
                             <FaCamera
-                            onClick={() => setIsTakingPhoto(true)}
+                                onClick={() => setIsTakingPhoto(true)}
                                 className="text-white" />
                         </div>
                     </form>
@@ -198,7 +210,13 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                 </div>
             )}
             <div className="flex items-center">
-                {message || fileData || recordedAudio ? (
+                {isUploading ? (
+                    <button
+                        onClick={sendMessage}
+                        className="btn bg-blue-500 border-0 flex items-center">
+                        <div className=" text-xl text-black loading loading-spinner" />
+                    </button>
+                ) : (message || fileData || recordedAudio ? (
                     <button
                         onClick={sendMessage}
                         className="btn bg-blue-500 border-0 flex items-center">
@@ -210,7 +228,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                             onRecordingComplete={handleVoiceRecorded}
                         />
                     </div>
-                )}
+                ))}
             </div>
             {showEmojiPicker && (
                 <div className="fixed bottom-48">

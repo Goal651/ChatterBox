@@ -116,7 +116,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
 
     return (
-        <div className="bg-slate-700 h-screen p-5 flex space-x-6 overflow-hidden">
+        <div className="bg-slate-700 h-screen p-3 flex space-x-4 overflow-hidden">
             <div className="w-fit sm:w-fit xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto">
                 <Navigator socket={socket} initialCurrentUser={currentUser} />
             </div>
@@ -129,7 +129,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
                     typingUsers={typingUsers}
                 />
             </div>
-            <div className="w-1/2 bg-black py-4 px-6 rounded-2xl flex flex-col">
+            <div className="w-2/3 bg-black py-4 px-6 rounded-2xl flex flex-col">
                 <ChatScreen
                     socket={socket}
                     users={filteredUsers}
@@ -158,7 +158,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
 );
 
 const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers }: { filteredUsers: User[]; currentUser: User | null; onlineUsers: string[], typingUsers: string[] }) => (
-    <div className="grid grid-rows-2 w-full space-y-5 overflow-y-auto overflow-x-hidden h-full">
+    <div className="grid grid-rows-2 w-full space-y-4 overflow-y-auto overflow-x-hidden h-full">
         <div className="bg-black rounded-2xl overflow-x-hidden">
             <GroupContent />
         </div>
