@@ -15,7 +15,7 @@ const app = express();
 // Middleware setup
 
 app.use(cors({
-    origin: ["https://chatter-box-three.vercel.app/login", "http://localhost:5173"],
+    origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
 
@@ -29,7 +29,7 @@ app.use('/api', routes);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://chatter-box-three.vercel.app/login", "http://localhost:5173"], // Ensure this matches your client
+        origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"], // Ensure this matches your client
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
