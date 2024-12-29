@@ -119,6 +119,10 @@ const SocketController = (io: Server) => {
                     delete userSockets[userId];
                 }
             }
+
+            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId])
+
+            io.emit('onlineUsers', onlineUsers)
         });
     });
 };
