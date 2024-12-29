@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-const NetworkChecker: React.FC = () => {
+const NetworkChecker = ({ serverUrl }: { serverUrl: string }) => {
     const navigate = useNavigate();
     const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
     const [serverStatus, setServerStatus] = useState<"up" | "down" | "unknown">("unknown");
 
     const checkServerStatus = async () => {
         try {
-            await axios.get("http://localhost:3001/api/ping", { timeout: 5000 });
+            await axios.get(serverUrl + "/ping", { timeout: 5000 });
             setServerStatus("up");
         } catch {
             setServerStatus("down");
@@ -48,7 +48,7 @@ const NetworkChecker: React.FC = () => {
             window.removeEventListener("online", checkInternetStatus);
             window.removeEventListener("offline", checkInternetStatus);
         };
-    }, []); 
+    }, []);
     // Empty dependency array ensures this effect runs only once when the component is mounted
 
     useEffect(() => {
@@ -72,13 +72,12 @@ const NetworkChecker: React.FC = () => {
             </p>
             <div className="mt-8">
                 <span
-                    className={`px-4 py-2 rounded-md ${
-                        isOnline
-                            ? serverStatus === "up"
-                                ? "bg-green-500"
-                                : "bg-red-500"
-                            : "bg-gray-500"
-                    }`}
+                    className={`px-4 py-2 rounded-md ${isOnline
+                        ? serverStatus === "up"
+                            ? "bg-green-500"
+                            : "bg-red-500"
+                        : "bg-gray-500"
+                        }`}
                 >
                     {isOnline
                         ? serverStatus === "up"

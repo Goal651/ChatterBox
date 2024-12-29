@@ -21,7 +21,7 @@ export default function App() {
             <Route path="/" element={<Auth />} />
             <Route path="/chat/:id" element={<Dashboard serverUrl={serverUrl} />} />
             <Route path="/chat/" element={<Dashboard serverUrl={serverUrl} />} />
-            <Route path="/no-internet" element={<NetworkChecker />} />
+            <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
             <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
             <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
             <Route path='/test' element={<FileUploaderTest />} />
