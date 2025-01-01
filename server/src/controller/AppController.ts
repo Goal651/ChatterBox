@@ -217,7 +217,7 @@ const getUsers = async (req: Request, res: Response) => {
                         { sender: user._id, receiver: userId }
                     ]
                 })
-                    .sort({ createdAt: -1 }) 
+                    .sort({ createdAt: -1 })
                     .exec();
 
                 return {
@@ -243,6 +243,15 @@ const getUserProfile = async (req: Request, res: Response) => {
             return
         }
 
+        const latestMessage = await model.Message.findOne({
+            $or: [
+                { sender: userId, receiver: user._id },
+                { sender: user._id, receiver: userId }
+            ]
+        }).sort({ createdAt: -1 }).exec();
+
+
+
         const userObject = {
             _id: user._id.toString(),
             username: user.username,
@@ -251,7 +260,7 @@ const getUserProfile = async (req: Request, res: Response) => {
             image: user.image,
             unreads: user.unreads,
             lastActiveTime: user.lastActiveTime,
-            latestMessage: user.latestMessage
+            latestMessage: latestMessage
         } as unknown as User
 
         res.status(200).json({ user: userObject })
@@ -261,12 +270,11 @@ const getUserProfile = async (req: Request, res: Response) => {
 const getUser = async (req: Request, res: Response) => {
     try {
         const { userId } = req.params;
-        const user = await model.User.findById(userId).select('_id username names email image lastActiveTime groups latestMessage');
+        const user = await model.User.findById(userId).select('_id username names email image lastActiveTime groups ');
         if (!user) {
             res.status(404).json({ message: 'user not found' });
             return
         }
-        const imageData = user.image ? await readImage(user.image) : null;
         const userObject = {
             _id: user._id,
             username: user.username,
@@ -274,7 +282,6 @@ const getUser = async (req: Request, res: Response) => {
             email: user.email,
             image: user.image,
             groups: user.groups,
-            imageData,
             lastActiveTime: user.lastActiveTime
         }
         res.status(200).json({ user: userObject });
@@ -285,7 +292,7 @@ const updateUserPhoto = async (req: Request, res: Response) => {
     try {
         const { userId } = res.locals.user;
         const image: { imageUrl: string } = req.body;
-        const updatedUser = await model.User.findByIdAndUpdate(userId, { image: image.imageUrl });
+        await model.User.findByIdAndUpdate(userId, { image: image.imageUrl });
         res.status(201).json({ message: 'user updated' });
     } catch (err) { res.status(500).json({ message: 'server error ', err }) }
 };

@@ -17,11 +17,6 @@ const userSchema = new mongoose.Schema({
         ref: 'Message',
         default: []
     }],
-    latestMessage: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Message',
-        default: null
-    },
     publicKey: { type: String, required: true },
     privateKey: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
