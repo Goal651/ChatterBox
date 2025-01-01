@@ -168,7 +168,10 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
                 }
                 if (error.response.status === 400) {
                     const errorMessages: string[] = error.response.data.errors || [];
-
+                    const emailAlreadyExists = error.response.data.message === "Email already exists"
+                    if (emailAlreadyExists) {
+                        setEmailError("Email already exists")
+                    }
                     errorMessages.forEach((message) => {
                         if (message.includes("Email")) {
                             setEmailError(message);
@@ -250,9 +253,7 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
                     ref={passwordRef}
                     error={passwordError}
                 />
-                {formData.password.length < 4 && formData.password && (
-                    <p className="text-red-400">Password must be at least 4 characters long</p>
-                )}
+
                 <PasswordField
                     name="confirmPassword"
                     label="Confirm Password"
