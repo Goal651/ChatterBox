@@ -206,7 +206,7 @@ const getUsers = async (req: Request, res: Response) => {
         const users = await model.User.find({ _id: { $ne: userId } })
             .select('email username names image  lastActiveTime  unreads')
             .skip(numberOfUsersToSkip)
-            .limit(10)
+
 
         const usersWithMessages = await Promise.all(
             users.map(async (user) => {

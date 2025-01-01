@@ -40,7 +40,10 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         const handleSocketMessage = (message: Message) => updateUserMessage(message);
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId);
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
-        const handleOnlineUsers = (users: string[]) => setOnlineUsers(users);
+        const handleOnlineUsers = (users: string[]) => {
+            setOnlineUsers([]);
+            setOnlineUsers(users);
+        }
         const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
         const handleReceiveSentMessage = (data: Message) => updateUsers(data)
 
