@@ -7,7 +7,7 @@ import path from 'path';
 
 import validator from '../validator/validator';
 import model from '../model/model';
-import { User,  Group, GroupMember } from '../interface/interface'
+import { User, Group, GroupMember } from '../interface/interface'
 
 const AES_KEY_LENGTH = 32;
 const generateKeyPair = async () => {
@@ -137,13 +137,13 @@ const signup = async (req: Request, res: Response) => {
     try {
         const { error, value } = validator.registerSchema.validate(req.body);
         if (error) {
-            res.status(400).json({ message: error.details[0].message ,error: error})
+            res.status(400).json({ message: error.details[0].message, error: error })
             return
         };
         const { email, password, username, names } = value as User;
         const existingUser = await model.User.findOne({ email }).select('username');
         if (existingUser) {
-            res.sendStatus(400)
+            res.status(400).json({ email: "Email already exists" })
             return
         };
         const { publicKey, privateKey } = await generateKeyPair() as { publicKey: string, privateKey: string };
