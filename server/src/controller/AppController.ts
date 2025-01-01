@@ -145,7 +145,7 @@ const signup = async (req: Request, res: Response) => {
         const { email, password, username, names } = value as User;
         const existingUser = await model.User.findOne({ email }).select('username');
         if (existingUser) {
-            res.status(400).json({ message: "Email already exists" })
+            res.status(400).json({ message: "User exist" })
             return
         };
         const { publicKey, privateKey } = await generateKeyPair() as { publicKey: string, privateKey: string };
