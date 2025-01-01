@@ -205,7 +205,6 @@ const getUsers = async (req: Request, res: Response) => {
         const numberOfUsersToSkip = 10 * page
         const users = await model.User.find({ _id: { $ne: userId } })
             .select('email username names image  lastActiveTime  unreads')
-            .populate('latestMessage')
             .skip(numberOfUsersToSkip)
             .limit(10)
 
