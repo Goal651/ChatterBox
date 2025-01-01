@@ -9,7 +9,7 @@ export default function Navigator({ initialCurrentUser, socket }: { initialCurre
     const handleLogout = () => {
         localStorage.clear()
         navigate('/login')
-        socket.disconnect()
+        socket.emit('disconnect')
     }
 
     return (

@@ -7,7 +7,8 @@ import { useEffect, useState } from "react";
 import { Message, User } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import useSocketConfig from "../config/SocketConfig";
-import PusherUtil from "../utilities/PusherUtil";
+import { Socket } from "socket.io-client";
+
 
 export default function Dashboard({ serverUrl }: { serverUrl: string }) {
     const socket = useSocketConfig();
@@ -40,9 +41,10 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId);
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
         const handleOnlineUsers = (users: string[]) => setOnlineUsers(users);
+        const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
+        const handleReceiveSentMessage = (data: Message) => updateUsers(data)
 
         const handleTypingUsers = (data: { typingUserId: string }) => {
-            console.log("User typing:", data.typingUserId);
             setTypingUsers(prev => {
                 if (prev.includes(data.typingUserId)) return prev;
                 return [...prev, data.typingUserId];
@@ -50,13 +52,14 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         };
 
         const handleStoppedTypingUsers = (data: { typingUserId: string }) => {
-            console.log("User stopped typing:", data.typingUserId);
             setTypingUsers(prev => prev.filter(id => id !== data.typingUserId));
         };
 
 
-        socket.on("messageSent", handleSocketMessage);
+        socket.on("messageSent", handleSentMessage);
+        socket.on("receiveSentMessage", handleReceiveSentMessage)
         socket.on("messageReceived", handleReceivedMessage);
+        socket.on("receiveMessage", handleSocketMessage)
         socket.on("messageSeen", handleSeenMessage);
         socket.on("onlineUsers", handleOnlineUsers);
         socket.on("userTyping", handleTypingUsers)
@@ -69,7 +72,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
             socket.off("onlineUsers", handleOnlineUsers);
             socket.off("userTyping", handleTypingUsers)
             socket.off("userNotTyping", handleStoppedTypingUsers)
-        };
+        }
     }, [socket]);
 
     // Helper functions
@@ -85,10 +88,19 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         if (!message) return;
         setUsers(prevUsers =>
             sortUsersByLatestMessage(prevUsers.map(user =>
-                user._id === message.receiver ? { ...user, latestMessage: message } : user
+                user._id === message.sender ? { ...user, latestMessage: message } : user
             ))
         );
     };
+
+    const updateUsers = (message: Message) => {
+        if (!message) return;
+        setUsers(prevUsers =>
+            sortUsersByLatestMessage(prevUsers.map(user =>
+                user._id === message.receiver ? { ...user, latestMessage: message } : user
+            ))
+        );
+    }
 
     const markMessageAsReceived = (messageId: string) => {
         setUsers(prevUsers =>
@@ -112,13 +124,21 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         );
     };
 
+    const handleSetUnreads = (data: Message[]) => {
+        if (!data) return
+        setCurrentUser((prev): User | null => {
+            if (!prev) return prev
+            const newUser = { ...prev, unreads: data }
+            return newUser
+        })
+    }
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
 
     return (
         <div className="bg-slate-700 h-screen p-3 flex space-x-4 overflow-hidden">
-            <PusherUtil />
             <div className="w-fit sm:w-fit xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto">
                 <Navigator socket={socket} initialCurrentUser={currentUser} />
             </div>
@@ -129,6 +149,8 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
                     currentUser={currentUser}
                     onlineUsers={onlineUsers}
                     typingUsers={typingUsers}
+                    socket={socket}
+                    handleSetUnreads={handleSetUnreads}
                 />
             </div>
             <div className="w-2/3 bg-black py-4 px-6 rounded-2xl flex flex-col">
@@ -136,7 +158,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
                     socket={socket}
                     users={filteredUsers}
                     serverUrl={serverUrl}
-                    sentMessage={updateUserMessage}
+                    sentMessage={updateUsers}
                     onlineUsers={onlineUsers}
                 />
             </div>
@@ -159,7 +181,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers }: { filteredUsers: User[]; currentUser: User | null; onlineUsers: string[], typingUsers: string[] }) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads }: { filteredUsers: User[]; currentUser: User | null; onlineUsers: string[], typingUsers: string[], socket: Socket, handleSetUnreads: (newUnreads: Message[]) => void }) => (
     <div className="grid grid-rows-2 w-full space-y-4 overflow-y-auto overflow-x-hidden h-full">
         <div className="bg-black rounded-2xl overflow-x-hidden">
             <GroupContent />
@@ -170,6 +192,8 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers }: { f
                 initialFriends={filteredUsers}
                 onlineUsers={onlineUsers}
                 typingUsers={typingUsers}
+                socket={socket}
+                setUnreads={handleSetUnreads}
             />
         </div>
     </div>

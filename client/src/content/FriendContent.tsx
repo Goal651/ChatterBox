@@ -1,23 +1,44 @@
 import { useNavigate } from "react-router-dom";
 import { Message, User } from "../interfaces/interfaces";
+import { Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
 
 interface FriendContentProps {
     initialFriends: User[];
     unreads?: Message[] | null;
     onlineUsers: string[]
     typingUsers: string[]
+    socket: Socket
+    setUnreads: (data: Message[]) => void
 }
 
-export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers }: FriendContentProps) {
+export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads }: FriendContentProps) {
     const navigate = useNavigate();
+    const [friends, setFriends] = useState(initialFriends)
+    const [unreadMessages, setUnreadMessages] = useState(unreads)
+
+    useEffect(() => {
+        if (!initialFriends) return
+        setFriends(initialFriends)
+        if (!unreads) return
+        setUnreadMessages(unreads)
+    }, [initialFriends, unreads])
 
     const handleFriendClick = (id: string) => {
-        navigate(`/chat/${id}`);
+        navigate(`/chat/${id}`)
+        if (!unreadMessages) return
+        const unread = unreadMessages.filter(m => m.sender === id)
+        if (unread.length <= 0) return
+        setUnreadMessages(prev => prev?.filter(dm => dm.sender !== id))
+        setUnreads(unreadMessages?.filter(dm => dm.sender !== id))
+        if (socket) {
+            socket.emit('markMessageAsRead', unread)
+        }
     };
 
     const findNumberOfUnreads = (id: string): number => {
-        if (!id || !unreads?.length) return 0;
-        return unreads.filter(m => m.sender === id).length;
+        if (!id || !unreadMessages?.length) return 0;
+        return unreadMessages.filter(m => m.sender === id).length;
     };
 
     const renderFriendStatus = (friend: User) => {
@@ -47,8 +68,8 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
     return (
         <div className="bg-transparent h-full p-4 flex flex-col space-y-4 overflow-y-auto overflow-x-hidden">
             <div className="text-white font-semibold text-xl">Friends</div>
-            {initialFriends?.length ? (
-                initialFriends.map((friend) => (
+            {friends?.length ? (
+                friends.map((friend) => (
                     <div key={friend._id} onClick={() => handleFriendClick(friend._id)} className="w-full py-4">
                         <div className="flex justify-between">
                             <div className="flex space-x-4">

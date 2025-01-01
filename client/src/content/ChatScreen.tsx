@@ -70,7 +70,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
             socket.off("receiveMessage", handleSentMessage);
             socket.off("messageSent", handleSocketMessage);
         };
-    }, [socket, sentMessage]);
+    }, [socket]);
 
     if (!user) return (
         <div className="flex items-center justify-center w-full h-full">
@@ -113,6 +113,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
                         sentMessages={message}
                         socketMessage={socketMessage}
                         socket={socket}
+                        friend={user}
                     />
                 </div>
                 <div className="h-1/6 flex items-center">

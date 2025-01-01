@@ -29,7 +29,7 @@ app.use('/api', routes);
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"], // Ensure this matches your client
+        origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"],
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }

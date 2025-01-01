@@ -2,7 +2,6 @@ import './index.css'
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import LoadingPage from './main/LoadingPage'
-import PusherUtil from './utilities/PusherUtil'
 
 
 const Dashboard = lazy(() => import('./main/Dashboard'))
@@ -13,11 +12,12 @@ const SignUpPage = lazy(() => import('./auth/Signup'))
 const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
 
+
+//https://chat-app-production-2663.up.railway.app
 export default function App() {
-  const serverUrl = 'http://localhost:3001/api'
+  const serverUrl = 'https://chat-app-production-2663.up.railway.app/api'
   return (
     <Router>
-      <PusherUtil />
         <Suspense fallback={<div><LoadingPage /></div>}>
           <Routes>
             <Route path="/" element={<Auth serverUrl={serverUrl} />} />

@@ -11,6 +11,7 @@ interface MessageProps {
     sentMessages: Message | null;
     socketMessage: { sentMessage: Message; messageId: string | number } | null;
     socket: Socket;
+    friend: User
 }
 
 export default function Messages({
@@ -18,20 +19,21 @@ export default function Messages({
     sentMessages,
     socketMessage,
     socket,
+    friend
 }: MessageProps) {
     const { id } = useParams();
+    const user: User = JSON.parse(sessionStorage.getItem("currentUser") || "{}") || null;
     const [messages, setMessages] = useState<Message[]>([]);
     const [lastMessage, setLastMessage] = useState<Message | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const messagesRef = useRef<Message[]>([]);
     const endMessageRef = useRef<HTMLDivElement | null>(null);
-
-    const user: User = JSON.parse(sessionStorage.getItem("currentUser") || "{}") || null;
-    const currentUser = user?._id;
+    const currentUser = user._id;
 
     const scrollBottom = useCallback(() => {
         endMessageRef.current?.scrollIntoView({ behavior: "smooth" });
     }, []);
+
 
     const fetchMessages = useCallback(async () => {
         if (!id) return;
@@ -66,21 +68,45 @@ export default function Messages({
 
     useEffect(() => {
         const handleReceiveMessage = (data: Message) => {
-            if (data.sender === id) {
+            if (data.sender === friend._id) {
                 setMessages((prev) => [...prev, data]);
                 socket.emit("messageSeen", { messageId: data._id, receiverId: data.sender });
             }
         };
 
         const handleSocketMessage = (data: { sentMessage: Message; messageId: string }) => {
-            setMessages((prev): Message[] => {
-                return prev.map((msg) => msg._id === data.messageId ? data.sentMessage : msg);
-            });
+            setMessages((prev): Message[] =>
+                prev.map((msg) => msg._id === data.messageId ? data.sentMessage : msg)
+            );
         };
+
+        const handleSentMessage = (data: Message) => {
+            setMessages((prev): Message[] => {
+                const isMessageThere = prev.filter(x => x._id == data._id)
+                if (isMessageThere.length > 0) return prev
+                return [...prev, data]
+            }
+            );
+        };
+
+        const handleReceivedMessage = (data: { messageId: string }) => {
+            setMessages((prev): Message[] =>
+                prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true } : msg)
+            );
+        }
+
+        const handleSeenMessage = (data: { messageId: string }) => {
+            setMessages((prev): Message[] =>
+                prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true, isMessageSeen: true } : msg)
+            );
+        }
 
         if (socket) {
             socket.on("receiveMessage", handleReceiveMessage);
             socket.on("messageSent", handleSocketMessage);
+            socket.on("receiveSentMessage", handleSentMessage)
+            socket.on("messageReceived", handleReceivedMessage);
+            socket.on("messageSeen", handleSeenMessage);
         }
 
         return () => {
@@ -101,9 +127,9 @@ export default function Messages({
 
     useEffect(() => {
         if (socket && lastMessage && lastMessage.sender === id && !lastMessage.isMessageSeen) {
-            socket.emit("messageSeen", { messageId: lastMessage._id });
+            socket.emit("messageSeen", { messageId: lastMessage._id, receiverId: user._id });
         }
-    }, [id, lastMessage, socket]);
+    }, [id, lastMessage, socket, user]);
 
     if (isLoading) {
         return (

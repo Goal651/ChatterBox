@@ -7,7 +7,7 @@ export interface User {
     image: string,
     imageData: string,
     lastActiveTime: Date,
-    unreads: Message[] | [] ,
+    unreads: Message[],
     latestMessage: Message,
 }
 
