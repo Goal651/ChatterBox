@@ -63,8 +63,6 @@ const SocketController = (io: Server) => {
 
             try {
                 await newMessage.save();
-                await model.User.findByIdAndUpdate(receiverId, { latestMessage: newMessage._id });
-                await model.User.findByIdAndUpdate(userId, { latestMessage: newMessage._id });
                 // Notify sender
                 io.to(socket.id).emit('messageSent', { messageId, sentMessage });
                 emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
