@@ -40,18 +40,18 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
 
         const handleSocketMessage = (message: Message) => {
             if (!message) return;
-        
+
             // Find the sender's username
             const senderUser = users.find(user => user._id === message.sender);
             const senderUsername = senderUser ? senderUser.username : "Unknown User";
-        
+
             // Pass the username and message to the Notifier
-            Notifier({ from: senderUsername, message: message.message });
-        
+            Notifier({ from: senderUsername, message: message.message, users });
+
             // Update user messages
             updateUserMessage(message);
         };
-        
+
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId);
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
         const handleOnlineUsers = (users: string[]) => {
