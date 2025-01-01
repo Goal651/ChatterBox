@@ -2,12 +2,12 @@ import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 
-//https://chatterbox-production-bb1f.up.railway.app
+//https://chatterbox-production-bb1f.up.railway.app/
 export default function useSocketConfig(): Socket {
     const socketRef = useRef<Socket | null>(null);
 
     if (!socketRef.current) {
-        socketRef.current = io('https://chat-app-production-2663.up.railway.app', {
+        socketRef.current = io('https://chatterbox-production-bb1f.up.railway.app/', {
             auth: {
                 token: localStorage.getItem('token'),
             },
