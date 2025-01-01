@@ -141,7 +141,7 @@ const signup = async (req: Request, res: Response) => {
             res.status(400).json({ message: 'Validation failed', errors: errorMessages });
             return;
         }
-        
+
         const { email, password, username, names } = value as User;
         const existingUser = await model.User.findOne({ email }).select('username');
         if (existingUser) {
@@ -204,12 +204,30 @@ const getUsers = async (req: Request, res: Response) => {
         const page = req.headers['page'] as unknown as number || 0
         const numberOfUsersToSkip = 10 * page
         const users = await model.User.find({ _id: { $ne: userId } })
-            .select('email username names image  lastActiveTime latestMessage unreads')
+            .select('email username names image  lastActiveTime  unreads')
             .populate('latestMessage')
             .skip(numberOfUsersToSkip)
             .limit(10)
 
-        res.status(200).json({ users })
+        const usersWithMessages = await Promise.all(
+            users.map(async (user) => {
+                const latestMessage = await model.Message.findOne({
+                    $or: [
+                        { sender: userId, receiver: user._id },
+                        { sender: user._id, receiver: userId }
+                    ]
+                })
+                    .sort({ createdAt: -1 }) 
+                    .exec();
+
+                return {
+                    ...user.toObject(),  // Spread the user data
+                    latestMessage: latestMessage || null,  // Add the latest message data
+                };
+            })
+        );
+
+        res.status(200).json({ users: usersWithMessages });
     } catch (err) {
         res.status(500).json({ message: 'Server error ' + err })
     }

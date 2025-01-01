@@ -117,13 +117,28 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
         if (value.trim()) {
             refMap[name]?.current?.classList.remove("bp3-intent-danger");
         }
+
+        if (type === 'password') {
+            setPasswordError('');
+        }
+
+        if (type === 'confirmPassword') {
+            setConfirmPasswordError('');
+        }
+        if (name === 'confirmPassword') {
+            if (value !== formData.password) {
+                setConfirmPasswordError('Passwords do not match');
+            }else{
+                setConfirmPasswordError('')
+            }
+        }
     };
 
     const handleImageUploadClick = () => fileInputRef.current?.click();
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        const ref = refMap[name];
+        const { name, value } = e.target
+        const ref = refMap[name]
         if (!value.trim()) {
             ref?.current?.classList.add("bp3-intent-danger");
         }
@@ -168,9 +183,9 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
                 }
                 if (error.response.status === 400) {
                     const errorMessages: string[] = error.response.data.errors || [];
-                    const emailAlreadyExists = error.response.data.message === "Email already exists"
+                    const emailAlreadyExists = error.response.data.message === "User exist"
                     if (emailAlreadyExists) {
-                        setEmailError("Email already exists")
+                        setEmailError(error.response.data.message as string)
                     }
                     errorMessages.forEach((message) => {
                         if (message.includes("Email")) {
@@ -330,7 +345,7 @@ function EmailInput({ value, onChange, emailError, isValid, onBlur, onFocus, ref
                 onFocus={onFocus}
                 required
             />
-            {emailError && <p className="mt-1 text-sm text-red-400">{emailError}</p>}
+            {emailError && <p className="mt-1 text-sm text-red-500 w-full text-center">{emailError}</p>}
         </div>
     );
 }
