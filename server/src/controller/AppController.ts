@@ -137,7 +137,7 @@ const signup = async (req: Request, res: Response) => {
     try {
         const { error, value } = validator.registerSchema.validate(req.body);
         if (error) {
-            res.status(400).json({ message: error.details[0].message })
+            res.status(400).json({ message: error.details[0].message ,error: error})
             return
         };
         const { email, password, username, names } = value as User;

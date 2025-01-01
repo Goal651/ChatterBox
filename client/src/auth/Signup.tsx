@@ -1,306 +1,169 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
-import { ClipLoader } from 'react-spinners';
+import  { useState } from 'react';
 import axios from 'axios';
 
-// Define types for form data
-interface FormData {
-    names: string;
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    image?: string;
-}
-
-interface RefMap {
-    [key: string]: React.RefObject<HTMLInputElement> | null;
-}
-
-interface InputProps {
-    name: string;
-    type?: string;
-    label: string;
-    value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    ref?: React.RefObject<HTMLInputElement>;
-}
-
-interface EmailInputProps {
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    isValid: boolean;
-    isEmailAlreadyUsed: boolean;
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
-    ref: React.RefObject<HTMLInputElement>;
-}
-
-export default function SignUp({ serverUrl }: { serverUrl: string }) {
-    const [formData, setFormData] = useState<FormData>({
+const Signup = ({serverUrl}) => {
+    const [formData, setFormData] = useState({
+        email: '',
         names: '',
         username: '',
-        email: '',
         password: '',
         confirmPassword: ''
     });
-    const [isPasswordMatch, setIsPasswordMatch] = useState<boolean>(false);
-    const [isEmailValid, setIsEmailValid] = useState<boolean>(false);
-    const [isEmailAlreadyUsed, setIsEmailAlreadyUsed] = useState<boolean>(false);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFormReadyToSubmit, setIsFormReadyToSubmit] = useState<boolean>(false);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
-    const navigate = useNavigate();
 
-    const namesRef = useRef<HTMLInputElement | null>(null);
-    const usernameRef = useRef<HTMLInputElement | null>(null);
-    const emailRef = useRef<HTMLInputElement | null>(null);
-    const passwordRef = useRef<HTMLInputElement | null>(null);
-    const confirmPasswordRef = useRef<HTMLInputElement | null>(null);
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
 
-    const refMap: RefMap = {
-        names: namesRef,
-        username: usernameRef,
-        email: emailRef,
-        password: passwordRef,
-        confirmPassword: confirmPasswordRef
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const validateForm = () => {
+        const newErrors = {};
 
-    useEffect(() => {
-        const validateEmail = () => setIsEmailValid(emailRegex.test(formData.email || ''));
-        const validatePasswordMatch = () => setIsPasswordMatch(formData.password === formData.confirmPassword);
-        validateEmail();
-        validatePasswordMatch();
-    }, [formData]);
-
-    useEffect(() => {
-        setIsFormReadyToSubmit(
-            formData.names !== "" &&
-            formData.username !== "" &&
-            formData.email !== "" &&
-            formData.password !== "" &&
-            formData.confirmPassword !== "" &&
-            isPasswordMatch &&
-            isEmailValid
-        );
-    }, [formData, isPasswordMatch, isEmailValid]);
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value, type, files } = e.target;
-        if (type === 'file' && files) {
-            setFormData((prevData) => ({ ...prevData, [name]: files[0] }));
-            setImagePreview(URL.createObjectURL(files[0]));
-        } else {
-            setFormData((prevData) => ({ ...prevData, [name]: value }));
+        if (!formData.email) {
+            newErrors.email = 'Email is required.';
+        } else if (!/^[\w-.]+@[\w-]+\.[a-z]{2,}$/i.test(formData.email)) {
+            newErrors.email = 'Enter a valid email address.';
         }
 
-        // Remove red border when input starts getting valid
-        if (value.trim()) {
-            refMap[name]?.current?.classList.remove("border-red-500", "focus:ring-red-500");
+        if (!formData.names) {
+            newErrors.names = 'Names are required.';
         }
-    };
 
-    const handleImageUploadClick = () => fileInputRef.current?.click();
-
-    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-
-        const ref = refMap[name];
-        if (!value.trim()) {
-            ref?.current?.classList.add("border-red-500", "focus:ring-red-500");
+        if (!formData.username) {
+            newErrors.username = 'Username is required.';
         }
+
+        if (!formData.password) {
+            newErrors.password = 'Password is required.';
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'Password must be at least 8 characters long.';
+        }
+
+        if (formData.password !== formData.confirmPassword) {
+            newErrors.confirmPassword = 'Passwords do not match.';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
-    const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-        const { name } = e.target;
-        const ref = refMap[name];
-        ref?.current?.classList.remove("border-red-500", "focus:ring-red-500");
-    };
-
-    const validateInputs = (): boolean => {
-        let isValid = true;
-
-        // Check if all required fields are filled in
-        Object.keys(refMap).forEach((key) => {
-            const ref = refMap[key];
-            const value = formData[key as keyof FormData];
-            if (!value?.trim()) {
-                ref?.current?.classList.add("border-red-500", "focus:ring-red-500");
-                isValid = false;
-            }
-        });
-
-        return isValid;
-    };
-
-    const handleFormSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateInputs()) return;
+        setErrors({}); // Clear previous errors
+        setSuccessMessage('');
 
-        setIsLoading(true);
+        if (!validateForm()) return;
+
+        setLoading(true);
 
         try {
-            const response = await axios.post(`${serverUrl}/signUp`, formData);
-
-            if (response.status === 201) navigate('/login');
+            const response = await axios.post(serverUrl+'/signup', formData);
+            setSuccessMessage(response.data.message);
+            setFormData({ email: '', names: '', username: '', password: '', confirmPassword: '' });
         } catch (error) {
-            if (axios.isAxiosError(error)) {
-                if (!error.response) {
-                    navigate('/no-internet');
-                    return;
-                }
-                if (error.response.status === 400) setIsEmailAlreadyUsed(true)
-                else console.error(error);
-
+            if (error.response && error.response.data) {
+                setErrors(error.response.data);
+            } else {
+                setErrors({ general: 'An unexpected error occurred. Please try again.' });
             }
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
+    const getPasswordStrength = (password) => {
+        if (!password) return '';
+        const strongPassword = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
+        return strongPassword.test(password) ? 'Strong' : 'Weak';
+    };
+
     return (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-800 via-gray-900 to-black m-0 p-0">
-            <form
-                className="h-screen sm:h-full w-full max-w-lg p-10 bg-gray-700 sm:rounded-lg shadow-lg space-y-6  "
-                onSubmit={handleFormSubmit}
-            >
-                <h2 className="text-3xl font-bold text-center text-white">Sign Up</h2>
-                <div className="text-center">
-                    <Link to="/login" className="text-blue-400 hover:text-blue-600">
-                        Already have an account? Sign In
-                    </Link>
-                </div>
-                {/* Profile Picture Preview */}
-                {imagePreview && (
-                    <div className="flex justify-center mb-6">
-                        <img
-                            src={imagePreview}
-                            alt="Profile Preview"
-                            className="w-32 h-32 rounded-full object-cover"
+        <div className="flex justify-center items-center h-screen bg-gray-800">
+            <div className="bg-gray-900 p-8 rounded shadow-md w-full max-w-md">
+                <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+                {successMessage && <div className="bg-green-100 text-green-700 p-3 rounded mb-4">{successMessage}</div>}
+                {errors.general && <div className="bg-red-100 text-red-700 p-3 rounded mb-4">{errors.general}</div>}
+
+                <form onSubmit={handleSubmit} noValidate>
+                    <div className="mb-4">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full p-2 border rounded-md ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                         />
+                        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                     </div>
-                )}
-                <InputField
-                    name="names"
-                    label="Full Name"
-                    value={formData.names}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    onFocus={handleFocus}
-                    ref={namesRef}
-                />
-                <InputField
-                    name="username"
-                    label="Username"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    onFocus={handleFocus}
-                    ref={usernameRef}
-                />
-                <EmailInput
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    isValid={isEmailValid}
-                    isEmailAlreadyUsed={isEmailAlreadyUsed}
-                    onBlur={handleBlur}
-                    onFocus={handleFocus}
-                    ref={emailRef}
-                />
-                <InputField
-                    name="password"
-                    label="Password"
-                    type="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    onFocus={handleFocus}
-                    ref={passwordRef}
-                />
-                <InputField
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    onBlur={handleBlur}
-                    onFocus={handleFocus}
-                    ref={confirmPasswordRef}
-                />
-                <button
-                    type="submit"
-                    disabled={!isFormReadyToSubmit}
-                    className={`w-full py-3 px-5 text-lg font-medium text-white bg-blue-600 rounded-lg ${isFormReadyToSubmit ? 'hover:bg-blue-700' : 'opacity-50 cursor-not-allowed'
-                        }`}
-                >
-                    {isLoading ? <ClipLoader color="white" size={24} /> : 'Sign Up'}
-                </button>
-                <button
-                    type="button"
-                    onClick={handleImageUploadClick}
-                    className="w-full py-3 px-5 mt-2 text-lg font-medium text-white bg-gray-600 rounded-lg hover:bg-gray-700"
-                >
-                    Upload Profile Image
-                </button>
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    name="image"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleInputChange}
-                />
-            </form>
-        </div>
-    );
-}
 
-function InputField({ name, label, type = 'text', value, onChange, onBlur, onFocus, ref }: InputProps) {
-    return (
-        <div>
-            <label className="block mb-2 text-sm font-medium text-gray-300">{label}</label>
-            <input
-                ref={ref}
-                className="w-full px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                name={name}
-                type={type}
-                value={value || ''}
-                onChange={onChange}
-                onBlur={onBlur}
-                onFocus={onFocus}
-                required
-            />
-        </div>
-    );
-}
+                    <div className="mb-4">
+                        <label htmlFor="names" className="block text-sm font-medium text-gray-700">Names</label>
+                        <input
+                            type="text"
+                            id="names"
+                            name="names"
+                            value={formData.names}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full p-2 border rounded-md ${errors.names ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.names && <p className="text-red-500 text-sm mt-1">{errors.names}</p>}
+                    </div>
 
-function EmailInput({ value, onChange, isValid, isEmailAlreadyUsed, onBlur, onFocus, ref }: EmailInputProps) {
-    return (
-        <div>
-            <label className="block mb-2 text-sm font-medium text-gray-300">Email</label>
-            <input
-                ref={ref}
-                className={`w-full px-4 py-2 bg-gray-800 text-white border rounded-lg focus:outline-none ${isValid
-                    ? 'border-gray-600 focus:ring-blue-500'
-                    : 'border-red-500 focus:ring-red-500'
-                    }`}
-                name="email"
-                type="email"
-                value={value || ''}
-                onChange={onChange}
-                onBlur={onBlur}
-                onFocus={onFocus}
-                required
-            />
-            {!isValid && <p className="mt-1 text-sm text-red-400">Please enter a valid email</p>}
-            {isEmailAlreadyUsed && (
-                <p className="mt-1 text-sm text-red-400">This email is already in use</p>
-            )}
+                    <div className="mb-4">
+                        <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
+                        <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value={formData.username}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full p-2 border rounded-md ${errors.username ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>}
+                    </div>
+
+                    <div className="mb-4">
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full p-2 border rounded-md ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+                        <p className="text-sm mt-1">Password strength: {getPasswordStrength(formData.password)}</p>
+                    </div>
+
+                    <div className="mb-4">
+                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+                        <input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            className={`mt-1 block w-full p-2 border rounded-md ${errors.confirmPassword ? 'border-red-500' : 'border-gray-300'}`}
+                        />
+                        {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 disabled:opacity-50"
+                    >
+                        {loading ? 'Signing up...' : 'Sign Up'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
-}
+};
+
+export default Signup;
