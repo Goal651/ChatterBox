@@ -8,6 +8,7 @@ import { Message, User } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import useSocketConfig from "../config/SocketConfig";
 import { Socket } from "socket.io-client";
+import Notifier from "../utilities/Notifier";
 
 
 export default function Dashboard({ serverUrl }: { serverUrl: string }) {
@@ -37,7 +38,20 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
     useEffect(() => {
         if (!socket) return;
 
-        const handleSocketMessage = (message: Message) => updateUserMessage(message);
+        const handleSocketMessage = (message: Message) => {
+            if (!message) return;
+        
+            // Find the sender's username
+            const senderUser = users.find(user => user._id === message.sender);
+            const senderUsername = senderUser ? senderUser.username : "Unknown User";
+        
+            // Pass the username and message to the Notifier
+            Notifier({ from: senderUsername, message: message.message });
+        
+            // Update user messages
+            updateUserMessage(message);
+        };
+        
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId);
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
         const handleOnlineUsers = (users: string[]) => {
