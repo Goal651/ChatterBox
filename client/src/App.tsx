@@ -22,8 +22,9 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
 
+  const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
 
-  const serverUrl = 'http://localhost:3001/api'
+
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
