@@ -1,10 +1,10 @@
-import { FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
+import { FaArrowLeft, FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
 import Messages from "./Messages";
 import Sender from "./Sender";
 import { Socket } from "socket.io-client";
 import { Message, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface ChatScreenProps {
     socket: Socket;
@@ -12,6 +12,11 @@ interface ChatScreenProps {
     serverUrl: string;
     sentMessage: (message: Message) => void;
     onlineUsers: string[]
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
 }
 
 interface SocketMessageProps {
@@ -19,20 +24,21 @@ interface SocketMessageProps {
     messageId: string | number;
 }
 
-const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: ChatScreenProps) => {
+const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType }: ChatScreenProps) => {
     const [user, setUser] = useState<User | null>(null);
     const [message, setMessage] = useState<Message | null>(null);
     const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null);
     const [isUserTyping, setIsUserTyping] = useState(false)
-    const { id } = useParams();
+    const { friendId } = useParams();
+    const navigate = useNavigate()
 
     useEffect(() => {
-        const result = users.find((user) => user._id === id);
+        const result = users.find((user) => user._id === friendId);
         if (result) {
             setUser(result);
             sessionStorage.setItem("selectedUser", JSON.stringify(result));
         }
-    }, [users, id]);
+    }, [users, friendId]);
 
     const handleSentMessage = (message: Message) => {
         if (message) {
@@ -50,13 +56,13 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
         };
 
         const handleTypingUser = (data: { typingUserId: string }) => {
-            if (id == data.typingUserId) {
+            if (friendId == data.typingUserId) {
                 setIsUserTyping(true)
             } else setIsUserTyping(false)
         }
 
         const handleNotTypingUser = (data: { typingUserId: string }) => {
-            if (id == data.typingUserId) {
+            if (friendId == data.typingUserId) {
                 setIsUserTyping(false)
             }
         }
@@ -82,12 +88,18 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
 
     return (
         <>
-            <div className="flex justify-between border-b border-slate-700 pb-6">
-                <div className="flex space-x-4 items-center">
+            <div className=" flex justify-between border-b border-slate-700 pb-6 ">
+                <div className="flex space-x-2 items-center">
+                    {(mediaType.isMobile || mediaType.isTablet) && (
+                        <FaArrowLeft
+                            className="text-white"
+                            onClick={() => navigate('/chat/')}
+                        />
+                    )}
                     <img
                         src={user?.imageData || "/image.png"}
                         alt="User Avatar"
-                        className="w-16 h-16 object-cover rounded-full"
+                        className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full"
                     />
                     <div className="flex flex-col">
                         <div className="text-white font-semibold text-xl">{user?.username}</div>
@@ -98,7 +110,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
                         ))}
                     </div>
                 </div>
-                <div className="flex space-x-8 items-center">
+                <div className="flex space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 items-center">
                     <FaPhone className="rotate-90 text-blue-500 w-6 h-6" />
                     <FaVideo className="text-blue-500 w-6 h-6" />
                     <FaEllipsisV className="text-blue-500 w-6 h-6" />
@@ -114,6 +126,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers }: Chat
                         socketMessage={socketMessage}
                         socket={socket}
                         friend={user}
+                        mediaType={mediaType}
                     />
                 </div>
                 <div className="h-1/6 flex items-center">

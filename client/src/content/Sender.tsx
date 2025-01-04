@@ -2,7 +2,7 @@ import { FaCamera, FaLink, FaPaperPlane } from "react-icons/fa"
 import { FaFaceLaugh } from "react-icons/fa6"
 import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import FileMessagePreview from "../utilities/FileMessagePreview"
 import { Socket } from "socket.io-client"
 import { Message, User } from "../interfaces/interfaces"
@@ -30,7 +30,23 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
     const [recordedAudioUrl, setRecordedAudioUrl] = useState<string | null>(null)
     const [isTakingPhoto, setIsTakingPhoto] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
-    const { id } = useParams()
+    const pickerRef = useRef<HTMLDivElement | null>(null);
+    const { friendId } = useParams()
+
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+                setShowEmojiPicker(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +63,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
         setRecordedAudioUrl(null)
     }
 
-    useEffect(() => resetSenderComponent, [id])
+    useEffect(() => resetSenderComponent, [friendId])
 
 
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,7 +168,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
     }
 
     return (
-        <div className="flex w-full space-x-4">
+        <div className="flex w-full gap-2 items-center justify-center">
             {isTakingPhoto && <PhotoCapture onPhotoCapture={handleCapturedPhoto} />}
             {recordedAudio ? (
                 <div className=" bg-slate-700 w-full p-4 rounded-lg space-y-4 flex space-x-4">
@@ -162,7 +178,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                     <button className="btn btn-error text-white  w-14" onClick={() => setRecordedAudio(null)}>cancel</button>
                 </div>
             ) : (
-                <div className=" bg-slate-700 w-full p-4 rounded-lg space-y-4">
+                <div className=" bg-slate-700 w-4/6 sm:w-5/6 lg:w-full p-4 rounded-lg space-y-4">
                     <form onSubmit={sendMessage} className="flex space-x-4">
                         <div>
                             <label className="cursor-pointer"
@@ -196,7 +212,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                                 className="text-white" />
                         </div>
                     </form>
-                    <div className="flex space-x-4 w-96 overflow-x-auto">
+                    <div className="flex space-x-4 w-40 md:w-96  overflow-x-auto">
                         {fileData && fileData.length > 0 && (
                             fileData.map((file, index) => (
                                 <FileMessagePreview
@@ -209,7 +225,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                     </div>
                 </div>
             )}
-            <div className="flex items-center">
+            <div className="flex items-center w-1/6 md:w-fit">
                 {isUploading ? (
                     <button
                         onClick={sendMessage}
@@ -220,7 +236,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                     <button
                         onClick={sendMessage}
                         className="btn bg-blue-500 border-0 flex items-center">
-                        <FaPaperPlane className=" text-xl text-black" />
+                        <FaPaperPlane className="text-xl text-black" />
                     </button>
                 ) : (
                     <div className="btn bg-blue-500 border-0 flex items-center">
@@ -231,14 +247,20 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
                 ))}
             </div>
             {showEmojiPicker && (
-                <div className="fixed bottom-48">
+                <div
+                    ref={pickerRef}
+                    className="absolute bottom-16  z-50 w-fit sm:w-96  overflow-x-auto shadow-lg"
+                >
                     <Picker
                         data={data}
                         theme={'dark'}
                         onEmojiSelect={handleEmojiSelect}
+                        width="100%"
+
                     />
                 </div>
             )}
+
         </div>
     )
 }

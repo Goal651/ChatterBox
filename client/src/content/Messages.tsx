@@ -12,6 +12,11 @@ interface MessageProps {
     socketMessage: { sentMessage: Message; messageId: string | number } | null;
     socket: Socket;
     friend: User
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
 }
 
 export default function Messages({
@@ -19,9 +24,10 @@ export default function Messages({
     sentMessages,
     socketMessage,
     socket,
-    friend
+    friend,
+    mediaType
 }: MessageProps) {
-    const { id } = useParams();
+    const { friendId } = useParams();
     const user: User = JSON.parse(sessionStorage.getItem("currentUser") || "{}") || null;
     const [messages, setMessages] = useState<Message[]>([]);
     const [lastMessage, setLastMessage] = useState<Message | null>(null);
@@ -36,10 +42,10 @@ export default function Messages({
 
 
     const fetchMessages = useCallback(async () => {
-        if (!id) return;
+        if (!friendId) return;
         try {
             setIsLoading(true);
-            const result = await getMessagesApi(serverUrl, id, 0);
+            const result = await getMessagesApi(serverUrl, friendId, 0);
             const resultMessages: Message[] | null = result.messages;
 
             if (resultMessages) {
@@ -52,7 +58,7 @@ export default function Messages({
         } finally {
             setIsLoading(false);
         }
-    }, [id, serverUrl]);
+    }, [friendId, serverUrl]);
 
     useEffect(() => {
         if (sentMessages) {
@@ -119,17 +125,17 @@ export default function Messages({
 
     useEffect(() => {
         scrollBottom();
-    }, [messages, id, scrollBottom]);
+    }, [messages, friendId, scrollBottom]);
 
     useEffect(() => {
         fetchMessages();
     }, [fetchMessages]);
 
     useEffect(() => {
-        if (socket && lastMessage && lastMessage.sender === id && !lastMessage.isMessageSeen) {
+        if (socket && lastMessage && lastMessage.sender === friendId && !lastMessage.isMessageSeen) {
             socket.emit("messageSeen", { messageId: lastMessage._id, receiverId: user._id });
         }
-    }, [id, lastMessage, socket, user]);
+    }, [friendId, lastMessage, socket, user]);
 
     if (isLoading) {
         return (
@@ -139,7 +145,7 @@ export default function Messages({
         );
     }
 
-    if (!id) {
+    if (!friendId) {
         return (
             <div className="h-full flex flex-col space-y-4 items-center justify-center">
                 <div className="text-gray-400 text-center">Select a friend to continue</div>
@@ -151,19 +157,20 @@ export default function Messages({
         <div className="h-full w-full flex flex-col overflow-x-hidden overflow-y-auto space-y-4">
             {messages.length > 0 ? (
                 messages.map((message) => {
-                    const isReceiver = message.receiver === id;
+                    const isReceiver = message.receiver === friendId;
                     const bubbleClass = isReceiver ? "bg-blue-600" : "bg-gray-900";
                     return (
                         <div key={message._id}>
                             <div className={`chat ${isReceiver ? "chat-end " : "chat-start"} h-auto w-full`}>
-                                <div className={`chat-bubble rounded-lg break-words min-w-16 max-w-96 ${bubbleClass}`}>
+                                <div className={`chat-bubble rounded-lg break-words min-w-16 ${bubbleClass} ${mediaType.isMobile ? "max-w-full" : "max-w-96 "}`}>
                                     {message.type == 'text' ? (
                                         <div className="text-white ">{message.message}</div>
                                     ) : (
-                                        <div className={`w-80  bg-black rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl" : "h-72"}`}>
+                                        <div className={`  bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl" : "max-h-72"}`}>
                                             <FilePreview
                                                 files={message.message}
                                                 serverUrl={serverUrl}
+                                                mediaType={mediaType}
                                             />
                                         </div>
                                     )}
@@ -174,7 +181,6 @@ export default function Messages({
                                             message.isMessageReceived ? (
                                                 message.isMessageSeen ? 'seen' : 'received'
                                             ) : 'sent') : "not sent"}
-
                                     </div>
                                 )}
                             </div>

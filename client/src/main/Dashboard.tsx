@@ -9,15 +9,26 @@ import ChatScreen from "../content/ChatScreen";
 import useSocketConfig from "../config/SocketConfig";
 import { Socket } from "socket.io-client";
 import Notifier from "../utilities/Notifier";
+import { useParams } from "react-router-dom";
+
+interface DashboardProps {
+    serverUrl: string;
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
+}
 
 
-export default function Dashboard({ serverUrl }: { serverUrl: string }) {
+export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const socket = useSocketConfig();
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([])
+    const { friendId } = useParams()
 
     // Fetch data and initialize state
     useEffect(() => {
@@ -150,34 +161,73 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
         })
     }
 
+    const hideUsers = (): boolean => {
+        if (mediaType.isDesktop) return false;
+        else if (mediaType.isTablet) {
+            if (friendId) return true
+            else return false
+        }
+        else if (mediaType.isMobile) {
+            if (friendId) return true
+            else return false
+        }
+        else return false
+    }
+
+    const hideChatScreen = (): boolean => {
+        if (mediaType.isDesktop) return false;
+        else if (mediaType.isTablet) {
+            if (friendId) return false
+            else return true
+        }
+        else if (mediaType.isMobile) {
+            if (friendId) return false
+            else return true
+        }
+        else return false
+    }
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
 
     return (
-        <div className="bg-slate-700 h-screen p-3 flex space-x-4 overflow-hidden">
-            <div className="w-fit sm:w-fit xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto">
-                <Navigator socket={socket} initialCurrentUser={currentUser} />
-            </div>
-            <div className="w-1/3 bg-transparent rounded-2xl flex flex-col space-y-4">
-                <SearchInput searchTerm={searchTerm} onSearchChange={handleSearchChange} />
-                <UserLists
-                    filteredUsers={filteredUsers}
-                    currentUser={currentUser}
-                    onlineUsers={onlineUsers}
-                    typingUsers={typingUsers}
+        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-4 p-2' : 'space-x-4 p-3'} bg-slate-700 h-screen  overflow-hidden`}>
+            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
+                <Navigator
                     socket={socket}
-                    handleSetUnreads={handleSetUnreads}
-                />
+                    initialCurrentUser={currentUser}
+                    mediaType={mediaType} />
             </div>
-            <div className="w-2/3 bg-black py-4 px-6 rounded-2xl flex flex-col">
-                <ChatScreen
-                    socket={socket}
-                    users={filteredUsers}
-                    serverUrl={serverUrl}
-                    sentMessage={updateUsers}
-                    onlineUsers={onlineUsers}
-                />
+            <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
+                {!hideUsers() && (
+                    <div className={`${mediaType.isMobile ? 'w-full' : 'w-1/3'} bg-transparent rounded-2xl flex flex-col space-y-4 h-full`}>
+                        <SearchInput
+                            searchTerm={searchTerm}
+                            onSearchChange={handleSearchChange}
+                        />
+                        <UserLists
+                            filteredUsers={filteredUsers}
+                            currentUser={currentUser}
+                            onlineUsers={onlineUsers}
+                            typingUsers={typingUsers}
+                            socket={socket}
+                            handleSetUnreads={handleSetUnreads}
+                        />
+                    </div>
+                )}
+                {hideChatScreen() ? null : (
+                    <div className={`${mediaType.isMobile||mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-black py-2 px-2 sm:px-8  flex flex-col`}>
+                        <ChatScreen
+                            socket={socket}
+                            users={filteredUsers}
+                            serverUrl={serverUrl}
+                            sentMessage={updateUsers}
+                            onlineUsers={onlineUsers}
+                            mediaType={mediaType}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

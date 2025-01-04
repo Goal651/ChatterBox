@@ -3,8 +3,19 @@ import { useNavigate } from "react-router-dom"
 import { User } from "../interfaces/interfaces"
 import { Socket } from "socket.io-client"
 
-export default function Navigator({ initialCurrentUser, socket }: { initialCurrentUser: User | null, socket: Socket }) {
+interface NavigatorProps {
+    initialCurrentUser: User | null,
+    socket: Socket,
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
+}
+
+export default function Navigator({ initialCurrentUser, socket, mediaType }: NavigatorProps) {
     const navigate = useNavigate()
+    const isMobile = mediaType.isMobile
 
     const handleLogout = () => {
         localStorage.clear()
@@ -13,14 +24,14 @@ export default function Navigator({ initialCurrentUser, socket }: { initialCurre
     }
 
     return (
-        <div className="flex flex-col space-y-4 lg:space-y-10 h-full justify-evenly md:place-items-center">
+        <div className={`flex ${isMobile ? ' justify-between w-full  ' : ' flex-col space-y-4  justify-evenly '}  lg:space-y-10 h-full md:place-items-center`}>
             <div className="flex justify-center">
                 <img
                     src={initialCurrentUser?.imageData ? initialCurrentUser.imageData : '/image.png'}
                     className="bg-transparent rounded-full object-cover w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36 "
                 />
             </div>
-            <div className="flex flex-col justify-center space-y-2 md:space-y-4 lg:space-y-8 xl:space-y-14">
+            <div className={`flex ${isMobile ? 'justify-evenly ' : 'justify-center space-y-2 flex-col'}   md:space-y-4 lg:space-y-8 xl:space-y-14`}>
                 <div className="flex space-x-4">
                     <div className="w-8 h-8">
                         <iconsFa.FaHome size={'100%'} className="text-slate-200" />

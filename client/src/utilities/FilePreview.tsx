@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getFile } from "../api/api";
 import Modal from "react-modal"
 
-Modal.setAppElement("#root"); // Adjust this selector to your app root
+Modal.setAppElement("#root");
 
 type FilePreviewData = {
     file: string;
@@ -12,9 +12,14 @@ type FilePreviewData = {
 interface FilePreviewProps {
     files: string; // Comma-separated file names
     serverUrl: string;
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
 }
 
-export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
+export default function FilePreview({ files, serverUrl, mediaType }: FilePreviewProps) {
     const [filePreviews, setFilePreviews] = useState<FilePreviewData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
@@ -68,7 +73,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
                     key={index}
                     src={file}
                     alt={`file-${index}`}
-                    className="w-full h-full object-cover rounded-md cursor-pointer"
+                    className="w-full h-full object-cover rounded-lg cursor-pointer bg-black"
                     onClick={() => openModal(index)}
                 />
             );
@@ -90,7 +95,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
                     key={index}
                     src={file}
                     controls
-                    className="w-96 h-full cursor-pointer"
+                    className={`h-10 cursor-pointer ${mediaType.isMobile ? "w-60" : "w-80"}`}
                     onClick={() => openModal(index)}
                 />
             );
@@ -99,10 +104,10 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
         return (
             <div
                 key={index}
-                className="bg-transparent flex items-center justify-center w-full h-full text-white text-sm cursor-pointer"
+                className="bg-black rounded-lg flex items-center justify-center w-full h-full text-white text-sm cursor-pointer"
                 onClick={() => openModal(index)}
             >
-                {file}
+                Unsupported file type
             </div>
         );
     };
@@ -113,7 +118,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
         }
 
         if (error) {
-            return <div className="text-red-500">{error}</div>;
+            return <div className="text-red-500">File not found</div>;
         }
 
         const fileCount = filePreviews.length;
@@ -124,7 +129,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
 
         if (fileCount === 2) {
             return (
-                <div className="grid grid-cols-2 gap-4">
+                <div className=" grid grid-cols-2 gap-2">
                     {filePreviews.map((preview, index) => renderFilePreview(preview.file, preview.type, index))}
                 </div>
             );
@@ -133,7 +138,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
         if (fileCount === 3) {
             return (
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
+                    <div className="relative col-span-2">
                         {renderFilePreview(filePreviews[0].file, filePreviews[0].type, 0)}
                     </div>
                     {filePreviews.slice(1).map((preview, index) => renderFilePreview(preview.file, preview.type, index + 1))}
@@ -142,7 +147,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
         }
 
         return (
-            <div className="grid grid-cols-2 gap-4 relative">
+            <div className="grid grid-cols-2 gap-4 relative w-full">
                 {filePreviews.slice(0, 3).map((preview, index) => renderFilePreview(preview.file, preview.type, index))}
                 {filePreviews.length > 3 && (
                     <div className="relative">
@@ -177,8 +182,10 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
 
 
     return (
-        <div className="bg-transparent w-full h-full flex items-center justify-center p-4">
+        <div className="bg-transparent w-full h-full flex items-center justify-center ">
+            <div className="w-full h-full">
             {renderFileList()}
+            </div>
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
