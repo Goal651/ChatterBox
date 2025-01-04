@@ -66,8 +66,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
     };
 
     return (
-        <div className="bg-transparent h-full p-4 flex flex-col space-y-4 overflow-y-auto overflow-x-hidden">
-            <div className="text-white font-semibold text-xl">Friends</div>
+        <div className="bg-transparent p-4 flex flex-col space-y-4  overflow-x-hidden">
             {friends?.length ? (
                 friends.map((friend) => (
                     <div key={friend._id} onClick={() => handleFriendClick(friend._id)} className="w-full py-4">

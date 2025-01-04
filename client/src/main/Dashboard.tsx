@@ -249,11 +249,9 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
 );
 
 const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads }: { filteredUsers: User[]; currentUser: User | null; onlineUsers: string[], typingUsers: string[], socket: Socket, handleSetUnreads: (newUnreads: Message[]) => void }) => (
-    <div className="grid grid-rows-2 w-full space-y-4 overflow-y-auto overflow-x-hidden h-full">
-        <div className="bg-black rounded-2xl overflow-x-hidden">
+    <div className="w-full space-y-4 overflow-hidden h-full">
+        <div className="bg-black rounded-2xl h-full overflow-y-auto">
             <GroupContent />
-        </div>
-        <div className="bg-black rounded-2xl overflow-hidden">
             <FriendContent
                 unreads={currentUser?.unreads}
                 initialFriends={filteredUsers}

@@ -1,7 +1,6 @@
 export default function GroupContent() {
     return (
-        <div className="bg-transparent h-full p-4 flex flex-col space-y-4 overflow-y-auto">
-            <div className="text-white font-semibold text-xl">Groups</div>
+        <div className="bg-transparent  p-4 flex flex-col space-y-4 overflow-y-auto">
             <div className="w-full ">
                 <div className="flex justify-between">
                     <div className="flex space-x-4">
