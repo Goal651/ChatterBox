@@ -20,6 +20,16 @@ interface DashboardProps {
     }
 }
 
+interface UserListProps {
+    filteredUsers: User[];
+    currentUser: User | null;
+    onlineUsers: string[],
+    typingUsers: string[],
+    socket: Socket,
+    handleSetUnreads: (newUnreads: Message[]) => void
+    loading: boolean
+}
+
 
 export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const socket = useSocketConfig();
@@ -29,18 +39,20 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([])
     const { friendId } = useParams()
+    const [loading, setLoading] = useState(true)
 
     // Fetch data and initialize state
     useEffect(() => {
         const fetchInitialData = async () => {
+            setLoading(true)
             const usersData = await getUsersApi(serverUrl);
             const currentUserData = await getProfileApi(serverUrl);
             const sortedUsers = sortUsersByLatestMessage(usersData);
             setUsers(sortedUsers);
             setCurrentUser(currentUserData);
-
             sessionStorage.setItem('users', JSON.stringify(sortedUsers));
             sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+            setLoading(false)
         };
         fetchInitialData();
     }, [serverUrl]);
@@ -213,11 +225,12 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
                             typingUsers={typingUsers}
                             socket={socket}
                             handleSetUnreads={handleSetUnreads}
+                            loading={loading}
                         />
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile||mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-black py-2 px-2 sm:px-8  flex flex-col`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-black py-2 px-2 sm:px-8  flex flex-col`}>
                         <ChatScreen
                             socket={socket}
                             users={filteredUsers}
@@ -248,18 +261,26 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads }: { filteredUsers: User[]; currentUser: User | null; onlineUsers: string[], typingUsers: string[], socket: Socket, handleSetUnreads: (newUnreads: Message[]) => void }) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-black rounded-2xl h-full overflow-y-auto">
-            <GroupContent />
-            <FriendContent
-                unreads={currentUser?.unreads}
-                initialFriends={filteredUsers}
-                onlineUsers={onlineUsers}
-                typingUsers={typingUsers}
-                socket={socket}
-                setUnreads={handleSetUnreads}
-            />
+            {!loading ? (
+                <>
+                    <GroupContent />
+                    <FriendContent
+                        unreads={currentUser?.unreads}
+                        initialFriends={filteredUsers}
+                        onlineUsers={onlineUsers}
+                        typingUsers={typingUsers}
+                        socket={socket}
+                        setUnreads={handleSetUnreads}
+                    />
+                </>
+            ) : (
+                <div className="flex justify-center items-center h-full text-white text-lg">
+                    loading  <span className="ml-2 loading loading-bars"/>
+                    </div>
+            )}
         </div>
     </div>
 );
