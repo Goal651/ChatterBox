@@ -119,7 +119,6 @@ const SocketController = (io: Server) => {
             }
 
             const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId])
-
             io.emit('onlineUsers', onlineUsers)
         });
     });
