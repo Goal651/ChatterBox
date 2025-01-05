@@ -30,8 +30,8 @@ export default function App() {
       <Suspense fallback={<div><LoadingPage /></div>}>
         <Routes>
           <Route path="/" element={<Auth serverUrl={serverUrl} />} />
-          <Route path="/chat/:friendId" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
-          <Route path="/chat/" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/:friendId" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />

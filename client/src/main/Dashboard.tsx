@@ -9,7 +9,10 @@ import ChatScreen from "../content/ChatScreen";
 import useSocketConfig from "../config/SocketConfig";
 import { Socket } from "socket.io-client";
 import Notifier from "../utilities/Notifier";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import Setting from "../content/Settings";
+import CreateGroup from "../content/CreateGroup";
+import Notifications from "../content/Notifications";
 
 interface DashboardProps {
     serverUrl: string;
@@ -28,17 +31,19 @@ interface UserListProps {
     socket: Socket,
     handleSetUnreads: (newUnreads: Message[]) => void
     loading: boolean
+    navigate: (path: string) => void
 }
 
 
 export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const socket = useSocketConfig();
+    const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([])
-    const { friendId } = useParams()
+    const { friendId, sessionType } = useParams()
     const [loading, setLoading] = useState(true)
 
     // Fetch data and initialize state
@@ -203,15 +208,9 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
 
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
 
-    return (
-        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-4 p-2' : 'space-x-4 p-3'} bg-slate-700 h-screen  overflow-hidden`}>
-            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
-                <Navigator
-                    socket={socket}
-                    initialCurrentUser={currentUser}
-                    mediaType={mediaType} />
-            </div>
-            <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
+    function chattingScreen() {
+        return (
+            <>
                 {!hideUsers() && (
                     <div className={`${mediaType.isMobile ? 'w-full' : 'w-1/3'} bg-transparent rounded-2xl flex flex-col space-y-4 h-full`}>
                         <SearchInput
@@ -226,6 +225,7 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
                             socket={socket}
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
+                            navigate={navigate}
                         />
                     </div>
                 )}
@@ -241,6 +241,46 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
                         />
                     </div>
                 )}
+            </>)
+    }
+
+
+    const renderScreen = () => {
+        switch (sessionType) {
+            case 'chat':
+                return chattingScreen()
+
+            case 'setting':
+                return <Setting />
+
+            case 'create-group':
+                return <CreateGroup
+                    socket={socket}
+                    userList={filteredUsers}
+                    mediaType={mediaType}
+                />
+
+            case 'notification':
+                return <Notifications />
+
+            default:
+                break;
+        }
+
+    }
+
+
+
+    return (
+        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-4 p-2' : 'space-x-4 p-3'} bg-slate-700 h-screen  overflow-hidden`}>
+            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
+                <Navigator
+                    socket={socket}
+                    initialCurrentUser={currentUser}
+                    mediaType={mediaType} />
+            </div>
+            <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
+                {renderScreen()}
             </div>
         </div>
     );
@@ -261,11 +301,16 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading }: UserListProps) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-black rounded-2xl h-full overflow-y-auto">
             {!loading ? (
                 <>
+                    <button
+                        onClick={() => navigate('/create-group')}
+                        className="flex border-0 mt-4 btn bg-blue-500 text-white hover:bg-blue-700 justify-self-center">
+                        Create new group
+                    </button>
                     <GroupContent />
                     <FriendContent
                         unreads={currentUser?.unreads}
@@ -278,8 +323,8 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socke
                 </>
             ) : (
                 <div className="flex justify-center items-center h-full text-white text-lg">
-                    loading  <span className="ml-2 loading loading-bars"/>
-                    </div>
+                    loading  <span className="ml-2 loading loading-bars" />
+                </div>
             )}
         </div>
     </div>
