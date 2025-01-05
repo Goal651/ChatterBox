@@ -15,7 +15,7 @@ const registerSchema = Joi.object({
     email: Joi.string().email().required().empty('').messages({
         'string.email': 'Provide valid email',
         'any.required': 'Email is required',
-        'string.empty':''
+        'string.empty': ''
     }),
     names: Joi.string().required().messages({
         'any.required': 'Names are required'
@@ -37,12 +37,24 @@ const groupCreationSchema = Joi.object({
     groupName: Joi.string().required().messages({
         'any.required': 'Group name is required',
     }),
-    members: Joi.array(),
+    members: Joi.array<string>().required().messages({
+        'any.required': 'Members are required',
+    }),
     image: Joi.string()
+})
+
+const addMemberSchema = Joi.object({
+    members: Joi.array<string>().required().messages({
+        'any.required': 'Members are required',
+    }),
+    groupId: Joi.string().required().messages({
+        'any.required': 'Group id is required',
+    })
 })
 
 export default {
     loginSchema,
     registerSchema,
-    groupCreationSchema
+    groupCreationSchema,
+    addMemberSchema
 }

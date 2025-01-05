@@ -14,29 +14,27 @@ router.post('/login', userController.login)
 //pinging server
 router.get('/ping', groupController.ping)
 
-//creation of groups and users
-router.post('/signup', userController.signup)
-router.post('/create-group', auth.checkToken, groupController.createGroup)
-
-//getting users and groups
+//apis for users
 router.get('/getUserProfile', auth.checkToken, userController.getUserProfile);
 router.get('/getUser/:email', auth.checkToken, userController.getUser)
 router.get('/getUsers', auth.checkToken, userController.getUsers)
+router.post('/signup', userController.signup)
+router.put('/editUserProfile', auth.checkToken, userController.updateUserPhoto)
+router.put('/editUser/', auth.checkToken, userController.updateUser)
+
+//apis for groups
 router.get('/getGroups', auth.checkToken, groupController.getGroups);
 router.get('/getGroup/:name', auth.checkToken, groupController.getGroup);
-
-//getting messages
-router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)
-router.get('/message/:receiverId/:phase', auth.checkToken, messageController.getMessage)
-
-//updating user,groups and messages
-router.put('/editUserProfile', auth.checkToken, userController.updateUserPhoto)
+router.post('/create-group', auth.checkToken, groupController.createGroup)
 router.put('/editGroupProfile/:group', auth.checkToken, groupController.updateGroup)
-router.put('/editUser/', auth.checkToken, userController.updateUser)
 router.put('/updateGroupProfile/:group', auth.checkToken, groupController.updateGroup)
 router.post('/addMember', auth.checkToken, groupController.addMember)
 
-//file uploads
+//apis for messages
+router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)
+router.get('/message/:receiverId/:phase', auth.checkToken, messageController.getMessage)
+
+//apis for files
 router.post('/uploadFile', auth.checkToken, mediaController.fileUpload)
 router.get('/getFile/:fileName', auth.checkToken, mediaController.sendFile)
 

@@ -59,36 +59,36 @@ const getGroups = async (req: Request, res: Response) => {
         const { userId } = res.locals.user;
         const page = req.headers.page as unknown as number
         const numberOfGroupsToSkip = 10 * page
+
         const user = await model.User.findById(userId)
             .select('groups')
             .populate({
                 path: 'groups',
+                select: 'groupName image members',
                 populate: {
-                    path: 'latestMessage'
+                    path: 'members.member',
+                    select: 'username email image',
                 }
             })
-            .limit(10)
-            .skip(numberOfGroupsToSkip)
-
 
         const groups = user?.toObject().groups as unknown as Group[]
-        if (!groups) {
-            res.status(404).json({ message: 'group not found' })
-            return
-        }
-        if (groups.length <= 0) {
-            res.status(200).json({ groups: null })
-            return
-        }
-        const groupWithDetails = await Promise.all(groups.map(async (group) => {
-            const details = await groupDetails(group.groupName)
-            return { ...group, ...details }
-        }))
-        const groupsWithImages = await Promise.all(groupWithDetails.map(async (group) => {
-            return group
-        }));
 
-        res.status(200).json({ groups: groupsWithImages });
+        if (!groups) {
+            res.status(404).json({ groups: [] })
+            return
+        }
+
+        if (groups.length <= 0) {
+            res.status(200).json({ groups: [] })
+            return
+        }
+
+        const groupsWithDetails = await Promise.all(groups.map(async (group) => {
+            const details = await groupDetails(group.groupName)
+            return { ...group, files: details }
+        }))
+
+        res.status(200).json({ groups: groupsWithDetails });
     } catch (err) {
         res.status(500).json({ message: 'Server error' + err });
     }
@@ -155,35 +155,46 @@ const updateGroup = async (req: Request, res: Response) => {
     }
 }
 
-
 const addMember = async (req: Request, res: Response) => {
     try {
-        const { groupName, memberEmail } = req.body;
+        const { error, value } = validator.addMemberSchema.validate(req.body);
+        if (error) {
+            res.status(400).json({ message: error.details[0].message });
+            return;
+        }
+
+        const { groupName, members } = value as { groupName: string; members: string[] };
         const group = await model.Group.findOne({ name: groupName });
+
         if (!group) {
-            res.status(404).json({ message: 'Group not found' })
-            return
+            res.status(404).json({ message: 'Group not found' });
+            return;
         }
-        const user = await model.User.findOne({ email: memberEmail });
-        if (!user) {
-            res.status(404).json({ message: 'User not found' })
-            return
+
+        let newMembers: string[] = []
+
+        for (const member of members) {
+            const memberExists = group.members.some((m) => m.member.toString() === member)
+            if (!memberExists) {
+                newMembers.push(member)
+            }
         }
-        const groupMembers = group.members as unknown[] as GroupMember[]
-        const isMember = groupMembers.some((member) => member.member.email === memberEmail);
-        if (isMember) {
-            res.status(400).json({ message: 'User is already a member' })
-            return
-        }
-        group.members.push({ email: memberEmail });
-        await group.save();
-        user.groups.push(groupName);
-        await user.save();
-        res.status(200).json({ message: 'Member added successfully' })
+
+        const resultMembers = newMembers.map((memberId) => ({
+            member: memberId,
+        }))
+
+        await model.Group.findByIdAndUpdate(group._id, {
+            $push: { members: { $each: resultMembers } }
+        });
+
+        res.status(200).json({ message: 'Members updated successfully' });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' + err });
+        res.status(500).json({ message: 'Server error: ' + err });
     }
-}
+};
+
+
 const ping = async (req: Request, res: Response) => {
     res.status(204).send()
 }

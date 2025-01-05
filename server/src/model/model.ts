@@ -24,11 +24,6 @@ const userSchema = new mongoose.Schema({
 
 const groupSchema = new mongoose.Schema({
     groupName: { type: String, required: true, unique: true },
-    admins: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
-    }],
     image: { type: String, default: '' },
     members: [{
         member: {
@@ -38,11 +33,6 @@ const groupSchema = new mongoose.Schema({
         },
         role: { type: String, default: '' }
     }],
-    latestMessage: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'GMessage',
-        default: null
-    },
     aesKey: { type: String, required: true },
     iv: { type: String, required: true },
     encryptedPrivateKey: { type: String, required: true },
