@@ -23,34 +23,61 @@ const groupDetails = async (group: string) => {
 
 const createGroup = async (req: Request, res: Response) => {
     try {
-        const { userId } = res.locals.user;
-        const { error, value } = validator.groupCreationSchema.validate(req.body)
-        if (error) {
-            res.status(400).json({ message: error.details[0].message })
-            return
-        }
-        const { groupName, image } = value as { groupName: string, image: string }
+        const { userId } = res.locals.user; // Assuming authentication middleware provides this
+        const { error, value } = validator.groupCreationSchema.validate(req.body);
 
+        if (error) {
+            res.status(400).json({ message: error.details[0].message });
+            return;
+        }
+
+        const { groupName, image, description, members } = value as {
+            groupName: string;
+            image: string;
+            description: string;
+            members: string[];
+        };
+
+        // Check if the group name already exists
         const existingGroup = await model.Group.findOne({ groupName });
         if (existingGroup) {
-            res.status(400).json({ message: 'Sorry that name is taken' });
-            return
+            res.status(400).json({ message: 'Group name is already taken' });
+            return;
         }
-        const { aesKey, encryptedPrivateKey, iv } = keyController.generateGroupKeys()
+
+        // Ensure members list includes the creator and remove duplicates
+        const uniqueMembers = new Set(members);
+        uniqueMembers.add(userId); // Add the creator as a member
+
+        // Generate encryption keys for the group
+        const { aesKey, encryptedPrivateKey, iv } = keyController.generateGroupKeys();
+
+        // Prepare the new group document
         const newGroup = new model.Group({
             groupName,
             admin: userId,
             image,
-            members: [{ member: userId, role: 'admin' }],
+            description,
+            members: Array.from(uniqueMembers).map((member) => ({
+                member,
+                role: member === userId ? 'admin' : 'member', // Assign role
+            })),
             aesKey: aesKey.toString('hex'),
             iv: iv.toString('hex'),
-            encryptedPrivateKey
+            encryptedPrivateKey,
         });
+
+        // Save the new group
         await newGroup.save();
-        await model.User.findByIdAndUpdate(userId, { $push: { groups: newGroup.toObject()._id } });
-        res.status(201).json({ message: 'Group created successfull' });
+
+        // Update the creator's user document with the new group
+        await model.User.findByIdAndUpdate(userId, {
+            $push: { groups: newGroup._id },
+        });
+
+        res.status(201).json({ message: 'Group created successfully', groupId: newGroup._id });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' + err });
+        res.status(500).json({ message: `Server error: ${err}` });
     }
 };
 

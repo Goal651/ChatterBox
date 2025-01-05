@@ -3,6 +3,8 @@ import { Socket } from "socket.io-client";
 import { Group, User } from "../interfaces/interfaces";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { createGroup } from "../api/api";
+import axios from "axios";
 
 interface CreateGroupProps {
     socket: Socket;
@@ -24,9 +26,8 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
     const [groupNameError, setGroupNameError] = useState(false);
     const [membersError, setMembersError] = useState(false);
 
-    const handleCreateGroup = () => {
+    const checkInputs = () => {
         let hasError = false;
-
         if (!groupName) {
             setGroupNameError(true);
             hasError = true;
@@ -43,8 +44,6 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
 
         if (hasError) return;
 
-        setLoading(true);
-        socket.emit("createGroup", { groupName, groupDescription, members: selectedMembers });
     };
 
     const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,6 +89,32 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
             socket.off("groupCreated", handleCreatedGroup);
         };
     }, [socket, navigate]);
+
+    const handleCreateGroup = async () => {
+        try {
+            checkInputs();
+            const groupData = {
+                groupName,
+                description: groupDescription,
+                members: selectedMembers.map((member) => member._id),
+            }
+            if (groupName && selectedMembers.length > 0) {
+                setLoading(true);
+                const response = await createGroup('/create-group', groupData);
+                if (response.status === 200) {
+                    const groupId: string = response.data.groupId;
+                    if (socket) socket.emit("groupCreated", groupId);
+                }
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (!error.response) {
+                    navigate("/no-internet");
+                    return;
+                }
+            }
+        }
+    };
 
     return (
         <div className="w-full flex flex-col items-center p-6 space-y-6 bg-black h-full rounded-2xl overflow-y-auto overflow-x-hidden">
@@ -152,8 +177,8 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
                             <div
                                 key={user._id}
                                 className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${selectedMembers.find((m) => m._id === user._id)
-                                        ? "bg-green-500 text-white"
-                                        : "bg-slate-700 text-gray-300"
+                                    ? "bg-green-500 text-white"
+                                    : "bg-slate-700 text-gray-300"
                                     }`}
                                 onClick={() => toggleMemberSelection(user)}
                             >
@@ -176,8 +201,8 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
                 <button
                     onClick={handleCreateGroup}
                     className={`w-full px-4 py-2 rounded-md ${loading
-                            ? "bg-gray-500 cursor-not-allowed"
-                            : "bg-blue-500 hover:bg-blue-600 text-white"
+                        ? "bg-gray-500 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600 text-white"
                         }`}
                     disabled={loading}
                 >

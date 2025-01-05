@@ -181,3 +181,17 @@ export async function getFile(serverUrl: string, fileName: string) {
     })
     return response.data
 }
+
+export async function createGroup(serverUrl: string, groupData: {
+    groupName: string;
+    description: string;
+    members: string[];
+}) {
+    const response = await axios.post(serverUrl + '/create-group', groupData, {
+        headers: {
+            accesstoken: localStorage.getItem('token'),
+        }
+    });
+    return response;
+
+}

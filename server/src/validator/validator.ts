@@ -40,7 +40,10 @@ const groupCreationSchema = Joi.object({
     members: Joi.array<string>().required().messages({
         'any.required': 'Members are required',
     }),
-    image: Joi.string()
+    image: Joi.string(),
+    description: Joi.string().required().messages({
+        'any.required': 'Description is required',
+    })
 })
 
 const addMemberSchema = Joi.object({

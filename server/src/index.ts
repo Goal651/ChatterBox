@@ -42,6 +42,5 @@ mongoose.connect(process.env.MONGO_URI as string)
             console.log('Server is running on port 3001');
         });
         SocketController(io)
-
     })
     .catch(err => console.log(err));

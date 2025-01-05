@@ -33,6 +33,7 @@ const groupSchema = new mongoose.Schema({
         },
         role: { type: String, default: '' }
     }],
+    description: { type: String, default: '' },
     aesKey: { type: String, required: true },
     iv: { type: String, required: true },
     encryptedPrivateKey: { type: String, required: true },
