@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import * as iconsFa from "react-icons/fa";
+import { useState } from "react";
 
 interface Notification {
     id: string;
@@ -58,9 +57,8 @@ export default function Notifications() {
                     notifications.map((notification) => (
                         <div
                             key={notification.id}
-                            className={`flex justify-between items-center p-4 rounded-lg shadow-md border ${
-                                notification.read ? "bg-slate-700" : "bg-blue-900 border-blue-500"
-                            }`}
+                            className={`flex justify-between items-center p-4 rounded-lg shadow-md border ${notification.read ? "bg-slate-700" : "bg-blue-900 border-blue-500"
+                                }`}
                         >
                             <div className="space-y-1">
                                 <h2 className="text-lg font-semibold text-gray-200">{notification.title}</h2>
