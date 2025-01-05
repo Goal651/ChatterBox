@@ -14,9 +14,10 @@ interface CreateGroupProps {
         isMobile: boolean;
     };
     userList: User[];
+    serverUrl: string
 }
 
-export default function CreateGroup({ socket, userList }: CreateGroupProps) {
+export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupProps) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -100,13 +101,14 @@ export default function CreateGroup({ socket, userList }: CreateGroupProps) {
             }
             if (groupName && selectedMembers.length > 0) {
                 setLoading(true);
-                const response = await createGroup('/create-group', groupData);
+                const response = await createGroup(serverUrl, groupData);
                 if (response.status === 200) {
                     const groupId: string = response.data.groupId;
                     if (socket) socket.emit("groupCreated", groupId);
                 }
             }
         } catch (error) {
+            setLoading(false);
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
                     navigate("/no-internet");

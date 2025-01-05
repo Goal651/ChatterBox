@@ -258,6 +258,7 @@ export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
                     socket={socket}
                     userList={filteredUsers}
                     mediaType={mediaType}
+                    serverUrl={serverUrl}
                 />
 
             case 'notification':
