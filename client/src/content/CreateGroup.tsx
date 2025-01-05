@@ -14,7 +14,7 @@ interface CreateGroupProps {
     userList: User[];
 }
 
-export default function CreateGroup({ socket, mediaType, userList }: CreateGroupProps) {
+export default function CreateGroup({ socket, userList }: CreateGroupProps) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -109,9 +109,8 @@ export default function CreateGroup({ socket, mediaType, userList }: CreateGroup
                             value={groupName}
                             onChange={handleGroupNameChange}
                             placeholder="Enter group name"
-                            className={`w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900 ${
-                                groupNameError ? "border-red-500" : "border-gray-700"
-                            }`}
+                            className={`w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900 ${groupNameError ? "border-red-500" : "border-gray-700"
+                                }`}
                         />
                     </div>
                     <div>
@@ -146,18 +145,16 @@ export default function CreateGroup({ socket, mediaType, userList }: CreateGroup
                     </div>
                     <div className="text-sm text-gray-500">Available Members:</div>
                     <div
-                        className={`max-h-40 overflow-y-auto space-y-2 border ${
-                            membersError ? "border-red-500" : "border-gray-700"
-                        } rounded-md p-2`}
+                        className={`max-h-40 overflow-y-auto space-y-2 border ${membersError ? "border-red-500" : "border-gray-700"
+                            } rounded-md p-2`}
                     >
                         {filteredUserList.map((user) => (
                             <div
                                 key={user._id}
-                                className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
-                                    selectedMembers.find((m) => m._id === user._id)
+                                className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${selectedMembers.find((m) => m._id === user._id)
                                         ? "bg-green-500 text-white"
                                         : "bg-slate-700 text-gray-300"
-                                }`}
+                                    }`}
                                 onClick={() => toggleMemberSelection(user)}
                             >
                                 <span>
@@ -178,11 +175,10 @@ export default function CreateGroup({ socket, mediaType, userList }: CreateGroup
             <div className="w-full max-w-md">
                 <button
                     onClick={handleCreateGroup}
-                    className={`w-full px-4 py-2 rounded-md ${
-                        loading
+                    className={`w-full px-4 py-2 rounded-md ${loading
                             ? "bg-gray-500 cursor-not-allowed"
                             : "bg-blue-500 hover:bg-blue-600 text-white"
-                    }`}
+                        }`}
                     disabled={loading}
                 >
                     {loading ? "Creating Group..." : "Create Group"}
