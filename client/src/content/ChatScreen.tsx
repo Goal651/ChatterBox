@@ -48,7 +48,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
     };
 
     const handleVideoCall = () => {
-        navigate(`/video-call/${friendId}`)
+        navigate(`/videoCall/${friendId}`)
     }
 
     useEffect(() => {
