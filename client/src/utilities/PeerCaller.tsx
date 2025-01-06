@@ -1,54 +1,45 @@
-import Peer from "peerjs";
-import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState, useRef } from 'react';
+import { useParams } from 'react-router-dom';
+import { Socket } from 'socket.io-client';
+
+interface PeerCallerProps {
+    socket: Socket;
+}
+
+interface SignalData {
+    type: string;
+    offer: RTCSessionDescriptionInit;
+    signal: RTCSessionDescriptionInit;
+    peerId: string;
+    receiver: string;
+    candidate: RTCIceCandidateInit;
+    target: string;
+    room: string;
+    answer: RTCSessionDescriptionInit;
+}
 
 
-export default function PeerCaller({ serverUrl }: { serverUrl: string }) {
-    const userId = localStorage.getItem('userId')
-    const from = JSON.parse(userId!)._id
-    const [peer, setPeer] = useState<Peer | null>(null)
-    const [myStream, setMyStream] = useState<MediaStream | null>(null)
-    const [peerId, setPeerId] = useState('')
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
+export default function PeerCaller({ socket }: PeerCallerProps) {
+    const senderData = sessionStorage.getItem('currentUser') || '';
+    const from: string = JSON.parse(senderData)._id
+    const [myStream, setMyStream] = useState<MediaStream | null>(null);
+    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const { friendId } = useParams();
-
+    const to = friendId
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
 
     useEffect(() => {
-        const newPeer = new Peer(from, {
-            path: '/testing',
-            host: serverUrl,
-            port: 3000,
-            secure: false,
-        })
+        socket.emit('join', from); // Send join message to server
 
-        newPeer.on('open', (id) => {
-            setPeerId(id)
-            console.log('Peer ID: ', id)
-        })
-
-        newPeer.on('call', (call) => {
-            if (myStream) {
-                call.answer(myStream)
-                call.on('stream', (remoteStream) => {
-                    setRemoteStream(remoteStream);
-                    if (remoteVideoRef.current) {
-                        remoteVideoRef.current.srcObject = remoteStream;
-                    }
-                })
-            }
-        })
-
-        newPeer.on('error', (err) => {
-            console.error('PeerJS error:', err);
+        socket.on('signal', (data) => {
+            handleSignal(data);
         });
 
-        setPeer(newPeer)
         return () => {
-            if (newPeer) newPeer.destroy()
-        }
-    }, [myStream])
+            socket.disconnect();
+        };
+    }, []);
 
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
@@ -58,25 +49,106 @@ export default function PeerCaller({ serverUrl }: { serverUrl: string }) {
                     localVideoRef.current.srcObject = stream;
                 }
             })
-            .catch((err) => console.error("Error accessing camera:", err))
-    }, [])
+            .catch((err) => console.error('Error accessing camera:', err));
+    }, []);
+    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
-    const handleCall = (peerIdToCall: string) => {
-        if (peer && myStream) {
-            const call = peer.call(peerIdToCall, myStream)
-            call.on('stream', (remoteStream) => {
-                setRemoteStream(remoteStream);
-                if (remoteVideoRef.current) {
-                    remoteVideoRef.current.srcObject = remoteStream;
+    const handleSignal = (data: SignalData) => {
+        if (!peerConnectionRef.current) {
+            peerConnectionRef.current = new RTCPeerConnection();
+            peerConnectionRef.current.addEventListener('icecandidate', (event) => {
+                if (event.candidate) {
+                    socket.emit('signal', {
+                        target: to,
+                        type: 'candidate',
+                        candidate: event.candidate,
+                    });
                 }
-            })
+            });
+    
+            peerConnectionRef.current.addEventListener('track', (event) => {
+                if (event.streams && event.streams[0]) {
+                    setRemoteStream(event.streams[0]);
+                    if (remoteVideoRef.current) {
+                        remoteVideoRef.current.srcObject = event.streams[0];
+                    }
+                }
+            });
+    
+            if (myStream) {
+                myStream.getTracks().forEach((track) => {
+                    peerConnectionRef.current?.addTrack(track, myStream);
+                });
+            }
         }
-    }
+    
+        const peerConnection = peerConnectionRef.current;
+    
+        if (data.type === 'offer') {
+            peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+                .then(() => peerConnection.createAnswer())
+                .then((answer) => peerConnection.setLocalDescription(answer))
+                .then(() => {
+                    socket.emit('signal', {
+                        target: to,
+                        type: 'answer',
+                        answer: peerConnection.localDescription,
+                    });
+                })
+                .catch((error) => console.error('Error handling offer:', error));
+        } else if (data.type === 'candidate') {
+            peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
+                .catch((error) => console.error('Error adding candidate:', error));
+        } else if (data.type === 'answer') {
+            peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
+                .catch((error) => console.error('Error handling answer:', error));
+        }
+    };
+    
+    const handleCall = (peerIdToCall: string) => {
+        if (!peerConnectionRef.current && myStream) {
+            peerConnectionRef.current = new RTCPeerConnection();
+            myStream.getTracks().forEach((track) => {
+                peerConnectionRef.current?.addTrack(track, myStream);
+            });
+    
+            peerConnectionRef.current.addEventListener('icecandidate', (event) => {
+                if (event.candidate) {
+                    socket.emit('signal', {
+                        target: peerIdToCall,
+                        type: 'candidate',
+                        candidate: event.candidate,
+                    });
+                }
+            });
+    
+            peerConnectionRef.current.addEventListener('track', (event) => {
+                if (event.streams && event.streams[0]) {
+                    setRemoteStream(event.streams[0]);
+                    if (remoteVideoRef.current) {
+                        remoteVideoRef.current.srcObject = event.streams[0];
+                    }
+                }
+            });
+    
+            peerConnectionRef.current.createOffer()
+                .then((offer) => peerConnectionRef.current?.setLocalDescription(offer))
+                .then(() => {
+                    socket.emit('signal', {
+                        target: peerIdToCall,
+                        type: 'offer',
+                        offer: peerConnectionRef.current?.localDescription,
+                    });
+                })
+                .catch((error) => console.error('Error creating offer:', error));
+        }
+    };
+    
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
-            <h1 className="text-4xl font-bold mb-4">PeerJS with React and TypeScript</h1>
-            <p className="text-lg mb-6">My Peer ID: <span className="font-semibold">{peerId}</span></p>
+            <h1 className="text-4xl font-bold mb-4">Socket.io Video Call</h1>
+            <p className="text-lg mb-6">My Peer ID: <span className="font-semibold">{from}</span></p>
 
             <div className="flex flex-col items-center mb-8">
                 <h3 className="text-xl font-semibold mb-2">Local Stream</h3>
@@ -105,12 +177,12 @@ export default function PeerCaller({ serverUrl }: { serverUrl: string }) {
 
             <div className="flex flex-col items-center">
                 <button
-                    onClick={() => handleCall(friendId!)}
+                    onClick={() => handleCall(prompt('Enter peer ID to call:') || '')}
                     className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
                 >
                     Call Peer
                 </button>
             </div>
         </div>
-    )
+    );
 }

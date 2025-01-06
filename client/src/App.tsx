@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
 import LoadingPage from './main/LoadingPage'
+import useSocketConfig from './config/SocketConfig'
 
 
 const Dashboard = lazy(() => import('./main/Dashboard'))
@@ -24,8 +25,7 @@ export default function App() {
   };
 
   const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
-  const hostName = "chatterbox-production-bb1f.up.railway.app"
-
+  const socket = useSocketConfig()
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
@@ -37,7 +37,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
-          <Route path='/videoCall/:friendId' element={<PeerCaller serverUrl={hostName} />} />
+          <Route path='/videoCall/:friendId' element={<PeerCaller socket={socket} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

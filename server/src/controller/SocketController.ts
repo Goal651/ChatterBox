@@ -118,18 +118,9 @@ const SocketController = (io: Server) => {
                 emitToUserSockets(data.receiverId, "userNotTyping", { typingUserId: userId })
             }
         })
-
-        socket.on('join-room', (roomId, userId) => {
-            console.log(`User ${userId} joined room ${roomId}`);
-            socket.join(roomId);
-            socket.broadcast.to(roomId).emit('user-connected', userId);
-
-            // Handle disconnection
-            socket.on('disconnect', () => {
-                socket.broadcast.to(roomId).emit('user-disconnected', userId);
-            });
+        socket.on('signal', (data) => {
+            io.to(data.target).emit('signal', data); // Forward the signal to the target peer
         });
-
 
         socket.on('disconnect', () => {
             if (userSockets[userId]) {
