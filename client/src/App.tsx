@@ -3,7 +3,6 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
 import LoadingPage from './main/LoadingPage'
-import PeerConfig from './config/PeerConfig'
 
 
 const Dashboard = lazy(() => import('./main/Dashboard'))
@@ -13,6 +12,7 @@ const LoginPage = lazy(() => import('./auth/Login'))
 const SignUpPage = lazy(() => import('./auth/Signup'))
 const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
+const PeerCaller = lazy(() => import('./utilities/PeerCaller'))
 
 
 //https://chatterbox-production-bb1f.up.railway.app/
@@ -24,7 +24,7 @@ export default function App() {
   };
 
   const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
-const peer = PeerConfig()
+  const hostName = "chatterbox-production-bb1f.up.railway.app"
 
   return (
     <Router>
@@ -36,7 +36,8 @@ const peer = PeerConfig()
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
-          <Route path='/test' element={<FileUploaderTest peer={peer} />} />
+          <Route path='/test' element={<FileUploaderTest />} />
+          <Route path='/videoCall/:friendId' element={<PeerCaller serverUrl={hostName} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

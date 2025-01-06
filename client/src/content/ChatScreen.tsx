@@ -47,6 +47,10 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
         }
     };
 
+    const handleVideoCall = () => {
+        navigate(`/video-call/${friendId}`)
+    }
+
     useEffect(() => {
         if (!socket) return;
 
@@ -112,7 +116,9 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
                 </div>
                 <div className="flex space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 items-center">
                     <FaPhone className="rotate-90 text-blue-500 w-6 h-6" />
-                    <FaVideo className="text-blue-500 w-6 h-6" />
+                    <FaVideo
+                        onClick={handleVideoCall}
+                        className="text-blue-500 w-6 h-6" />
                     <FaEllipsisV className="text-blue-500 w-6 h-6" />
                 </div>
             </div>

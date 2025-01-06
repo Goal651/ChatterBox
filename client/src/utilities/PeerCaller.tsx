@@ -1,16 +1,16 @@
 import Peer from "peerjs";
 import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 
-interface PeerCallerProps {
-    from: string
-    to: string
-}
 
-export default function PeerCaller({ from, to }: PeerCallerProps) {
+export default function PeerCaller({ serverUrl }: { serverUrl: string }) {
+    const userId = localStorage.getItem('userId')
+    const from = JSON.parse(userId!)._id
     const [peer, setPeer] = useState<Peer | null>(null)
     const [myStream, setMyStream] = useState<MediaStream | null>(null)
     const [peerId, setPeerId] = useState('')
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
+    const { friendId } = useParams();
 
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -18,7 +18,7 @@ export default function PeerCaller({ from, to }: PeerCallerProps) {
     useEffect(() => {
         const newPeer = new Peer(from, {
             path: '/testing',
-            host: 'localhost',
+            host: serverUrl,
             port: 3001,
             secure: false,
         })
@@ -105,7 +105,7 @@ export default function PeerCaller({ from, to }: PeerCallerProps) {
 
             <div className="flex flex-col items-center">
                 <button
-                    onClick={() => handleCall(to)}
+                    onClick={() => handleCall(friendId!)}
                     className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
                 >
                     Call Peer
