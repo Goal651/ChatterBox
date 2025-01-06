@@ -31,7 +31,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
     const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
-    // Initialize socket and join room
+    // Join room and listen for signals
     useEffect(() => {
         if (!from) {
             console.error("No sender ID found. Check 'currentUser' in sessionStorage.");
@@ -65,6 +65,14 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
             })
             .catch((err) => console.error('Error accessing camera/microphone:', err));
     }, []);
+
+    // Auto-call once local stream is ready and peer ID is available
+    useEffect(() => {
+        if (myStream && to) {
+            console.log("Auto-calling peer:", to);
+            handleCall(to);
+        }
+    }, [myStream, to]); // Dependency ensures the call is triggered only when both are ready
 
     const handleSignal = (data: SignalData) => {
         if (!peerConnectionRef.current) {
@@ -156,12 +164,6 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
             })
             .catch((error) => console.error('Error creating offer:', error));
     };
-
-    useEffect(() => {
-        if (to) {
-            handleCall(to);
-        }
-    }, [to]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
