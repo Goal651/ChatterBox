@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Socket } from 'socket.io-client';
+import { User } from '../interfaces/interfaces';
 
 interface PeerCallerProps {
     socket: Socket;
@@ -18,77 +19,70 @@ interface SignalData {
     answer: RTCSessionDescriptionInit;
 }
 
-
 export default function PeerCaller({ socket }: PeerCallerProps) {
-    const senderData = sessionStorage.getItem('currentUser') ;
-    const from: string = JSON.parse(senderData!)._id
+    const senderData = sessionStorage.getItem('currentUser');
+    const fromUser: User = JSON.parse(senderData || '{}');
+    const from = fromUser?._id || '';
     const [myStream, setMyStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const { friendId } = useParams();
-    const to = friendId
+    const to = friendId;
     const localVideoRef = useRef<HTMLVideoElement | null>(null);
     const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
+    // Initialize socket and join room
     useEffect(() => {
-        socket.emit('join', from); // Send join message to server
+        if (!from) {
+            console.error("No sender ID found. Check 'currentUser' in sessionStorage.");
+            return;
+        }
+
+        console.log("Joining room:", from);
+        socket.emit('join', from);
 
         socket.on('signal', (data) => {
+            console.log("Received signal data:", data);
             handleSignal(data);
         });
 
         return () => {
-            socket.disconnect();
+            socket.off('signal');
         };
-    }, []);
+    }, [from, socket]);
 
+    // Access and display the local video stream
     useEffect(() => {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        console.log("Requesting local media stream...");
+        navigator.mediaDevices
+            .getUserMedia({ video: true, audio: true })
             .then((stream) => {
+                console.log("Local stream acquired:", stream);
                 setMyStream(stream);
                 if (localVideoRef.current) {
                     localVideoRef.current.srcObject = stream;
                 }
             })
-            .catch((err) => console.error('Error accessing camera:', err));
+            .catch((err) => console.error('Error accessing camera/microphone:', err));
     }, []);
-    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
 
     const handleSignal = (data: SignalData) => {
         if (!peerConnectionRef.current) {
+            console.log("Initializing new RTCPeerConnection...");
             peerConnectionRef.current = new RTCPeerConnection();
-            peerConnectionRef.current.addEventListener('icecandidate', (event) => {
-                if (event.candidate) {
-                    socket.emit('signal', {
-                        target: to,
-                        type: 'candidate',
-                        candidate: event.candidate,
-                    });
-                }
-            });
-
-            peerConnectionRef.current.addEventListener('track', (event) => {
-                if (event.streams && event.streams[0]) {
-                    setRemoteStream(event.streams[0]);
-                    if (remoteVideoRef.current) {
-                        remoteVideoRef.current.srcObject = event.streams[0];
-                    }
-                }
-            });
-
-            if (myStream) {
-                myStream.getTracks().forEach((track) => {
-                    peerConnectionRef.current?.addTrack(track, myStream);
-                });
-            }
+            setupPeerConnectionEvents(peerConnectionRef.current);
         }
 
         const peerConnection = peerConnectionRef.current;
 
         if (data.type === 'offer') {
-            peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+            console.log("Handling offer...");
+            peerConnection
+                .setRemoteDescription(new RTCSessionDescription(data.offer))
                 .then(() => peerConnection.createAnswer())
                 .then((answer) => peerConnection.setLocalDescription(answer))
                 .then(() => {
+                    console.log("Sending answer...");
                     socket.emit('signal', {
                         target: to,
                         type: 'answer',
@@ -97,56 +91,71 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                 })
                 .catch((error) => console.error('Error handling offer:', error));
         } else if (data.type === 'candidate') {
-            peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate))
-                .catch((error) => console.error('Error adding candidate:', error));
+            console.log("Adding ICE candidate...");
+            peerConnection
+                .addIceCandidate(new RTCIceCandidate(data.candidate))
+                .catch((error) => console.error('Error adding ICE candidate:', error));
         } else if (data.type === 'answer') {
-            peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer))
+            console.log("Handling answer...");
+            peerConnection
+                .setRemoteDescription(new RTCSessionDescription(data.answer))
                 .catch((error) => console.error('Error handling answer:', error));
         }
     };
 
-    const handleCall = (peerIdToCall: string) => {
-        if (!peerConnectionRef.current && myStream) {
-            peerConnectionRef.current = new RTCPeerConnection();
+    const setupPeerConnectionEvents = (peerConnection: RTCPeerConnection) => {
+        peerConnection.addEventListener('icecandidate', (event) => {
+            if (event.candidate) {
+                console.log("Sending ICE candidate...");
+                socket.emit('signal', {
+                    target: to,
+                    type: 'candidate',
+                    candidate: event.candidate,
+                });
+            }
+        });
+
+        peerConnection.addEventListener('track', (event) => {
+            if (event.streams && event.streams[0]) {
+                console.log("Receiving remote stream...");
+                setRemoteStream(event.streams[0]);
+                if (remoteVideoRef.current) {
+                    remoteVideoRef.current.srcObject = event.streams[0];
+                }
+            }
+        });
+
+        if (myStream) {
+            console.log("Adding local tracks to the peer connection...");
             myStream.getTracks().forEach((track) => {
-                peerConnectionRef.current?.addTrack(track, myStream);
+                peerConnection.addTrack(track, myStream);
             });
-
-            peerConnectionRef.current.addEventListener('icecandidate', (event) => {
-                if (event.candidate) {
-                    socket.emit('signal', {
-                        target: peerIdToCall,
-                        type: 'candidate',
-                        candidate: event.candidate,
-                    });
-                }
-            });
-
-            peerConnectionRef.current.addEventListener('track', (event) => {
-                if (event.streams && event.streams[0]) {
-                    setRemoteStream(event.streams[0]);
-                    if (remoteVideoRef.current) {
-                        remoteVideoRef.current.srcObject = event.streams[0];
-                    }
-                }
-            });
-
-            peerConnectionRef.current.createOffer()
-                .then((offer) => peerConnectionRef.current?.setLocalDescription(offer))
-                .then(() => {
-                    socket.emit('signal', {
-                        target: peerIdToCall,
-                        type: 'offer',
-                        offer: peerConnectionRef.current?.localDescription,
-                    });
-                })
-                .catch((error) => console.error('Error creating offer:', error));
         }
     };
-    useEffect(() => {
-        handleCall(to!);
-    })
 
+    const handleCall = (peerIdToCall: string) => {
+        if (!peerConnectionRef.current) {
+            console.log("Initializing peer connection for call...");
+            peerConnectionRef.current = new RTCPeerConnection();
+            setupPeerConnectionEvents(peerConnectionRef.current);
+        }
+
+        const peerConnection = peerConnectionRef.current;
+
+        console.log("Creating offer...");
+        peerConnection
+            .createOffer()
+            .then((offer) => peerConnection.setLocalDescription(offer))
+            .then(() => {
+                console.log("Sending offer...");
+                socket.emit('signal', {
+                    target: peerIdToCall,
+                    type: 'offer',
+                    offer: peerConnection.localDescription,
+                });
+            })
+            .catch((error) => console.error('Error creating offer:', error));
+    };
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
@@ -155,7 +164,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
 
             <div className="flex flex-col items-center mb-8">
                 <h3 className="text-xl font-semibold mb-2">Local Stream</h3>
-                {myStream && (
+                {myStream ? (
                     <video
                         ref={localVideoRef}
                         autoPlay
@@ -163,22 +172,24 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                         playsInline
                         className="w-full max-w-xs rounded-lg shadow-lg border-2 border-gray-300"
                     />
+                ) : (
+                    <p>Loading local stream...</p>
                 )}
             </div>
 
             <div className="flex flex-col items-center mb-8">
                 <h3 className="text-xl font-semibold mb-2">Remote Stream</h3>
-                {remoteStream && (
+                {remoteStream ? (
                     <video
                         ref={remoteVideoRef}
                         autoPlay
                         playsInline
                         className="w-full max-w-xs rounded-lg shadow-lg border-2 border-gray-300"
                     />
+                ) : (
+                    <p>Waiting for remote stream...</p>
                 )}
             </div>
-
-
         </div>
     );
 }
