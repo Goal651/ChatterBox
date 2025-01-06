@@ -19,7 +19,7 @@ export default function PeerCaller({ serverUrl }: { serverUrl: string }) {
         const newPeer = new Peer(from, {
             path: '/testing',
             host: serverUrl,
-            port: 3001,
+            port: 3000,
             secure: false,
         })
 

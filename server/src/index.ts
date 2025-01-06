@@ -24,7 +24,7 @@ const io = new Server(server, {
 
 const peerServer = PeerServer({
     host: 'localhost',
-    port: 3001,
+    port: 3000,
     path: '/testing',
     corsOptions: {
         origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"],
@@ -54,8 +54,8 @@ app.use('/api', routes)
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI as string)
     .then(async () => {
-        server.listen(3000, () => {
-            console.log('Server is running on port 3000');
+        server.listen(3001, () => {
+            console.log('Server is running on port 3001');
         });
         SocketController(io)
     })
