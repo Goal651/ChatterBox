@@ -157,6 +157,12 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
             .catch((error) => console.error('Error creating offer:', error));
     };
 
+    useEffect(() => {
+        if (to) {
+            handleCall(to);
+        }
+    }, [to]);
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
             <h1 className="text-4xl font-bold mb-4">Socket.io Video Call</h1>
