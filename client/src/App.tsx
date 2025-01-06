@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
 import LoadingPage from './main/LoadingPage'
+import PeerConfig from './config/PeerConfig'
 
 
 const Dashboard = lazy(() => import('./main/Dashboard'))
@@ -23,7 +24,7 @@ export default function App() {
   };
 
   const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
-
+const peer = PeerConfig()
 
   return (
     <Router>
@@ -35,7 +36,7 @@ export default function App() {
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
-          <Route path='/test' element={<FileUploaderTest />} />
+          <Route path='/test' element={<FileUploaderTest peer={peer} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

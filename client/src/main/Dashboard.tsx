@@ -13,6 +13,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import Setting from "../content/Settings";
 import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
+// import PeerConfig from "../config/PeerConfig";
 
 interface DashboardProps {
     serverUrl: string;
@@ -37,6 +38,7 @@ interface UserListProps {
 
 export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const socket = useSocketConfig();
+    // const peer = PeerConfig()
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);

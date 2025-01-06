@@ -9,6 +9,15 @@ interface SentMessages {
     messageId: string | number;
 }
 
+interface AudioCallMessage {
+    senderId: string;
+    receiverId: string;
+    offer?: RTCSessionDescriptionInit; // For initial offer
+    answer?: RTCSessionDescriptionInit; // For answer
+    candidate?: RTCIceCandidate; // For ICE candidates
+}
+
+
 const SocketController = (io: Server) => {
     const userSockets: Record<string, string[]> = {};
 
@@ -109,6 +118,18 @@ const SocketController = (io: Server) => {
                 emitToUserSockets(data.receiverId, "userNotTyping", { typingUserId: userId })
             }
         })
+
+        socket.on('join-room', (roomId, userId) => {
+            console.log(`User ${userId} joined room ${roomId}`);
+            socket.join(roomId);
+            socket.broadcast.to(roomId).emit('user-connected', userId);
+
+            // Handle disconnection
+            socket.on('disconnect', () => {
+                socket.broadcast.to(roomId).emit('user-disconnected', userId);
+            });
+        });
+
 
         socket.on('disconnect', () => {
             if (userSockets[userId]) {
