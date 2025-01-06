@@ -20,8 +20,8 @@ interface SignalData {
 
 
 export default function PeerCaller({ socket }: PeerCallerProps) {
-    const senderData = sessionStorage.getItem('currentUser') || '';
-    const from: string = JSON.parse(senderData)._id
+    const senderData = sessionStorage.getItem('currentUser') ;
+    const from: string = JSON.parse(senderData!)._id
     const [myStream, setMyStream] = useState<MediaStream | null>(null);
     const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
     const { friendId } = useParams();
@@ -65,7 +65,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                     });
                 }
             });
-    
+
             peerConnectionRef.current.addEventListener('track', (event) => {
                 if (event.streams && event.streams[0]) {
                     setRemoteStream(event.streams[0]);
@@ -74,16 +74,16 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                     }
                 }
             });
-    
+
             if (myStream) {
                 myStream.getTracks().forEach((track) => {
                     peerConnectionRef.current?.addTrack(track, myStream);
                 });
             }
         }
-    
+
         const peerConnection = peerConnectionRef.current;
-    
+
         if (data.type === 'offer') {
             peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer))
                 .then(() => peerConnection.createAnswer())
@@ -104,14 +104,14 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                 .catch((error) => console.error('Error handling answer:', error));
         }
     };
-    
+
     const handleCall = (peerIdToCall: string) => {
         if (!peerConnectionRef.current && myStream) {
             peerConnectionRef.current = new RTCPeerConnection();
             myStream.getTracks().forEach((track) => {
                 peerConnectionRef.current?.addTrack(track, myStream);
             });
-    
+
             peerConnectionRef.current.addEventListener('icecandidate', (event) => {
                 if (event.candidate) {
                     socket.emit('signal', {
@@ -121,7 +121,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                     });
                 }
             });
-    
+
             peerConnectionRef.current.addEventListener('track', (event) => {
                 if (event.streams && event.streams[0]) {
                     setRemoteStream(event.streams[0]);
@@ -130,7 +130,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                     }
                 }
             });
-    
+
             peerConnectionRef.current.createOffer()
                 .then((offer) => peerConnectionRef.current?.setLocalDescription(offer))
                 .then(() => {
@@ -143,7 +143,10 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                 .catch((error) => console.error('Error creating offer:', error));
         }
     };
-    
+    useEffect(() => {
+        handleCall(to!);
+    })
+
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
@@ -175,14 +178,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                 )}
             </div>
 
-            <div className="flex flex-col items-center">
-                <button
-                    onClick={() => handleCall(prompt('Enter peer ID to call:') || '')}
-                    className="bg-blue-500 text-white py-2 px-4 rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
-                >
-                    Call Peer
-                </button>
-            </div>
+
         </div>
     );
 }
