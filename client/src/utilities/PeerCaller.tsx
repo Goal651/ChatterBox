@@ -1,203 +1,184 @@
-import { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { Socket } from 'socket.io-client';
-import { User } from '../interfaces/interfaces';
+import { useEffect, useRef, useState } from "react";
+import Peer, { SignalData } from "simple-peer";
+import "./App.css";
+import { Socket } from "socket.io-client";
+import { useNavigate, useParams } from "react-router-dom";
+
+interface CallUserData {
+    from: string;
+    name: string;
+    signal: SignalData;
+}
 
 interface PeerCallerProps {
-    socket: Socket;
+    socket: Socket
 }
 
-interface SignalData {
-    type: string;
-    offer: RTCSessionDescriptionInit;
-    signal: RTCSessionDescriptionInit;
-    peerId: string;
-    receiver: string;
-    candidate: RTCIceCandidateInit;
-    target: string;
-    room: string;
-    answer: RTCSessionDescriptionInit;
-}
+
 
 export default function PeerCaller({ socket }: PeerCallerProps) {
-    const senderData = sessionStorage.getItem('currentUser');
-    const fromUser: User = JSON.parse(senderData || '{}');
-    const from = fromUser?._id || '';
-    const [myStream, setMyStream] = useState<MediaStream | null>(null);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const { friendId } = useParams();
-    const to = friendId;
-    const localVideoRef = useRef<HTMLVideoElement | null>(null);
-    const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-    const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+    const [stream, setStream] = useState<MediaStream | null>(null);
+    const [receivingCall, setReceivingCall] = useState(false);
+    const [caller, setCaller] = useState<string>("");
+    const [callerSignal, setCallerSignal] = useState<SignalData | null>(null);
+    const [callAccepted, setCallAccepted] = useState(false);
+    const [callEnded, setCallEnded] = useState(false);
+    const [name, setName] = useState<string>("");
+    const { friendId } = useParams()
+    const idToCall = friendId
 
-    // Join room and listen for signals
+    const navigate = useNavigate()
+
+    const myVideo = useRef<HTMLVideoElement>(null);
+    const userVideo = useRef<HTMLVideoElement>(null);
+    const connectionRef = useRef<Peer.Instance | null>(null);
+
     useEffect(() => {
-        if (!from) {
-            console.error("No sender ID found. Check 'currentUser' in sessionStorage.");
-            return;
-        }
+        if (!socket) return
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true, })
+            .then(stream => {
+                setStream(stream)
+                if (myVideo.current) {
+                    myVideo.current.srcObject = stream;
+                }
+            })
+            .catch(error => {
+                console.error(error)
+            })
 
-        console.log("Joining room:", from);
-        socket.emit('join', from);
-
-        socket.on('signal', (data) => {
-            console.log("Received signal data:", data);
-            handleSignal(data);
+        socket.on("callUser", (data: CallUserData) => {
+            setReceivingCall(true);
+            setCaller(data.from);
+            setName(data.name);
+            setCallerSignal(data.signal);
         });
 
         return () => {
-            socket.off('signal');
+            socket.off("callUser");
         };
-    }, [from, socket]);
-
-    // Access and display the local video stream
-    useEffect(() => {
-        console.log("Requesting local media stream...");
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-                console.log("Local stream acquired:", stream);
-                setMyStream(stream);
-                if (localVideoRef.current) {
-                    localVideoRef.current.srcObject = stream;
-                }
-            })
-            .catch((err) => console.error('Error accessing camera/microphone:', err));
     }, []);
 
-    // Auto-call once local stream is ready and peer ID is available
-    useEffect(() => {
-        if (myStream && to) {
-            console.log("Auto-calling peer:", to);
-            handleCall(to);
-        }
-    }, [myStream, to]); // Dependency ensures the call is triggered only when both are ready
-
-    const handleSignal = (data: SignalData) => {
-        if (!peerConnectionRef.current) {
-            console.log("Initializing new RTCPeerConnection...");
-            peerConnectionRef.current = new RTCPeerConnection();
-            setupPeerConnectionEvents(peerConnectionRef.current);
+    const callUser = (id: string) => {
+        if (!stream) {
+            console.error("Stream not available. Cannot make a call.");
+            return;
         }
 
-        const peerConnection = peerConnectionRef.current;
-
-        if (data.type === 'offer') {
-            console.log("Handling offer...");
-            peerConnection
-                .setRemoteDescription(new RTCSessionDescription(data.offer))
-                .then(() => peerConnection.createAnswer())
-                .then((answer) => peerConnection.setLocalDescription(answer))
-                .then(() => {
-                    console.log("Sending answer...");
-                    socket.emit('signal', {
-                        target: to,
-                        type: 'answer',
-                        answer: peerConnection.localDescription,
-                    });
-                })
-                .catch((error) => console.error('Error handling offer:', error));
-        } else if (data.type === 'candidate') {
-            console.log("Adding ICE candidate...");
-            peerConnection
-                .addIceCandidate(new RTCIceCandidate(data.candidate))
-                .catch((error) => console.error('Error adding ICE candidate:', error));
-        } else if (data.type === 'answer') {
-            console.log("Handling answer...");
-            peerConnection
-                .setRemoteDescription(new RTCSessionDescription(data.answer))
-                .catch((error) => console.error('Error handling answer:', error));
-        }
-    };
-
-    const setupPeerConnectionEvents = (peerConnection: RTCPeerConnection) => {
-        peerConnection.addEventListener('icecandidate', (event) => {
-            if (event.candidate) {
-                console.log("Sending ICE candidate...");
-                socket.emit('signal', {
-                    target: to,
-                    type: 'candidate',
-                    candidate: event.candidate,
-                });
-            }
+        const peer = new Peer({
+            initiator: true,
+            trickle: false,
+            stream: stream,
         });
 
-        peerConnection.addEventListener('track', (event) => {
-            if (event.streams && event.streams[0]) {
-                console.log("Receiving remote stream...");
-                setRemoteStream(event.streams[0]);
-                if (remoteVideoRef.current) {
-                    remoteVideoRef.current.srcObject = event.streams[0];
-                }
-            }
-        });
-
-        if (myStream) {
-            console.log("Adding local tracks to the peer connection...");
-            myStream.getTracks().forEach((track) => {
-                peerConnection.addTrack(track, myStream);
+        peer.on("signal", (data) => {
+            socket.emit("callUser", {
+                userToCall: id,
+                signalData: data,
+                name,
             });
-        }
+        });
+
+        peer.on("stream", (currentStream) => {
+            if (userVideo.current) {
+                userVideo.current.srcObject = currentStream;
+            }
+        });
+
+        socket.on("callAccepted", (signal: SignalData) => {
+            setCallAccepted(true);
+            peer.signal(signal);
+        });
+
+        connectionRef.current = peer;
     };
 
-    const handleCall = (peerIdToCall: string) => {
-        if (!peerConnectionRef.current) {
-            console.log("Initializing peer connection for call...");
-            peerConnectionRef.current = new RTCPeerConnection();
-            setupPeerConnectionEvents(peerConnectionRef.current);
+    const answerCall = () => {
+        if (!stream) {
+            console.error("Stream not available. Cannot answer the call.");
+            return;
         }
 
-        const peerConnection = peerConnectionRef.current;
+        setCallAccepted(true);
+        const peer = new Peer({
+            initiator: false,
+            trickle: false,
+            stream: stream,
+        });
 
-        console.log("Creating offer...");
-        peerConnection
-            .createOffer()
-            .then((offer) => peerConnection.setLocalDescription(offer))
-            .then(() => {
-                console.log("Sending offer...");
-                socket.emit('signal', {
-                    target: peerIdToCall,
-                    type: 'offer',
-                    offer: peerConnection.localDescription,
-                });
-            })
-            .catch((error) => console.error('Error creating offer:', error));
+        peer.on("signal", (data) => {
+            socket.emit("answerCall", { signal: data, to: caller });
+        });
+
+        peer.on("stream", (currentStream) => {
+            if (userVideo.current) {
+                userVideo.current.srcObject = currentStream;
+            }
+        });
+
+        if (callerSignal) peer.signal(callerSignal);
+        connectionRef.current = peer;
+    };
+
+    const leaveCall = () => {
+        setCallEnded(true);
+        connectionRef.current?.destroy();
+        connectionRef.current = null;
+        navigate('/chat/' + friendId)
     };
 
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white p-6">
-            <h1 className="text-4xl font-bold mb-4">Socket.io Video Call</h1>
-            <p className="text-lg mb-6">My Peer ID: <span className="font-semibold">{from}</span></p>
-
-            <div className="flex flex-col items-center mb-8">
-                <h3 className="text-xl font-semibold mb-2">Local Stream</h3>
-                {myStream ? (
-                    <video
-                        ref={localVideoRef}
-                        autoPlay
-                        muted
-                        playsInline
-                        className="w-full max-w-xs rounded-lg shadow-lg border-2 border-gray-300"
+        <>
+            <h1 style={{ textAlign: "center", color: "#fff" }}>Video Call</h1>
+            <div className="container">
+                <div className="video-container">
+                    <div className="video">
+                        {stream && <video playsInline muted ref={myVideo} autoPlay style={{ width: "300px" }} />}
+                    </div>
+                    <div className="video">
+                        {callAccepted && !callEnded && (
+                            <video playsInline ref={userVideo} autoPlay style={{ width: "300px" }} />
+                        )}
+                    </div>
+                </div>
+                <div className="myId">
+                    <input
+                        type="text"
+                        placeholder="Name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        style={{ marginBottom: "20px", padding: "10px", width: "100%" }}
                     />
-                ) : (
-                    <p>Loading local stream...</p>
+
+                    <div>
+                        {callAccepted && !callEnded ? (
+                            <button
+                                onClick={leaveCall}
+                                style={{ padding: "10px", backgroundColor: "red", color: "white" }}
+                            >
+                                End Call
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => callUser(idToCall!)}
+                                style={{ padding: "10px", backgroundColor: "green", color: "white" }}
+                            >
+                                Call
+                            </button>
+                        )}
+                    </div>
+                </div>
+                {receivingCall && !callAccepted && (
+                    <div>
+                        <h1>{name} is calling...</h1>
+                        <button
+                            onClick={answerCall}
+                            style={{ padding: "10px", backgroundColor: "blue", color: "white" }}
+                        >
+                            Answer
+                        </button>
+                    </div>
                 )}
             </div>
-
-            <div className="flex flex-col items-center mb-8">
-                <h3 className="text-xl font-semibold mb-2">Remote Stream</h3>
-                {remoteStream ? (
-                    <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className="w-full max-w-xs rounded-lg shadow-lg border-2 border-gray-300"
-                    />
-                ) : (
-                    <p>Waiting for remote stream...</p>
-                )}
-            </div>
-        </div>
+        </>
     );
-}
+};

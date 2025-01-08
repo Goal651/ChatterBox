@@ -9,12 +9,13 @@ interface SentMessages {
     messageId: string | number;
 }
 
-interface AudioCallMessage {
-    senderId: string;
-    receiverId: string;
-    offer?: RTCSessionDescriptionInit; // For initial offer
-    answer?: RTCSessionDescriptionInit; // For answer
-    candidate?: RTCIceCandidate; // For ICE candidates
+interface SignalData {
+    type: string;
+    offer?: RTCSessionDescriptionInit;
+    answer?: RTCSessionDescriptionInit;
+    candidate?: RTCIceCandidateInit;
+    peerId: string;
+    target: string;
 }
 
 const SocketController = (io: Server) => {
@@ -33,100 +34,92 @@ const SocketController = (io: Server) => {
 
         await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() });
 
-        // Register user's socket
         userSockets[userId] = userSockets[userId] || [];
         userSockets[userId].push(socket.id);
 
-        const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId]);
-
+        const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0);
         io.emit('onlineUsers', onlineUsers);
 
-        // Helper to emit a message to all sockets of a user
         const emitToUserSockets = (userId: string, event: string, data: any) => {
             if (userSockets[userId]) {
                 userSockets[userId].forEach((id) => socket.to(id).emit(event, data));
             }
         };
 
-        // Handle signaling for calls
-        socket.on('signal', (data: AudioCallMessage) => {
-            const { senderId, receiverId, offer, answer, candidate } = data;
+        // WebRTC signaling
+        socket.on('signal', (data: SignalData) => {
+            const { target, ...signalData } = data;
 
-            // Notify the receiver with the signaling data
-            emitToUserSockets(receiverId, 'signal', {
-                senderId,
-                offer,
-                answer,
-                candidate,
-            });
+            if (userSockets[target]) {
+                emitToUserSockets(target, 'signal', { ...signalData, peerId: userId });
+            } else {
+                console.log(`User ${target} is not online.`);
+            }
         });
 
-        // Handle message sending
+        // Handle initiating a video call
+        socket.on('startCall', (data: { receiverId: string }) => {
+            const { receiverId } = data;
+
+            if (userSockets[receiverId]) {
+                emitToUserSockets(receiverId, 'incomingCall', { callerId: userId });
+            } else {
+                console.log(`User ${receiverId} is not online.`);
+            }
+        });
+
+        // Handle call acceptance
+        socket.on('acceptCall', (data: { callerId: string }) => {
+            const { callerId } = data;
+
+            if (userSockets[callerId]) {
+                emitToUserSockets(callerId, 'callAccepted', { peerId: userId });
+            }
+        });
+
+        // Handle call rejection
+        socket.on('rejectCall', (data: { callerId: string }) => {
+            const { callerId } = data;
+
+            if (userSockets[callerId]) {
+                emitToUserSockets(callerId, 'callRejected', { peerId: userId });
+            }
+            // Redirect the user to the chat page
+            io.to(socket.id).emit('navigateToChat', { path: `/chat/${callerId}` });
+        });
+
+        // Message handling
         socket.on('message', async (data: SentMessages) => {
             const { receiverId, message, messageType, messageId } = data;
 
             const newMessage = new model.Message({
-                message,
-                receiver: receiverId,
                 sender: userId,
+                receiver: receiverId,
+                message,
                 type: messageType,
             });
 
-            const sentMessage = {
-                ...newMessage.toObject(),
-                sender: newMessage.sender.toString(),
-                receiver: newMessage.receiver.toString(),
+            const savedMessage = await newMessage.save();
+            const messageData = {
+                ...savedMessage.toObject(),
+                sender: userId,
+                receiver: receiverId,
             };
 
-            try {
-                await newMessage.save();
-                // Notify sender
-                io.to(socket.id).emit('messageSent', { messageId, sentMessage });
-                emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
-
-                // Notify receiver
-                if (userSockets[receiverId]) {
-                    emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
-                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageReceived: true });
-
-                    // Notify that message received
-                    io.to(socket.id).emit('messageReceived', { messageId: sentMessage._id });
-                    emitToUserSockets(userId, 'messageReceived', { messageId: sentMessage._id });
-                } else {
-                    await model.User.findByIdAndUpdate(receiverId, { $addToSet: { unreads: newMessage._id } });
-                }
-            } catch (error) {
-                console.error(error);
-            }
+            emitToUserSockets(receiverId, 'receiveMessage', messageData);
+            io.to(socket.id).emit('messageSent', { messageId, messageData });
         });
 
-        // Handle message seen
-        socket.on('messageSeen', async (data: { messageId: string; receiverId: string }) => {
-            console.log(data);
-            if (!data) return;
-            try {
-                await model.Message.findByIdAndUpdate(data.messageId, { isMessageSeen: true, isMessageReceived: true });
-                await model.User.findByIdAndUpdate(userId, { $unset: { unreads: data.messageId } });
-
-                emitToUserSockets(data.receiverId, 'messageSeen', { messageId: data.messageId });
-                emitToUserSockets(userId, 'messageSeen', { messageId: data.messageId });
-            } catch (error) {
-                console.error(error);
-            }
+        // Typing notifications
+        socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
+            emitToUserSockets(receiverId, 'userTyping', { userId });
         });
 
-        socket.on('userTyping', (data: { receiverId: string }) => {
-            if (userSockets[data.receiverId]) {
-                emitToUserSockets(data.receiverId, 'userTyping', { typingUserId: userId });
-            }
+        socket.on('userNotTyping', ({ receiverId }: { receiverId: string }) => {
+            emitToUserSockets(receiverId, 'userNotTyping', { userId });
         });
 
-        socket.on('userNotTyping', (data: { receiverId: string }) => {
-            if (userSockets[data.receiverId]) {
-                emitToUserSockets(data.receiverId, 'userNotTyping', { typingUserId: userId });
-            }
-        });
-
+        // Disconnect handling
         socket.on('disconnect', () => {
             if (userSockets[userId]) {
                 userSockets[userId] = userSockets[userId].filter((id) => id !== socket.id);
@@ -134,8 +127,7 @@ const SocketController = (io: Server) => {
                     delete userSockets[userId];
                 }
             }
-
-            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId]);
+            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0);
             io.emit('onlineUsers', onlineUsers);
         });
     });

@@ -8,7 +8,6 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 import routes from './routes/routes'
 import SocketController from './controller/SocketController'
-import { PeerServer } from 'peer';
 
 
 const app = express();
@@ -22,17 +21,6 @@ const io = new Server(server, {
     }
 });
 
-const peerServer = PeerServer({
-    host: 'localhost',
-    port: 3000,
-    path: '/testing',
-    corsOptions: {
-        origin: ["https://chatter-box-three.vercel.app", "http://localhost:5173"],
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true
-    },
-    
-});
 
 // Middleware setup
 
@@ -45,7 +33,6 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(cookieParser());
-app.use('/peerjs', peerServer);
 app.use('/api', routes)
 
 
