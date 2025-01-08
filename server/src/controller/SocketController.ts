@@ -1,6 +1,7 @@
 import { Socket, Server } from 'socket.io';
 import SocketAuthController from '../auth/SocketAuthController';
 import model from '../model/model';
+import { Message } from '../interface/interface';
 
 interface SentMessages {
     receiverId: string;
@@ -90,33 +91,59 @@ const SocketController = (io: Server) => {
 
         // Message handling
         socket.on('message', async (data: SentMessages) => {
-            const { receiverId, message, messageType, messageId } = data;
+            try {
+                const { receiverId, message, messageType, messageId } = data;
 
-            const newMessage = new model.Message({
-                sender: userId,
-                receiver: receiverId,
-                message,
-                type: messageType,
-            });
+                const newMessage = new model.Message({
+                    sender: userId,
+                    receiver: receiverId,
+                    message,
+                    type: messageType,
+                });
 
-            const savedMessage = await newMessage.save();
-            const sentMessage = {
-                ...savedMessage.toObject(),
-                sender: userId,
-                receiver: receiverId,
-            };
+                await newMessage.save();
 
-            emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
-            io.to(socket.id).emit('messageSent', { messageId, sentMessage });
-            emitToUserSockets(userId, 'messageSent', { messageId, sentMessage });
+                const sentMessage = {
+                    ...newMessage.toObject(),
+                    sender: userId,
+                    receiver: receiverId,
+                };
+                io.to(socket.id).emit('messageSent', { messageId, sentMessage });
+                emitToUserSockets(userId, 'messageSent', { messageId, sentMessage });
+
+                if (userSockets[receiverId]) {
+                    emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
+                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true });
+                    io.to(socket.id).emit('messageReceived', { messageId: newMessage._id });
+                    emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
+                } else {
+                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageReceived: true });
+                }
+            }
+            catch (error) {
+                console.error(error);
+                socket.emit('messageError', 'Failed to send message');
+            }
         });
 
         socket.on('messageSeen', async (data: { messageId: string, receiverId: string }) => {
             const { messageId, receiverId } = data;
 
-            await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true });
+            await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true, isMessageReceived: true });
             emitToUserSockets(receiverId, 'messageSeen', { messageId });
         });
+
+
+
+
+        socket.on("markMessageAsRead", async (data: string[]) => {
+            try {
+                await model.User.findByIdAndUpdate(userId, { $pull: { unreads: { $in: data } } });
+            } catch (error) {
+                socket.emit("markMessageAsReadError", "Failed to mark messages as read");
+            }
+        });
+
 
         // Typing notifications
         socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {

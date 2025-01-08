@@ -32,7 +32,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
         setUnreadMessages(prev => prev?.filter(dm => dm.sender !== id))
         setUnreads(unreadMessages?.filter(dm => dm.sender !== id))
         if (socket) {
-            socket.emit('markMessageAsRead', unread)
+            socket.emit('markMessageAsRead', unread.map(m => m._id))
         }
     };
 

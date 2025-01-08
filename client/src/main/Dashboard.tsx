@@ -38,7 +38,6 @@ interface UserListProps {
 
 export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
     const socket = useSocketConfig();
-    // const peer = PeerConfig()
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
