@@ -6,14 +6,12 @@ import { getProfileApi, getUsersApi } from "../api/api";
 import { useEffect, useState } from "react";
 import { Message, User } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
-import useSocketConfig from "../config/SocketConfig";
 import { Socket } from "socket.io-client";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
 import Setting from "../content/Settings";
 import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
-// import PeerConfig from "../config/PeerConfig";
 
 interface DashboardProps {
     serverUrl: string;
@@ -21,7 +19,8 @@ interface DashboardProps {
         isDesktop: boolean
         isTablet: boolean
         isMobile: boolean
-    }
+    },
+    socket: Socket
 }
 
 interface UserListProps {
@@ -36,8 +35,7 @@ interface UserListProps {
 }
 
 
-export default function Dashboard({ serverUrl, mediaType }: DashboardProps) {
-    const socket = useSocketConfig();
+export default function Dashboard({ serverUrl, mediaType,socket }: DashboardProps) {
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);

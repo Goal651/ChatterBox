@@ -7,7 +7,7 @@ export default function useSocketConfig(): Socket {
     const socketRef = useRef<Socket | null>(null);
 
     if (!socketRef.current) {
-        socketRef.current = io('http://localhost:3001', {
+        socketRef.current = io('https://chatterbox-production-bb1f.up.railway.app', {
             auth: {
                 token: localStorage.getItem('token'),
             },

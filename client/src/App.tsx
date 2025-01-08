@@ -24,19 +24,21 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
 
+  const socket = useSocketConfig()
+
   const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
         <Routes>
           <Route path="/" element={<Auth serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/:friendId" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/" element={<Dashboard mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/:friendId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
-          <Route path='/videoCall/:friendId' element={<PeerCaller socket={''} />} />
+          <Route path='/videoCall/:friendId' element={<PeerCaller socket={socket} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>
