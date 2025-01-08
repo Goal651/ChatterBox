@@ -109,7 +109,7 @@ const SocketController = (io: Server) => {
                     receiver: receiverId,
                 };
                 io.to(socket.id).emit('messageSent', { messageId, sentMessage });
-                emitToUserSockets(userId, 'messageSent', { messageId, sentMessage });
+                emitToUserSockets(userId, 'receiveSentMessage',  sentMessage  );
 
                 if (userSockets[receiverId]) {
                     emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
