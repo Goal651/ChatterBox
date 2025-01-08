@@ -30,7 +30,7 @@ const SocketController = (io: Server) => {
             return;
         }
 
-        const userId = socket.data.user.userId;
+        const userId: string = socket.data.user.userId;
 
         await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() });
 
@@ -46,7 +46,7 @@ const SocketController = (io: Server) => {
             }
         };
 
-        // WebRTC signaling
+
         socket.on('signal', (data: SignalData) => {
             const { target, ...signalData } = data;
 
@@ -69,11 +69,11 @@ const SocketController = (io: Server) => {
         });
 
         // Handle call acceptance
-        socket.on('acceptCall', (data: { callerId: string }) => {
-            const { callerId } = data;
+        socket.on('acceptCall', (data: { callerId: string, signal: SignalData }) => {
+            const { callerId, signal } = data;
 
             if (userSockets[callerId]) {
-                emitToUserSockets(callerId, 'callAccepted', { peerId: userId });
+                emitToUserSockets(callerId, 'callAccepted', { callerId: userId, signal });
             }
         });
 
@@ -110,6 +110,13 @@ const SocketController = (io: Server) => {
             io.to(socket.id).emit('messageSent', { messageId, messageData });
         });
 
+        socket.on('messageSeen', async (data: { messageId: string, receiverId: string }) => {
+            const { messageId, receiverId } = data;
+
+            await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true });
+            emitToUserSockets(receiverId, 'messageSeen', { messageId });
+        });
+        
         // Typing notifications
         socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
             emitToUserSockets(receiverId, 'userTyping', { userId });
