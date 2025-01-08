@@ -25,7 +25,6 @@ export default function App() {
   };
 
   const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
-  const socket = useSocketConfig()
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
@@ -37,7 +36,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
-          <Route path='/videoCall/:friendId' element={<PeerCaller socket={socket} />} />
+          <Route path='/videoCall/:friendId' element={<PeerCaller socket={''} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

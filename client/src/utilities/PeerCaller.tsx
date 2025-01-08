@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import Peer, { SignalData } from "simple-peer";
-import "./App.css";
 import { Socket } from "socket.io-client";
 import { useNavigate, useParams } from "react-router-dom";
+import { User } from "../interfaces/interfaces";
 
 interface CallUserData {
     from: string;
-    name: string;
     signal: SignalData;
 }
 
@@ -17,15 +16,16 @@ interface PeerCallerProps {
 
 
 export default function PeerCaller({ socket }: PeerCallerProps) {
+    const user = sessionStorage.getItem('currentUser')
+    const userData: User = JSON.parse(user || '{}')
     const [stream, setStream] = useState<MediaStream | null>(null);
     const [receivingCall, setReceivingCall] = useState(false);
-    const [caller, setCaller] = useState<string>("");
     const [callerSignal, setCallerSignal] = useState<SignalData | null>(null);
     const [callAccepted, setCallAccepted] = useState(false);
     const [callEnded, setCallEnded] = useState(false);
-    const [name, setName] = useState<string>("");
     const { friendId } = useParams()
     const idToCall = friendId
+    const caller = userData._id
 
     const navigate = useNavigate()
 
@@ -38,23 +38,25 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true, })
             .then(stream => {
                 setStream(stream)
-                if (myVideo.current) {
-                    myVideo.current.srcObject = stream;
-                }
+                if (myVideo.current) myVideo.current.srcObject = stream
             })
             .catch(error => {
                 console.error(error)
             })
 
-        socket.on("callUser", (data: CallUserData) => {
+        socket.on("incomingCall", (data: CallUserData) => {
             setReceivingCall(true);
-            setCaller(data.from);
-            setName(data.name);
             setCallerSignal(data.signal);
         });
 
+        socket.on('callAccepted', (data: CallUserData) => {
+            setCallAccepted(true);
+            setCallerSignal(data.signal);
+        })
+
         return () => {
-            socket.off("callUser");
+            socket.off("incomingCall");
+            socket.off('callAccepted')
         };
     }, []);
 
@@ -71,17 +73,14 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
         });
 
         peer.on("signal", (data) => {
-            socket.emit("callUser", {
+            socket.emit("startCall", {
                 userToCall: id,
                 signalData: data,
-                name,
             });
         });
 
         peer.on("stream", (currentStream) => {
-            if (userVideo.current) {
-                userVideo.current.srcObject = currentStream;
-            }
+            if (userVideo.current) userVideo.current.srcObject = currentStream;
         });
 
         socket.on("callAccepted", (signal: SignalData) => {
@@ -99,6 +98,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
         }
 
         setCallAccepted(true);
+
         const peer = new Peer({
             initiator: false,
             trickle: false,
@@ -106,7 +106,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
         });
 
         peer.on("signal", (data) => {
-            socket.emit("answerCall", { signal: data, to: caller });
+            socket.emit("acceptCall", { signal: data, to: caller });
         });
 
         peer.on("stream", (currentStream) => {
@@ -141,14 +141,6 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                     </div>
                 </div>
                 <div className="myId">
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        style={{ marginBottom: "20px", padding: "10px", width: "100%" }}
-                    />
-
                     <div>
                         {callAccepted && !callEnded ? (
                             <button
@@ -169,7 +161,7 @@ export default function PeerCaller({ socket }: PeerCallerProps) {
                 </div>
                 {receivingCall && !callAccepted && (
                     <div>
-                        <h1>{name} is calling...</h1>
+                        <h1> is calling...</h1>
                         <button
                             onClick={answerCall}
                             style={{ padding: "10px", backgroundColor: "blue", color: "white" }}
