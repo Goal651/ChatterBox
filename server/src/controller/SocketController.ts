@@ -100,14 +100,15 @@ const SocketController = (io: Server) => {
             });
 
             const savedMessage = await newMessage.save();
-            const messageData = {
+            const sentMessage = {
                 ...savedMessage.toObject(),
                 sender: userId,
                 receiver: receiverId,
             };
 
-            emitToUserSockets(receiverId, 'receiveMessage', messageData);
-            io.to(socket.id).emit('messageSent', { messageId, messageData });
+            emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
+            io.to(socket.id).emit('messageSent', { messageId, sentMessage });
+            emitToUserSockets(userId, 'messageSent', { messageId, sentMessage });
         });
 
         socket.on('messageSeen', async (data: { messageId: string, receiverId: string }) => {
@@ -116,7 +117,7 @@ const SocketController = (io: Server) => {
             await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true });
             emitToUserSockets(receiverId, 'messageSeen', { messageId });
         });
-        
+
         // Typing notifications
         socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
             emitToUserSockets(receiverId, 'userTyping', { userId });
