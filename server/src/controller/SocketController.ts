@@ -117,7 +117,7 @@ const SocketController = (io: Server) => {
                     io.to(socket.id).emit('messageReceived', { messageId: newMessage._id });
                     emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
                 } else {
-                    await model.Message.findByIdAndUpdate(newMessage._id, { isMessageReceived: true });
+                    await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
                 }
             }
             catch (error) {
