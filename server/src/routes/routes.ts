@@ -19,7 +19,6 @@ router.get('/getUserProfile', auth.checkToken, userController.getUserProfile);
 router.get('/getUser/:email', auth.checkToken, userController.getUser)
 router.get('/getUsers', auth.checkToken, userController.getUsers)
 router.post('/signup', userController.signup)
-router.put('/editUserProfile', auth.checkToken, userController.updateUserPhoto)
 router.put('/editUser/', auth.checkToken, userController.updateUser)
 
 //apis for groups

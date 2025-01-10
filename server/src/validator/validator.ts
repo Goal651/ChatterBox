@@ -55,9 +55,25 @@ const addMemberSchema = Joi.object({
     })
 })
 
+const updateUserSchema = Joi.object({
+    email: Joi.string().email().required().empty('').messages({
+        'string.email': 'Provide valid email',
+        'any.required': 'Email is required',
+        'string.empty': ''
+    }),
+    names: Joi.string().required().messages({
+        'any.required': 'Names are required'
+    }),
+    username: Joi.string().required().messages({
+        'any.required': 'Username is required'
+    }),
+    image: Joi.string()
+})
+
 export default {
     loginSchema,
     registerSchema,
     groupCreationSchema,
-    addMemberSchema
+    addMemberSchema,
+    updateUserSchema
 }

@@ -2,7 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 
-export default function Login({ serverUrl }: { serverUrl: string }) {
+
+interface LoginProps {
+  serverUrl: string,
+  status: (data: boolean) => void
+}
+
+export default function Login({ serverUrl, status }: LoginProps) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
@@ -79,6 +85,7 @@ export default function Login({ serverUrl }: { serverUrl: string }) {
     setLoading(true);
     try {
       const { data } = await axios.post(`${serverUrl}/login`, formData);
+      status(true)
       localStorage.setItem("token", data.accessToken);
       navigate("/chat/");
     } catch (error) {

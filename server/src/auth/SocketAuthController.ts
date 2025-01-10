@@ -22,11 +22,10 @@ const SocketAuthController = (io: Server) => {
             // Handle token refresh if necessary
             if (decoded.exp && decoded.exp * 1000 < Date.now()) {
                 try {
-                    const refreshedToken = await mainAuth.refreshToken(decoded.id);
+                    const refreshedToken = mainAuth.refreshToken(decoded.id);
                     if (!refreshedToken) {
                         return next(new Error('Authentication error: Unable to refresh token'));
                     }
-                    // Optionally, send the new token to the client
                     socket.handshake.auth.token = refreshedToken;
                 } catch (refreshError) {
                     return next(new Error('Authentication error: Token refresh failed'));

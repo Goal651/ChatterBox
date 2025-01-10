@@ -1,5 +1,5 @@
 import './index.css'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
 import LoadingPage from './main/LoadingPage'
@@ -18,15 +18,20 @@ const PeerCaller = lazy(() => import('./utilities/PeerCaller'))
 
 //https://chatterbox-production-bb1f.up.railway.app/
 export default function App() {
+
   const deviceType = {
     isDesktop: useMediaQuery({ minWidth: 1024 }),
     isTablet: useMediaQuery({ minWidth: 768, maxWidth: 1023 }),
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
+  const [status, setStatus] = useState(false)
+  const host: string = "https://chatterbox-production-bb1f.up.railway.app"
+  const socket = useSocketConfig({ serverUrl: host, status })
+  const serverUrl = host + '/api'
 
-  const socket = useSocketConfig()
-
-  const serverUrl = "https://chatterbox-production-bb1f.up.railway.app/api"
+  const handleLogin = (data: boolean) => {
+    setStatus(data)
+  }
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
@@ -35,7 +40,7 @@ export default function App() {
           <Route path="/:sessionType/:friendId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
-          <Route path="/login" element={<LoginPage serverUrl={serverUrl} />} />
+          <Route path="/login" element={<LoginPage serverUrl={serverUrl} status={handleLogin} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
           <Route path='/videoCall/:friendId' element={<PeerCaller socket={socket} />} />

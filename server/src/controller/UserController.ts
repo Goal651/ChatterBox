@@ -161,21 +161,17 @@ const getUser = async (req: Request, res: Response) => {
     } catch (err) { res.status(500).json({ message: 'Server error' + err }) }
 };
 
-const updateUserPhoto = async (req: Request, res: Response) => {
-    try {
-        const { userId } = res.locals.user;
-        const image: { imageUrl: string } = req.body;
-        await model.User.findByIdAndUpdate(userId, { image: image.imageUrl });
-        res.status(201).json({ message: 'user updated' });
-    } catch (err) { res.status(500).json({ message: 'server error ', err }) }
-};
 
 
 const updateUser = async (req: Request, res: Response) => {
     try {
         const { userId } = res.locals.user;
-        const { username, names, newEmail } = req.body as { username: string, names: string, newEmail: string };
-        await model.User.findByIdAndUpdate(userId, { username, names, email: newEmail });
+        const { error, value } = validator.updateUserSchema.validate(req.body)
+        if (error) {
+            res.status(400).json({ error: error.details })
+            return
+        }
+        await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email });
         res.status(201).json({ message: 'user updated' });
     } catch (err) { res.status(500).json({ message: 'server error ', err }) }
 }
@@ -187,6 +183,5 @@ export default {
     getUsers,
     getUserProfile,
     getUser,
-    updateUserPhoto,
     updateUser
 }
