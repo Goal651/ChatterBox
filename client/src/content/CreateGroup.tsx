@@ -1,21 +1,10 @@
 import * as iconsFa from "react-icons/fa";
-import { Socket } from "socket.io-client";
-import { Group, User } from "../interfaces/interfaces";
+import { CreateGroupProps, Group, User } from "../interfaces/interfaces";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { createGroup } from "../api/api";
 import axios from "axios";
 
-interface CreateGroupProps {
-    socket: Socket;
-    mediaType: {
-        isDesktop: boolean;
-        isTablet: boolean;
-        isMobile: boolean;
-    };
-    userList: User[];
-    serverUrl: string
-}
 
 export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupProps) {
     const navigate = useNavigate();

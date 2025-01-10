@@ -2,41 +2,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useEffect, useState, useRef } from 'react';
 import { ClipLoader } from 'react-spinners';
 import axios from 'axios';
+import { EmailInputProps, FormData, InputProps, RefMap } from '../interfaces/interfaces';
 
 // Define types for form data
-interface FormData {
-    names: string;
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-    image?: string;
-}
-
-interface RefMap {
-    [key: string]: React.RefObject<HTMLInputElement> | null;
-}
-
-interface InputProps {
-    name: string;
-    type?: string;
-    label: string;
-    value?: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    ref?: React.RefObject<HTMLInputElement>;
-}
-
-interface EmailInputProps {
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    isValid: boolean;
-    emailError: string;
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onFocus: (e: React.FocusEvent<HTMLInputElement>) => void;
-    ref: React.RefObject<HTMLInputElement>;
-}
 
 export default function SignUp({ serverUrl }: { serverUrl: string }) {
     const [formData, setFormData] = useState<FormData>({

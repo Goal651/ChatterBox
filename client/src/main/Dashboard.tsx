@@ -4,35 +4,13 @@ import GroupContent from "../content/GroupContent";
 import FriendContent from "../content/FriendContent";
 import { getProfileApi, getUsersApi } from "../api/api";
 import { useEffect, useState } from "react";
-import { Message, User } from "../interfaces/interfaces";
+import { DashboardProps, Message, User, UserListProps } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
-import { Socket } from "socket.io-client";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
 import Setting from "../content/Settings";
 import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
-
-interface DashboardProps {
-    serverUrl: string;
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    },
-    socket: Socket
-}
-
-interface UserListProps {
-    filteredUsers: User[];
-    currentUser: User | null;
-    onlineUsers: string[],
-    typingUsers: string[],
-    socket: Socket,
-    handleSetUnreads: (newUnreads: Message[]) => void
-    loading: boolean
-    navigate: (path: string) => void
-}
 
 
 export default function Dashboard({ serverUrl, mediaType,socket }: DashboardProps) {

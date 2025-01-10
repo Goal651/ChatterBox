@@ -1,23 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Message, User } from "../interfaces/interfaces";
+import { Message, MessageProps, User } from "../interfaces/interfaces";
 import { useParams } from "react-router-dom";
 import { getMessagesApi } from "../api/api";
-import { Socket } from "socket.io-client";
 import FilePreview from "../utilities/FilePreview";
 
-interface MessageProps {
-    user: User | null;
-    serverUrl: string;
-    sentMessages: Message | null;
-    socketMessage: { sentMessage: Message; messageId: string | number } | null;
-    socket: Socket;
-    friend: User
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    }
-}
 
 export default function Messages({
     serverUrl,

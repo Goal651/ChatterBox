@@ -1,12 +1,7 @@
 import { useState } from "react";
+import { Notification } from "../interfaces/interfaces";
 
-interface Notification {
-    id: string;
-    title: string;
-    message: string;
-    timestamp: string;
-    read: boolean;
-}
+
 
 const sampleNotifications: Notification[] = [
     {

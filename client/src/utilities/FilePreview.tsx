@@ -4,7 +4,7 @@ import Modal from "react-modal"
 
 Modal.setAppElement("#root");
 
-type FilePreviewData = {
+interface FilePreviewData {
     file: string;
     type: string;
 };

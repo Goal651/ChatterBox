@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
+import { FileMessagePreviewProps } from "../interfaces/interfaces";
 
-interface FileMessagePreviewProps {
-    key:number
-    data: File;
-    cancelFile: (fileName:string) => void;
-}
+
 
 export default function FileMessagePreview({ data, cancelFile }: FileMessagePreviewProps) {
     const [filePreview, setFilePreview] = useState<string>("");

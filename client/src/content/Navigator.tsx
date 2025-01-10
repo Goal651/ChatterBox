@@ -1,18 +1,8 @@
 import * as iconsFa from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { User } from "../interfaces/interfaces";
-import { Socket } from "socket.io-client";
+import { NavigatorProps } from "../interfaces/interfaces";
 
-interface NavigatorProps {
-    initialCurrentUser: User | null;
-    socket: Socket;
-    mediaType: {
-        isDesktop: boolean;
-        isTablet: boolean;
-        isMobile: boolean;
-    };
-}
 
 export default function Navigator({ initialCurrentUser, socket, mediaType }: NavigatorProps) {
     const navigate = useNavigate();

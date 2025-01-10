@@ -1,28 +1,9 @@
 import { FaArrowLeft, FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
 import Messages from "./Messages";
 import Sender from "./Sender";
-import { Socket } from "socket.io-client";
-import { Message, User } from "../interfaces/interfaces";
+import { ChatScreenProps, Message, SocketMessageProps, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-
-interface ChatScreenProps {
-    socket: Socket;
-    users: User[];
-    serverUrl: string;
-    sentMessage: (message: Message) => void;
-    onlineUsers: string[]
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    }
-}
-
-interface SocketMessageProps {
-    sentMessage: Message;
-    messageId: string | number;
-}
 
 const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType }: ChatScreenProps) => {
     const [user, setUser] = useState<User | null>(null);

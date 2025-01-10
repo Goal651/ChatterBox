@@ -4,19 +4,14 @@ import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import { useEffect, useRef, useState } from "react"
 import FileMessagePreview from "../utilities/FileMessagePreview"
-import { Socket } from "socket.io-client"
-import { Message, User } from "../interfaces/interfaces"
+import { Message, SenderProps, User } from "../interfaces/interfaces"
 import FileUploader from "../utilities/FileUploader"
 import AudioRecorder from "../utilities/AudioRecorder"
 import StyledAudioPlayer from "../utilities/StyledAudioPlayer"
 import { useParams } from "react-router-dom"
 import PhotoCapture from "../utilities/PhotoCapture"
 
-interface SenderProps {
-    socket: Socket,
-    sentMessage: (message: Message) => void
-    serverUrl: string
-}
+
 
 export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) {
     const user = sessionStorage.getItem('currentUser') || ''

@@ -1,16 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { Message, User } from "../interfaces/interfaces";
-import { Socket } from "socket.io-client";
+import {  FriendContentProps, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 
-interface FriendContentProps {
-    initialFriends: User[];
-    unreads?: Message[] | null;
-    onlineUsers: string[]
-    typingUsers: string[]
-    socket: Socket
-    setUnreads: (data: Message[]) => void
-}
 
 export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads }: FriendContentProps) {
     const navigate = useNavigate();
