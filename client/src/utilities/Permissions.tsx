@@ -33,7 +33,7 @@ const NotificationRequest: React.FC = () => {
     if (!showModal) return null
 
     return (
-        <div className="fixed top-0 left-0 w-screen flex items-center justify-center h-screen bg-black bg-opacity-70">
+        <div className="fixed top-0 left-0 w-screen flex items-center justify-center h-screen bg-black bg-opacity-80 z-50">
             <div className="bg-slate-800 p-6 rounded-lg shadow-lg text-center w-80 *:text-slate-300">
                 <h2 className="text-xl font-semibold mb-4">Enable Notifications</h2>
                 <p className="mb-4">
