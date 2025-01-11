@@ -11,9 +11,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import Setting from "../content/Settings";
 import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
+import PusherManager from '../config/PusherManager'
 
 
-export default function Dashboard({ serverUrl, mediaType,socket }: DashboardProps) {
+export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
     const navigate = useNavigate()
     const [users, setUsers] = useState<User[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -188,6 +189,7 @@ export default function Dashboard({ serverUrl, mediaType,socket }: DashboardProp
     function chattingScreen() {
         return (
             <>
+                <PusherManager serverUrl={serverUrl} />
                 {!hideUsers() && (
                     <div className={`${mediaType.isMobile ? 'w-full' : 'w-1/3'} bg-transparent rounded-2xl flex flex-col space-y-4 h-full`}>
                         <SearchInput

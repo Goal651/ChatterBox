@@ -4,7 +4,7 @@ import userController from '../controller/UserController'
 import messageController from '../controller/MessageController'
 import auth from '../auth/AuthController'
 import mediaController from '../controller/MultimediaController'
-
+import webPusherController from '../controller/WebPusherController'
 const router = express.Router()
 
 //Authentication
@@ -36,6 +36,9 @@ router.get('/message/:receiverId/:phase', auth.checkToken, messageController.get
 //apis for files
 router.post('/uploadFile', auth.checkToken, mediaController.fileUpload)
 router.get('/getFile/:fileName', auth.checkToken, mediaController.sendFile)
+
+//apis for pusher
+router.post('/webPusher/subscribe', auth.checkToken,webPusherController.webPusherController)
 
 
 export default router;

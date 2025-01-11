@@ -9,7 +9,6 @@ import cors from 'cors'
 import routes from './routes/routes'
 import SocketController from './controller/SocketController'
 
-
 const app = express();
 
 const server = http.createServer(app);
@@ -34,9 +33,6 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(cookieParser());
 app.use('/api', routes)
-
-
-
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI as string)

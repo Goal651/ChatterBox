@@ -2,6 +2,7 @@ import { Socket, Server } from 'socket.io';
 import SocketAuthController from '../auth/SocketAuthController';
 import model from '../model/model';
 import { Message } from '../interface/interface';
+import WebPusherController from './WebPusherController';
 
 interface SentMessages {
     receiverId: string;
@@ -109,7 +110,7 @@ const SocketController = (io: Server) => {
                     receiver: receiverId,
                 };
                 io.to(socket.id).emit('messageSent', { messageId, sentMessage });
-                emitToUserSockets(userId, 'receiveSentMessage',  sentMessage  );
+                emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
 
                 if (userSockets[receiverId]) {
                     emitToUserSockets(receiverId, 'receiveMessage', sentMessage);
@@ -118,6 +119,7 @@ const SocketController = (io: Server) => {
                     emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
                 } else {
                     await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
+                    await WebPusherController.sendDataToWebPush(receiverId, data);
                 }
             }
             catch (error) {

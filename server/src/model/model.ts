@@ -117,6 +117,13 @@ const groupMessageSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
+const SubscriptionSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true },
+    subscription: { type: Object, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+
+const Subscription = mongoose.model("Subscription", SubscriptionSchema);
 const User = mongoose.model("User", userSchema);
 const Tokens = mongoose.model("Token", tokenSchema);
 const Message = mongoose.model("Message", messageSchema);
@@ -128,5 +135,6 @@ export default {
     Tokens,
     Message,
     Group,
-    GMessage
+    GMessage,
+    Subscription
 };

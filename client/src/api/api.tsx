@@ -193,5 +193,18 @@ export async function createGroup(serverUrl: string, groupData: {
         }
     });
     return response;
+}
+
+export async function subscribeToPush(serverUrl: string,subscription: object) {
+    try {
+        const response = await axios.post(serverUrl + '/webPusher/subscribe', subscription, {
+            headers: {
+                accesstoken: localStorage.getItem('token')
+            },
+        });
+        return response
+    } catch (error) {
+        console.error('Failed to send subscription to the backend:', error);
+    }
 
 }
