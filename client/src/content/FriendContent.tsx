@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import {  FriendContentProps, User } from "../interfaces/interfaces";
+import { FriendContentProps, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 
 
@@ -16,6 +16,11 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
     }, [initialFriends, unreads])
 
     const handleFriendClick = (id: string) => {
+        Notification.requestPermission().then((result) => {
+            console.log(result)
+        }).catch((error) => {
+            console.log(error)
+        })
         navigate(`/chat/${id}`)
         if (!unreadMessages) return
         const unread = unreadMessages.filter(m => m.sender === id)
@@ -25,6 +30,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
         if (socket) {
             socket.emit('markMessageAsRead', unread.map(m => m._id))
         }
+
     };
 
     const findNumberOfUnreads = (id: string): number => {
