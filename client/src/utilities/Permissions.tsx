@@ -12,31 +12,29 @@ const NotificationRequest: React.FC = () => {
             console.log('Current Notification Permission:', currentPermission);
             setPermission(currentPermission);
             if (currentPermission === 'default') {
-                setShowModal(true);
+                setTimeout(() => setShowModal(true), 3000); // Delay the modal display to control timing
             }
         } else {
             console.log('Notifications are not supported in this browser.');
             setShowModal(false);
         }
     }, []);
-
+    
     const requestPermission = async () => {
-        console.log('Requesting notification permission...');
         if (permission === 'default') {
-            await Notification.requestPermission()
-                .then((result) => {
-                    console.log('Notification Permission Result:', result);
-                    setPermission(result);
-                    if (result === 'granted') {
-                        console.log('Notification permission granted');
-                        new Notification('Test Notification', { body: 'This is a test notification.' });
-                    } else if (result === 'denied') {
-                        console.log('Notification permission denied');
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error requesting notification permission:', error);
-                });
+            try {
+                const result = await Notification.requestPermission();
+                console.log('Notification Permission Result:', result);
+                setPermission(result);
+                if (result === 'granted') {
+                    console.log('Notification permission granted');
+                    new Notification('Test Notification', { body: 'This is a test notification.' });
+                } else if (result === 'denied') {
+                    console.log('Notification permission denied');
+                }
+            } catch (error) {
+                console.error('Error requesting notification permission:', error);
+            }
         }
     };
 
@@ -62,7 +60,6 @@ const NotificationRequest: React.FC = () => {
                 ) : (
                     <button
                         onClick={() => {
-                            console.log('Allow Notifications button clicked');
                             requestPermission();
                         }}
                         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"

@@ -1,16 +1,18 @@
+const { title } = require("process");
+
 // Listen for the push event
 self.addEventListener('push', (event) => {
     const data = event.data.json();
 
     const options = {
         body: data.message,
-        icon: '/AppIcon.png', 
-        badge: '/nopro.png',       
-        data: { url: data.url },        
+        icon: '/AppIcon.png',
+        data: { url: data.url },
+        title: 'ChatterBox',
     };
 
     event.waitUntil(
-        self.registration.showNotification(data.title, options)
+        self.registration.showNotification(options)
     );
 });
 

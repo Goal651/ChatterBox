@@ -5,7 +5,6 @@ const PushNotifications = ({serverUrl}:{serverUrl: string}) => {
     useEffect(() => {
         async function setupPushNotifications() {
             if ('serviceWorker' in navigator && 'PushManager' in window) {
-
                 const registration = await navigator.serviceWorker.register('/sw.js');
                 const subscription = await subscribeUserToPush(registration);
                 try {
@@ -13,10 +12,8 @@ const PushNotifications = ({serverUrl}:{serverUrl: string}) => {
                 } catch (error) {
                     console.error('Failed to send subscription to the backend:', error);
                 }
-
             }
         }
-
         setupPushNotifications();
     }, []);
 
@@ -27,6 +24,7 @@ const PushNotifications = ({serverUrl}:{serverUrl: string}) => {
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
             });
+            
             return subscription;
         } catch (error) {
             console.error('Error subscribing to push:', error);
