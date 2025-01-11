@@ -12,6 +12,7 @@ import Setting from "../content/Settings";
 import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
 import PusherManager from '../config/PusherManager'
+import NotificationRequest from "../utilities/Permissions";
 
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
@@ -190,6 +191,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         return (
             <>
                 <PusherManager serverUrl={serverUrl} />
+                <NotificationRequest />
                 {!hideUsers() && (
                     <div className={`${mediaType.isMobile ? 'w-full' : 'w-1/3'} bg-transparent rounded-2xl flex flex-col space-y-4 h-full`}>
                         <SearchInput

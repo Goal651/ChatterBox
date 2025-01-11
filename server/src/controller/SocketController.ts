@@ -130,12 +130,9 @@ const SocketController = (io: Server) => {
 
         socket.on('messageSeen', async (data: { messageId: string, receiverId: string }) => {
             const { messageId, receiverId } = data;
-
             await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true, isMessageReceived: true });
             emitToUserSockets(receiverId, 'messageSeen', { messageId });
         });
-
-
 
 
         socket.on("markMessageAsRead", async (data: string[]) => {
