@@ -2,11 +2,13 @@ import * as iconsFa from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { User } from "../interfaces/interfaces";
 import { editUserPassword, updateUserApi } from "../api/api";
+import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 interface ProfileDataType {
     username: string;
     names: string;
     email: string;
+    profilePicture: string
 }
 
 export default function Setting({ userData, serverUrl }: { userData: User | null; serverUrl: string }) {
@@ -16,6 +18,7 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
         username: userData?.username || "",
         names: userData?.names || "",
         email: userData?.email || "",
+        profilePicture: '',
     });
     const [isUpdating, setIsUpdating] = useState(false);
     const [passwordMatch, setPasswordMatch] = useState(false);
@@ -28,16 +31,18 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
 
     const [notification, setNotification] = useState({
         message: "",
-        type: "", 
+        type: "",
         visible: false,
     });
 
     useEffect(() => {
-        setProfileData({
+        setProfileData((prev) => ({
+            ...prev,
             username: userData?.username || "",
             names: userData?.names || "",
             email: userData?.email || "",
-        });
+            profilePicture: userData?.image || "",
+        }));
     }, [userData]);
 
     useEffect(() => {
@@ -46,7 +51,7 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
             names: userData?.names || "",
             email: userData?.email || "",
         };
-        setIsUpdating(JSON.stringify(compareObject) !== JSON.stringify(profileData));
+        setIsUpdating(JSON.stringify(compareObject) !== JSON.stringify({ ...profileData, profilePicture: null }));
     }, [userData, profileData]);
 
     useEffect(() => {
@@ -58,19 +63,23 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
         setProfileData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const passwordDataChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { value, name } = e.target;
-        setPasswordData((prev) => ({ ...prev, [name]: value }));
-    };
 
     const handleNotification = (message: string, type: "success" | "error") => {
         setNotification({ message, type, visible: true });
-        setTimeout(() => setNotification((prev) => ({ ...prev, visible: false })), 3000); // Auto-hide after 3 seconds
+        setTimeout(() => setNotification((prev) => ({ ...prev, visible: false })), 3000);
     };
 
     const handleProfileEdition = async () => {
+        const formData = new FormData();
+        formData.append("username", profileData.username);
+        formData.append("names", profileData.names);
+        formData.append("email", profileData.email);
+        if (profileData.profilePicture) {
+            formData.append("profilePicture", profileData.profilePicture);
+        }
+
         try {
-            const res = await updateUserApi(serverUrl, profileData);
+            const res = await updateUserApi(serverUrl, formData);
             handleNotification("Profile updated successfully!", "success");
             console.log(res);
         } catch (error) {
@@ -94,12 +103,10 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
         <div className="w-full flex flex-col items-center p-6 space-y-6 bg-black h-full rounded-2xl overflow-y-auto overflow-x-hidden">
             <h1 className="text-2xl font-bold text-gray-500">Settings</h1>
 
-            {/* Notification Popup */}
             {notification.visible && (
                 <div
-                    className={`fixed top-5 right-5 px-4 py-2 rounded-lg shadow-lg ${
-                        notification.type === "success" ? "bg-green-500" : "bg-red-500"
-                    } text-white`}
+                    className={`fixed top-5 right-5 px-4 py-2 rounded-lg shadow-lg ${notification.type === "success" ? "bg-green-500" : "bg-red-500"
+                        } text-white`}
                 >
                     {notification.message}
                 </div>
@@ -119,6 +126,15 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                 </div>
                 {isProfileOpen && (
                     <div className="space-y-3">
+                        <div>
+                            <label className="block text-gray-600 text-sm mb-1">Profile Picture</label>
+                            <div
+                                className="flex items-center justify-center cursor-pointer">
+                                <ProfilePicturePreview profilePicture={profileData.profilePicture} serverUrl={serverUrl} />
+
+                            </div>
+                          
+                        </div>
                         <div>
                             <label className="block text-gray-600 text-sm mb-1">Full Name</label>
                             <input
@@ -157,9 +173,8 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                 <button
                     disabled={!isUpdating}
                     onClick={handleProfileEdition}
-                    className={`mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md ${
-                        isUpdating ? "" : "bg-slate-600 hover:bg-slate-700"
-                    }`}
+                    className={`mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md ${isUpdating ? "" : "bg-slate-600 hover:bg-slate-700"
+                        }`}
                 >
                     Save Changes
                 </button>
@@ -187,7 +202,7 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                                 placeholder="Enter old password"
                                 className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
                                 value={passwordData.oldPassword}
-                                onChange={passwordDataChange}
+                                onChange={(e) => setPasswordData((prev) => ({ ...prev, oldPassword: e.target.value }))}
                             />
                         </div>
                         <div>
@@ -196,9 +211,9 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                                 type="password"
                                 name="newPassword"
                                 placeholder="Enter new password"
-                                className="w-full border-0 px-3 py-2 rounded-md text-gray-200 bg-slate-900"
-                                value={passwordData?.newPassword}
-                                onChange={passwordDataChange}
+                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                value={passwordData.newPassword}
+                                onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
                             />
                         </div>
                         <div>
@@ -207,9 +222,9 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                                 type="password"
                                 name="confirmPassword"
                                 placeholder="Confirm new password"
-                                className="w-full border-0 px-3 py-2 rounded-md text-gray-200 bg-slate-900"
-                                value={passwordData?.confirmPassword}
-                                onChange={passwordDataChange}
+                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                value={passwordData.confirmPassword}
+                                onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                             />
                         </div>
                         {!passwordMatch && <p className="text-red-500 text-sm">Passwords do not match</p>}

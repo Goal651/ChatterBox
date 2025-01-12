@@ -161,7 +161,8 @@ export interface FriendContentProps {
     unreads?: Message[] | null;
     onlineUsers: string[]
     typingUsers: string[]
-    socket: Socket
+    socket: Socket,
+    serverUrl:string
     setUnreads: (data: Message[]) => void
 }
 

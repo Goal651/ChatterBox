@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { FriendContentProps, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
+import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads }: FriendContentProps) {
+export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads,serverUrl }: FriendContentProps) {
     const navigate = useNavigate();
     const [friends, setFriends] = useState(initialFriends)
     const [unreadMessages, setUnreadMessages] = useState(unreads)
@@ -70,11 +71,10 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
                         <div className="flex justify-between">
                             <div className="flex space-x-4">
                                 <div>
-                                    <img
-                                        src="/image.png"
-                                        alt="Friend Avatar"
-                                        className="w-14 h-14 rounded-full object-cover"
-                                    />
+                                    <div className="w-14 h-14">
+                                    <ProfilePicturePreview profilePicture={friend.image} serverUrl={serverUrl} />
+
+                                    </div>
                                     {onlineUsers.includes(friend._id) && (
                                         <div className="relative bottom-4 left-10 w-4 h-4 bg-green-500 rounded-full border-2 border-black" />
                                     )}

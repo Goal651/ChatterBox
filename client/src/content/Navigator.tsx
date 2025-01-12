@@ -47,10 +47,10 @@ export default function Navigator({ initialCurrentUser, socket, mediaType }: Nav
                     </div>
                 </div>
             )}
-            <div className="flex justify-center">
+            <div className="flex justify-center w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36">
                 <img
                     src={initialCurrentUser?.imageData ? initialCurrentUser.imageData : "/image.png"}
-                    className="bg-transparent rounded-full object-cover w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36"
+                    className="bg-transparent rounded-full object-cover w-full h-full "
                 />
             </div>
             <div
