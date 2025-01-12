@@ -89,6 +89,7 @@ export interface UserListProps {
     handleSetUnreads: (newUnreads: Message[]) => void
     loading: boolean
     navigate: (path: string) => void
+    serverUrl:string
 }
 
 

@@ -4,6 +4,7 @@ import Sender from "./Sender";
 import { ChatScreenProps, Message, SocketMessageProps, User } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType }: ChatScreenProps) => {
     const [user, setUser] = useState<User | null>(null);
@@ -81,11 +82,13 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
                             onClick={() => navigate('/chat/')}
                         />
                     )}
-                    <img
-                        src={user?.imageData || "/image.png"}
-                        alt="User Avatar"
+                    <div
                         className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full"
-                    />
+
+                    >
+                        <ProfilePicturePreview profilePicture={user?.image} serverUrl={serverUrl} />
+                    </div>
+
                     <div className="flex flex-col">
                         <div className="text-white font-semibold text-xl">{user?.username}</div>
                         {isUserTyping ? (

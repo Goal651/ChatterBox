@@ -12,7 +12,7 @@ interface ProfileDataType {
 }
 
 export default function Setting({ userData, serverUrl }: { userData: User | null; serverUrl: string }) {
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
         username: userData?.username || "",
@@ -70,16 +70,13 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
     };
 
     const handleProfileEdition = async () => {
-        const formData = new FormData();
-        formData.append("username", profileData.username);
-        formData.append("names", profileData.names);
-        formData.append("email", profileData.email);
-        if (profileData.profilePicture) {
-            formData.append("profilePicture", profileData.profilePicture);
+        const submitObject = {
+            email: profileData.email,
+            username: profileData.username,
+            names: profileData.names
         }
-
         try {
-            const res = await updateUserApi(serverUrl, formData);
+            const res = await updateUserApi(serverUrl, submitObject);
             handleNotification("Profile updated successfully!", "success");
             console.log(res);
         } catch (error) {
@@ -126,14 +123,11 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                 </div>
                 {isProfileOpen && (
                     <div className="space-y-3">
-                        <div>
-                            <label className="block text-gray-600 text-sm mb-1">Profile Picture</label>
+                        <div className="flex justify-center">
                             <div
-                                className="flex items-center justify-center cursor-pointer">
+                                className="flex items-center justify-center cursor-pointer w-52 h-52">
                                 <ProfilePicturePreview profilePicture={profileData.profilePicture} serverUrl={serverUrl} />
-
                             </div>
-                          
                         </div>
                         <div>
                             <label className="block text-gray-600 text-sm mb-1">Full Name</label>

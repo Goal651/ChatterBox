@@ -207,6 +207,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
                             navigate={navigate}
+                            serverUrl={serverUrl}
                         />
                     </div>
                 )}
@@ -285,7 +286,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate }: UserListProps) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate,serverUrl }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-black rounded-2xl h-full overflow-y-auto">
             {!loading ? (
@@ -303,6 +304,7 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socke
                         typingUsers={typingUsers}
                         socket={socket}
                         setUnreads={handleSetUnreads}
+                        serverUrl={serverUrl}
                     />
                 </>
             ) : (

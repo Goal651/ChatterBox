@@ -21,6 +21,7 @@ router.get('/getUsers', auth.checkToken, userController.getUsers)
 router.post('/signup', userController.signup)
 router.put('/editUser/', auth.checkToken, userController.updateUser)
 router.put('/editUserPassword', auth.checkToken, userController.editUserPassword)
+router.put('/editUserProfilePicture',auth.checkToken,userController.editUserProfilePicture)
 
 //apis for groups
 router.get('/getGroups', auth.checkToken, groupController.getGroups);

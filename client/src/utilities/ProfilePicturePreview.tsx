@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { getFile } from "../api/api";
+import { editUserProfilePicture, getFile } from "../api/api";
 import Modal from "react-modal";
+import { useParams } from "react-router-dom";
+import FileUploader from "./FileUploader";
 
 Modal.setAppElement("#root");
 
@@ -10,16 +12,26 @@ interface ProfilePicturePreviewProps {
 }
 
 export default function ProfilePicturePreview({ profilePicture, serverUrl }: ProfilePicturePreviewProps) {
-    const [imageSrc, setImageSrc] = useState<string>("");
+    const [imageSrc, setImageSrc] = useState<string>("/image.png");
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [previewSrc, setPreviewSrc] = useState<string>(""); // Preview of new image
+    const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
+    const [allowedToEdit, setAllowedToEdit] = useState<boolean>(false);
+    const { sessionType } = useParams();
 
     useEffect(() => {
         const fetchProfilePicture = async () => {
+            setLoading(true);
             try {
-                const response = await getFile(serverUrl, profilePicture);
-                setImageSrc(response.file);
+                if (profilePicture) {
+                    const response = await getFile(serverUrl, profilePicture);
+                    setImageSrc(response.file);
+                } else {
+                    setImageSrc("/image.png");
+                }
             } catch (err) {
                 console.error("Error fetching profile picture:", err);
                 setError("Failed to load profile picture.");
@@ -27,30 +39,58 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
                 setLoading(false);
             }
         };
-        if (profilePicture === '') {
-            setImageSrc("/image.png");
-            setLoading(false);
-            return
-        }
 
         fetchProfilePicture();
     }, [profilePicture, serverUrl]);
 
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
+    useEffect(() => {
+        setAllowedToEdit(sessionType === "setting");
+    }, [sessionType]);
+
+    const resetEditingState = () => {
+        setIsEditing(false);
+        setPreviewSrc("");
+        setNewProfilePicture(null);
+    };
+
+    const openModal = () => setIsModalOpen(allowedToEdit);
+
+    const closeModal = () => {
+        resetEditingState();
+        setIsModalOpen(false);
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setNewProfilePicture(file);
+            setPreviewSrc(URL.createObjectURL(file)); // Generate preview URL
+        }
+    };
+
+    const handleSaveClick = async () => {
+        if (newProfilePicture) {
+            try {
+                const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture, serverUrl });
+                if (uploadedFileName) {
+                    await editUserProfilePicture(serverUrl, uploadedFileName);
+                    setImageSrc(previewSrc); // Update displayed profile picture
+                }
+            } catch (err) {
+                console.error("Error uploading profile picture:", err);
+                setError("Failed to save profile picture.");
+            } finally {
+                resetEditingState();
+            }
+        }
+    };
 
     return (
         <div className="w-full h-full">
             {loading ? (
-                <div
-                    className="text-gray-500 loading-spinner">
-                    Loading...
-                </div>
+                <div className="w-full h-full object-cover loading loading-spinner text-gray-500"></div>
             ) : error ? (
-                <div
-                    className="text-red-500">
-                    {error}
-                </div>
+                <div className="text-red-500">{error}</div>
             ) : (
                 <img
                     src={imageSrc}
@@ -59,6 +99,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
                     onClick={openModal}
                 />
             )}
+
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
@@ -72,8 +113,45 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
                 >
                     Close
                 </button>
-                <div className="flex items-center justify-center">
-                    <img src={imageSrc} alt="Profile Large" className="w-auto max-w-full max-h-full rounded-lg" />
+                <div className="flex flex-col items-center justify-center">
+                    <img
+                        src={previewSrc || imageSrc} // Show preview if available, else current image
+                        alt="Profile Large"
+                        className="w-auto max-w-96 max-h-96 rounded-lg mb-4"
+                    />
+                    {allowedToEdit && (
+                        !isEditing ? (
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                            >
+                                Edit
+                            </button>
+                        ) : (
+                            <div className="flex flex-col items-center space-y-4">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleFileChange}
+                                    className="border border-gray-300 rounded px-2 py-1"
+                                />
+                                <div className="flex space-x-4">
+                                    <button
+                                        onClick={handleSaveClick}
+                                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                    >
+                                        Save
+                                    </button>
+                                    <button
+                                        onClick={resetEditingState}
+                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    )}
                 </div>
             </Modal>
         </div>

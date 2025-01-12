@@ -182,7 +182,6 @@ export async function uploadFileApi(serverUrl: string, fileData: FormData) {
 }
 
 export async function getFile(serverUrl: string, fileName: string) {
-
     const response = await axios.get(serverUrl + '/getFile/' + fileName, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -204,7 +203,7 @@ export async function createGroup(serverUrl: string, groupData: {
     return response;
 }
 
-export async function subscribeToPush(serverUrl: string,subscription: object) {
+export async function subscribeToPush(serverUrl: string, subscription: object) {
     try {
         const response = await axios.post(serverUrl + '/webPusher/subscribe', subscription, {
             headers: {
@@ -215,5 +214,16 @@ export async function subscribeToPush(serverUrl: string,subscription: object) {
     } catch (error) {
         console.error('Failed to send subscription to the backend:', error);
     }
+}
+
+
+export async function editUserProfilePicture(serverUrl: string, finalFileName: string) {
+    const response = await axios.put(serverUrl + '/editUserProfilePicture', {finalFileName}, {
+        headers: {
+            accesstoken: localStorage.getItem('token'),
+        },
+        
+    });
+    return response;
 
 }
