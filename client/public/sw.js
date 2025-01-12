@@ -1,4 +1,3 @@
-const { title } = require("process");
 
 // Listen for the push event
 self.addEventListener('push', (event) => {

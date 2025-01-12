@@ -143,6 +143,15 @@ export async function editGroupProfileApi(serverUrl: string, group: string, grou
     return response.data;
 }
 
+export async function editUserPassword(serverUrl: string, userData: object) {
+    const response = await axios.put(serverUrl + '/editUserPassword', userData, {
+        headers: {
+            accesstoken: localStorage.getItem('token'),
+        }
+    });
+    return response.data;
+}
+
 export async function updateUserApi(serverUrl: string, userData: object) {
     const response = await axios.put(serverUrl + '/editUser/', userData, {
         headers: {

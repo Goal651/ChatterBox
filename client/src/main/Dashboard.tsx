@@ -232,7 +232,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 return chattingScreen()
 
             case 'setting':
-                return <Setting />
+                return <Setting
+                serverUrl={serverUrl}
+                 userData={currentUser} />
 
             case 'create-group':
                 return <CreateGroup

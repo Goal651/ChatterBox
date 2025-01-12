@@ -176,6 +176,30 @@ const updateUser = async (req: Request, res: Response) => {
     } catch (err) { res.status(500).json({ message: 'server error ', err }) }
 }
 
+const editUserPassword = async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.user.userId
+        const { oldPassword, newPassword } = req.body
+        const user = await model.User.findById(userId).select('password');
+        if (!user) {
+            res.status(404).json({ message: 'user not found' });
+            return
+        }
+        const validated = bcrypt.compareSync(oldPassword, user.password);
+        if (!validated) {
+            res.status(400).json({ message: 'Invalid password' })
+            return
+        };
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(newPassword, salt);
+        await model.User.findByIdAndUpdate(userId, { password: hash });
+        res.status(201).json({ message: 'user updated' });
+    } catch (err) {
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'server error ', err })
+        }
+    }
+}
 
 export default {
     signup,
@@ -183,5 +207,6 @@ export default {
     getUsers,
     getUserProfile,
     getUser,
-    updateUser
+    updateUser,
+    editUserPassword
 }
