@@ -28,7 +28,7 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
 
     const [notification, setNotification] = useState({
         message: "",
-        type: "", // success, error
+        type: "", 
         visible: false,
     });
 
