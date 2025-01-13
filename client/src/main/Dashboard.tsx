@@ -234,8 +234,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
             case 'setting':
                 return <Setting
-                serverUrl={serverUrl}
-                 userData={currentUser} />
+                    serverUrl={serverUrl}
+                    userData={currentUser} />
 
             case 'create-group':
                 return <CreateGroup
@@ -262,7 +262,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 <Navigator
                     socket={socket}
                     initialCurrentUser={currentUser}
-                    mediaType={mediaType} />
+                    mediaType={mediaType}
+                    serverUrl={serverUrl} />
+
             </div>
             <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
                 {renderScreen()}
@@ -286,7 +288,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate,serverUrl }: UserListProps) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-black rounded-2xl h-full overflow-y-auto">
             {!loading ? (

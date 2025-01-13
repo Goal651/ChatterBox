@@ -189,6 +189,7 @@ export interface NavigatorProps {
         isTablet: boolean;
         isMobile: boolean;
     };
+    serverUrl:string
 }
 
 export interface Notification {

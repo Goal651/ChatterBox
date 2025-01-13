@@ -2,9 +2,10 @@ import * as iconsFa from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { NavigatorProps } from "../interfaces/interfaces";
+import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function Navigator({ initialCurrentUser, socket, mediaType }: NavigatorProps) {
+export default function Navigator({ initialCurrentUser, socket, mediaType, serverUrl }: NavigatorProps) {
     const navigate = useNavigate();
     const isMobile = mediaType.isMobile;
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
@@ -18,9 +19,8 @@ export default function Navigator({ initialCurrentUser, socket, mediaType }: Nav
 
     return (
         <div
-            className={`flex ${
-                isMobile ? "justify-between w-full" : "flex-col space-y-4 justify-evenly"
-            } lg:space-y-10 h-full md:place-items-center`}
+            className={`flex ${isMobile ? "justify-between w-full" : "flex-col space-y-4 justify-evenly"
+                } lg:space-y-10 h-full md:place-items-center`}
         >
 
             {/* Logout Confirmation Popup */}
@@ -47,16 +47,12 @@ export default function Navigator({ initialCurrentUser, socket, mediaType }: Nav
                     </div>
                 </div>
             )}
-            <div className="flex justify-center w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36">
-                <img
-                    src={initialCurrentUser?.imageData ? initialCurrentUser.imageData : "/image.png"}
-                    className="bg-transparent rounded-full object-cover w-full h-full "
-                />
+            <div className="flex justify-center w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36 bg-white rounded-full">
+                <ProfilePicturePreview serverUrl={serverUrl} profilePicture={initialCurrentUser?.image || ''} />
             </div>
             <div
-                className={`flex ${
-                    isMobile ? "justify-evenly" : "justify-center space-y-2 flex-col"
-                } md:space-y-4 lg:space-y-8 xl:space-y-14`}
+                className={`flex ${isMobile ? "justify-evenly" : "justify-center space-y-2 flex-col"
+                    } md:space-y-4 lg:space-y-8 xl:space-y-14`}
             >
                 <div onClick={() => navigate("/")} className="flex space-x-4">
                     <div className="w-8 h-8">

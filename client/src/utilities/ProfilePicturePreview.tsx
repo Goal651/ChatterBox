@@ -13,7 +13,6 @@ interface ProfilePicturePreviewProps {
 
 export default function ProfilePicturePreview({ profilePicture, serverUrl }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("/image.png");
-    const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -24,7 +23,6 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
 
     useEffect(() => {
         const fetchProfilePicture = async () => {
-            setLoading(true);
             try {
                 if (profilePicture) {
                     const response = await getFile(serverUrl, profilePicture);
@@ -34,9 +32,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
                 }
             } catch (err) {
                 console.error("Error fetching profile picture:", err);
-                setError("Failed to load profile picture.");
-            } finally {
-                setLoading(false);
+                setImageSrc("/image.png");
             }
         };
 
@@ -87,9 +83,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
 
     return (
         <div className="w-full h-full">
-            {loading ? (
-                <div className="w-full h-full object-cover loading loading-spinner text-gray-500"></div>
-            ) : error ? (
+            {error ? (
                 <div className="text-red-500">{error}</div>
             ) : (
                 <img
