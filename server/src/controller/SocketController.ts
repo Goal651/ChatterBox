@@ -94,7 +94,7 @@ const SocketController = (io: Server) => {
         socket.on('message', async (data: SentMessages) => {
             try {
                 const { receiverId, message, messageType, messageId } = data;
-
+                const senderUserName = await model.User.findById(userId).select('username') as unknown as { username: string };
                 const newMessage = new model.Message({
                     sender: userId,
                     receiver: receiverId,
@@ -119,7 +119,7 @@ const SocketController = (io: Server) => {
                     emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
                 } else {
                     await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
-                    await WebPusherController.sendDataToWebPush(receiverId, data);
+                    await WebPusherController.sendDataToWebPush(senderUserName.username, data);
                 }
             }
             catch (error) {
