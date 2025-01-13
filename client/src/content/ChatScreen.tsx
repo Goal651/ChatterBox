@@ -22,7 +22,7 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
         }
     }, [users, friendId]);
 
-    const handleSentMessage = (message: Message) => {
+    const handleSentMessage = ({ message }: { message: Message }) => {
         if (message) {
             setMessage(message);
             sentMessage(message);

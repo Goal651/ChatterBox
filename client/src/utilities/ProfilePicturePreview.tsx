@@ -43,6 +43,8 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
         setAllowedToEdit(sessionType === "setting");
     }, [sessionType]);
 
+
+
     const resetEditingState = () => {
         setIsEditing(false);
         setPreviewSrc("");

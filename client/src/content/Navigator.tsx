@@ -13,7 +13,6 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
     const handleLogout = () => {
         localStorage.clear();
         navigate("/login");
-        socket.emit("disconnect");
         socket.disconnect();
     };
 

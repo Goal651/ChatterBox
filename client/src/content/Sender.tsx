@@ -152,11 +152,11 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
 
         if (result.length > 0 || audioResult) {
             socket.emit("message", { message: result.length > 0 ? result.toString() : audioResult, receiverId: friend._id, messageType: 'file', messageId: fileMessage._id })
-            sentMessage(fileMessage)
+            sentMessage({ message: fileMessage })
         }
         else {
             socket.emit("message", { message, receiverId: friend._id, messageType: 'text', messageId: textMessage._id });
-            sentMessage(textMessage)
+            sentMessage({ message: textMessage })
         }
         resetSenderComponent()
         socket.emit('userNotTyping', { receiverId: friend._id })

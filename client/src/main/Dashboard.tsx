@@ -45,14 +45,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     useEffect(() => {
         if (!socket) return;
 
-        const handleSocketMessage = (message: Message) => {
+        const handleSocketMessage = ({ message,senderUsername }: { message: Message ,senderUsername:string}) => {
             if (!message) return;
 
-            // Find the sender's username
-            const senderUser = users.find(user => user._id === message.sender);
-            const senderUsername = senderUser ? senderUser.username : "Unknown User";
-
-            // Pass the username and message to the Notifier
             Notifier({ from: senderUsername, message: message.message, users });
 
             // Update user messages

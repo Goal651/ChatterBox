@@ -89,7 +89,7 @@ export interface UserListProps {
     handleSetUnreads: (newUnreads: Message[]) => void
     loading: boolean
     navigate: (path: string) => void
-    serverUrl:string
+    serverUrl: string
 }
 
 
@@ -163,7 +163,7 @@ export interface FriendContentProps {
     onlineUsers: string[]
     typingUsers: string[]
     socket: Socket,
-    serverUrl:string
+    serverUrl: string
     setUnreads: (data: Message[]) => void
 }
 
@@ -189,7 +189,7 @@ export interface NavigatorProps {
         isTablet: boolean;
         isMobile: boolean;
     };
-    serverUrl:string
+    serverUrl: string
 }
 
 export interface Notification {
@@ -202,12 +202,12 @@ export interface Notification {
 
 export interface SenderProps {
     socket: Socket,
-    sentMessage: (message: Message) => void
+    sentMessage: ({ message }: { message: Message }) => void
     serverUrl: string
 }
 
 export interface FileMessagePreviewProps {
-    key:number
+    key: number
     data: File;
-    cancelFile: (fileName:string) => void;
+    cancelFile: (fileName: string) => void;
 }

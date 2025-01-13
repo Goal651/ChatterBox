@@ -59,10 +59,10 @@ export default function Messages({
     }, [sentMessages]);
 
     useEffect(() => {
-        const handleReceiveMessage = (data: Message) => {
-            if (data.sender === friend._id) {
-                setMessages((prev) => [...prev, data]);
-                socket.emit("messageSeen", { messageId: data._id, receiverId: data.sender });
+        const handleReceiveMessage = ({ message }: { message: Message }) => {
+            if (message.sender === friend._id) {
+                setMessages((prev) => [...prev, message]);
+                socket.emit("messageSeen", { messageId: message._id, receiverId: message.sender });
             }
         };
 
