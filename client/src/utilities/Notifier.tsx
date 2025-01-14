@@ -7,16 +7,11 @@ interface NotifierProps {
 }
 
 export default function Notifier(data: NotifierProps) {
-
-    const { from, message ,users} = data
-
-    const user = users.find((user) => user.username === from);
-
-
+    const { from, message } = data
     Notification.requestPermission().then((result) => {
         if (result === 'granted') {
             new Notification('You have a new message', {
-                body: user?.username||'Unknown User' + ':' + message,
+                body: from + ':' + message,
                 icon: '/AppIcon.png',
             });
         } else if (result === 'denied') {

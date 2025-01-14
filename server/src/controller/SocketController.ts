@@ -113,6 +113,7 @@ const SocketController = (io: Server) => {
                 emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
 
                 if (userSockets[receiverId]) {
+                    console.log(senderUserName.username)
                     emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username });
                     await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true });
                     io.to(socket.id).emit('messageReceived', { messageId: newMessage._id });

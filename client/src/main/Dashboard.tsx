@@ -45,10 +45,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     useEffect(() => {
         if (!socket) return;
 
-        const handleSocketMessage = ({ message,senderUsername }: { message: Message ,senderUsername:string}) => {
+        const handleSocketMessage = ({ message, senderUserName }: { message: Message, senderUserName: string }) => {
             if (!message) return;
-
-            Notifier({ from: senderUsername, message: message.message, users });
+            Notifier({ from: senderUserName, message: message.message, users });
 
             // Update user messages
             updateUserMessage(message);
@@ -61,7 +60,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             setOnlineUsers(users);
         }
         const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
-        const handleReceiveSentMessage = (data: Message) => updateUsers(data)
+        const handleReceiveSentMessage = (data: Message) => {
+            console.log(data); updateUsers(data)
+        }
 
         const handleTypingUsers = (data: { typingUserId: string }) => {
             setTypingUsers(prev => {
