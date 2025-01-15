@@ -89,6 +89,7 @@ export default function Login({ serverUrl, status }: LoginProps) {
       localStorage.setItem("token", data.accessToken);
       navigate("/chat/");
     } catch (error) {
+      setLoading(false);
       if (axios.isAxiosError(error)) {
         if (!error.response) {
           navigate("/no-internet");
@@ -96,9 +97,8 @@ export default function Login({ serverUrl, status }: LoginProps) {
         }
         setErrorMessage(error.response.data.message);
       }
-    } finally {
-      setLoading(false);
-    }
+      
+    } 
   };
 
   return (
