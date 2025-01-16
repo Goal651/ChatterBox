@@ -29,7 +29,6 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         const fetchProfilePicture = async () => {
             try {
                 if (profilePicture) {
-                    if (photos) console.log(photos)
                     const isPhotoAvailable = photos.filter((photo) => photo.key === profilePicture)[0];
                     if (isPhotoAvailable) {
                         setImageSrc(isPhotoAvailable.photo);
@@ -42,11 +41,10 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                         photo: response.file
                     }
                     loadedImage(newProfilePic)
-                } else {
-                    setImageSrc("/image.png");
-                }
+                } else setImageSrc("/image.png");
+
             } catch (err) {
-                console.error("Error fetching profile picture:", err);
+                console.error("Error", err);
                 setImageSrc("/image.png");
             }
         };

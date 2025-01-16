@@ -147,11 +147,11 @@ const SocketController = (io: Server) => {
 
         // Typing notifications
         socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
-            emitToUserSockets(receiverId, 'userTyping', { userId });
+            emitToUserSockets(receiverId, 'userTyping', { typingUserId: userId });
         });
 
         socket.on('userNotTyping', ({ receiverId }: { receiverId: string }) => {
-            emitToUserSockets(receiverId, 'userNotTyping', { userId });
+            emitToUserSockets(receiverId, 'userNotTyping', { typingUserId: userId });
         });
 
         // Disconnect handling

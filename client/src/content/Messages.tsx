@@ -105,6 +105,9 @@ export default function Messages({
             if (socket) {
                 socket.off("receiveMessage", handleReceiveMessage);
                 socket.off("messageSent", handleSocketMessage);
+                socket.off("receiveSentMessage", handleSentMessage)
+                socket.off("messageReceived", handleReceivedMessage);
+                socket.off("messageSeen", handleSeenMessage);
             }
         };
     }, [socket, socketMessage]);
@@ -147,12 +150,12 @@ export default function Messages({
                     const bubbleClass = isReceiver ? "bg-blue-600" : "bg-gray-900";
                     return (
                         <div key={message._id}>
-                            <div className={`chat ${isReceiver ? "chat-end " : "chat-start"} h-auto w-full`}>
+                            <div className={`chat ${isReceiver ? "chat-end " : "chat-start"} max-h-full w-full`}>
                                 <div className={`chat-bubble rounded-lg break-words min-w-16 ${bubbleClass} ${mediaType.isMobile ? "max-w-full" : "max-w-96 "}`}>
                                     {message.type == 'text' ? (
                                         <div className="text-white ">{message.message}</div>
                                     ) : (
-                                        <div className={`bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl" : "h-full w-full"}`}>
+                                        <div className={`bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl" : "h-fif w-full"}`}>
                                             <FilePreview
                                                 files={message.message}
                                                 serverUrl={serverUrl}

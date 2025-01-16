@@ -118,7 +118,7 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
         }
 
         if (error) {
-            return <div className="w-full h-full bg-black text-red-500">File not found</div>;
+            return <div className="min-w-full h-full  ">File not found</div>;
         }
 
         const fileCount = filePreviews.length;

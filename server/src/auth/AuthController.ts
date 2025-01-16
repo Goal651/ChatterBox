@@ -16,7 +16,7 @@ const checkToken = async (req: Request, res: Response, next: NextFunction) => {
 
         const decodedToken = jwt.decode(accessToken) as { id: string } | null;
         if (!decodedToken || !decodedToken.id) {
-            res.status(401).json({ message: 'Unauthorized: Invalid token' });
+            res.status(400).json({ message: 'Unauthorized: Invalid token' });
             return
         }
 
