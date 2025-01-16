@@ -29,9 +29,8 @@ export default function App() {
   const socket = useSocketConfig({ serverUrl: host, status })
   const serverUrl = host + '/api'
 
-  const handleLogin = (data: boolean) => {
-    setStatus(data)
-  }
+  const handleLogin = (data: boolean) =>     setStatus(data)
+  
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>

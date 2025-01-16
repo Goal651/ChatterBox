@@ -22,6 +22,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
     const [previewSrc, setPreviewSrc] = useState<string>(""); // Preview of new image
     const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
     const [allowedToEdit, setAllowedToEdit] = useState<boolean>(false);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const { sessionType } = useParams();
 
     useEffect(() => {
@@ -51,7 +52,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         };
 
         fetchProfilePicture();
-    }, [profilePicture, serverUrl]);
+    }, [profilePicture, serverUrl, photos]);
 
     useEffect(() => {
         setAllowedToEdit(sessionType === "setting");
@@ -83,16 +84,18 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
     const handleSaveClick = async () => {
         if (newProfilePicture) {
             try {
+                setIsSubmitting(true);
                 const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture, serverUrl });
                 if (uploadedFileName) {
                     await editUserProfilePicture(serverUrl, uploadedFileName);
-                    setImageSrc(previewSrc); // Update displayed profile picture
+                    setImageSrc(previewSrc);
                 }
             } catch (err) {
                 console.error("Error uploading profile picture:", err);
                 setError("Failed to save profile picture.");
             } finally {
                 resetEditingState();
+                setIsSubmitting(false);
             }
         }
     };
@@ -146,12 +149,21 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                                     className="border border-gray-300 rounded px-2 py-1"
                                 />
                                 <div className="flex space-x-4">
-                                    <button
-                                        onClick={handleSaveClick}
-                                        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                    >
-                                        Save
-                                    </button>
+                                    {isSubmitting ? (
+                                        <button
+                                            onClick={handleSaveClick}
+                                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                                        >
+                                            saving...
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={handleSaveClick}
+                                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                                        >
+                                            Save
+                                        </button>
+                                    )}
                                     <button
                                         onClick={resetEditingState}
                                         className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -163,7 +175,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                         )
                     )}
                 </div>
-            </Modal>
-        </div>
+            </Modal >
+        </div >
     );
 }

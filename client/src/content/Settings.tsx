@@ -11,7 +11,7 @@ interface ProfileDataType {
     profilePicture: string
 }
 
-export default function Setting({ userData, serverUrl,loadedImage,photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void,photos:Photos[] }) {
+export default function Setting({ userData, serverUrl, loadedImage, photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void, photos: Photos[] }) {
     const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
@@ -22,7 +22,8 @@ export default function Setting({ userData, serverUrl,loadedImage,photos }: { us
     });
     const [isUpdating, setIsUpdating] = useState(false);
     const [passwordMatch, setPasswordMatch] = useState(false);
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSubmittingPassword, setIsSubmittingPassword] = useState(false);
     const [passwordData, setPasswordData] = useState({
         oldPassword: "",
         newPassword: "",
@@ -75,23 +76,27 @@ export default function Setting({ userData, serverUrl,loadedImage,photos }: { us
             username: profileData.username,
             names: profileData.names
         }
+        setIsSubmitting(true);
         try {
-            const res = await updateUserApi(serverUrl, submitObject);
+            await updateUserApi(serverUrl, submitObject);
             handleNotification("Profile updated successfully!", "success");
-            console.log(res);
+            setIsSubmitting(false);
         } catch (error) {
             handleNotification("Failed to update profile.", "error");
-            console.log(error);
+            setIsSubmitting(false);
+            console.error(error);
         }
     };
 
     const handlePasswordEdition = async () => {
         try {
-            const res = await editUserPassword(serverUrl, passwordData);
+            setIsSubmittingPassword(true);
+            await editUserPassword(serverUrl, passwordData);
             handleNotification("Password updated successfully!", "success");
-            console.log(res);
+            setIsSubmittingPassword(false);
         } catch (error) {
             handleNotification("Failed to update password.", "error");
+            setIsSubmittingPassword(false);
             console.log(error);
         }
     };
@@ -126,11 +131,11 @@ export default function Setting({ userData, serverUrl,loadedImage,photos }: { us
                         <div className="flex justify-center">
                             <div
                                 className="flex items-center justify-center cursor-pointer w-52 h-52">
-                                <ProfilePicturePreview 
-                                profilePicture={profileData.profilePicture} 
-                                serverUrl={serverUrl}
-                                loadedImage={loadedImage}
-                                photos={photos} />
+                                <ProfilePicturePreview
+                                    profilePicture={profileData.profilePicture}
+                                    serverUrl={serverUrl}
+                                    loadedImage={loadedImage}
+                                    photos={photos} />
                             </div>
                         </div>
                         <div>
@@ -168,14 +173,24 @@ export default function Setting({ userData, serverUrl,loadedImage,photos }: { us
                         </div>
                     </div>
                 )}
-                <button
-                    disabled={!isUpdating}
-                    onClick={handleProfileEdition}
-                    className={`mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md ${isUpdating ? "" : "bg-slate-600 hover:bg-slate-700"
-                        }`}
-                >
-                    Save Changes
-                </button>
+                {isSubmitting ? (
+                    <button
+                        disabled={true}
+                        onClick={handleProfileEdition}
+                        className={`mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-md `}
+                    >
+                        Saving...
+                    </button>
+                ) : (
+                    <button
+                        disabled={!isUpdating}
+                        onClick={handleProfileEdition}
+                        className={`mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md ${isUpdating ? "" : "bg-slate-600 hover:bg-slate-700"
+                            }`}
+                    >
+                        Save Changes
+                    </button>
+                )}
             </div>
 
             {/* Account Settings */}
@@ -228,13 +243,23 @@ export default function Setting({ userData, serverUrl,loadedImage,photos }: { us
                         {!passwordMatch && <p className="text-red-500 text-sm">Passwords do not match</p>}
                     </div>
                 )}
-                <button
-                    onClick={handlePasswordEdition}
-                    className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                >
-                    Update Password
-                </button>
+                {isSubmittingPassword ? (
+                    <button
+                        disabled
+                        onClick={handlePasswordEdition}
+                        className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                    >
+                        updating...
+                    </button>
+                ) : (
+                    <button
+                        onClick={handlePasswordEdition}
+                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
+                    >
+                        Update Password
+                    </button>
+                )}
             </div>
-        </div>
+        </div >
     );
 }
