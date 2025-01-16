@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads,serverUrl }: FriendContentProps) {
+export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads, serverUrl, images, photos }: FriendContentProps) {
     const navigate = useNavigate();
     const [friends, setFriends] = useState(initialFriends)
     const [unreadMessages, setUnreadMessages] = useState(unreads)
@@ -28,10 +28,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
         if (unread.length <= 0) return
         setUnreadMessages(prev => prev?.filter(dm => dm.sender !== id))
         setUnreads(unreadMessages?.filter(dm => dm.sender !== id))
-        if (socket) {
-            socket.emit('markMessageAsRead', unread.map(m => m._id))
-        }
-
+        if (socket) socket.emit('markMessageAsRead', unread.map(m => m._id))
     };
 
     const findNumberOfUnreads = (id: string): number => {
@@ -72,7 +69,11 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
                             <div className="flex space-x-4">
                                 <div>
                                     <div className="w-14 h-14">
-                                    <ProfilePicturePreview profilePicture={friend.image} serverUrl={serverUrl} />
+                                        <ProfilePicturePreview
+                                            profilePicture={friend.image}
+                                            serverUrl={serverUrl}
+                                            loadedImage={images}
+                                            photos={photos} />
 
                                     </div>
                                     {onlineUsers.includes(friend._id) && (

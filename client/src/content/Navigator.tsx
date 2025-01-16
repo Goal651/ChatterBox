@@ -5,7 +5,7 @@ import { NavigatorProps } from "../interfaces/interfaces";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function Navigator({ initialCurrentUser, socket, mediaType, serverUrl }: NavigatorProps) {
+export default function Navigator({ initialCurrentUser, socket, mediaType, serverUrl,loadedImage,photos }: NavigatorProps) {
     const navigate = useNavigate();
     const isMobile = mediaType.isMobile;
     const [showLogoutPopup, setShowLogoutPopup] = useState(false);
@@ -47,7 +47,11 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
                 </div>
             )}
             <div className="flex justify-center w-8 h-8 md:w-16 md:h-16 lg:w-24 lg:h-24 xl:w-36 xl:h-36 bg-white rounded-full">
-                <ProfilePicturePreview serverUrl={serverUrl} profilePicture={initialCurrentUser?.image || ''} />
+                <ProfilePicturePreview 
+                serverUrl={serverUrl} 
+                profilePicture={initialCurrentUser?.image || ''}
+                loadedImage={loadedImage}
+                photos={photos} />
             </div>
             <div
                 className={`flex ${isMobile ? "justify-evenly" : "justify-center space-y-2 flex-col"

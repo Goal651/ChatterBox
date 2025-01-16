@@ -1,6 +1,6 @@
 import * as iconsFa from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { User } from "../interfaces/interfaces";
+import { Photos, User } from "../interfaces/interfaces";
 import { editUserPassword, updateUserApi } from "../api/api";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
@@ -11,7 +11,7 @@ interface ProfileDataType {
     profilePicture: string
 }
 
-export default function Setting({ userData, serverUrl }: { userData: User | null; serverUrl: string }) {
+export default function Setting({ userData, serverUrl,loadedImage,photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void,photos:Photos[] }) {
     const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
@@ -126,7 +126,11 @@ export default function Setting({ userData, serverUrl }: { userData: User | null
                         <div className="flex justify-center">
                             <div
                                 className="flex items-center justify-center cursor-pointer w-52 h-52">
-                                <ProfilePicturePreview profilePicture={profileData.profilePicture} serverUrl={serverUrl} />
+                                <ProfilePicturePreview 
+                                profilePicture={profileData.profilePicture} 
+                                serverUrl={serverUrl}
+                                loadedImage={loadedImage}
+                                photos={photos} />
                             </div>
                         </div>
                         <div>

@@ -90,6 +90,8 @@ export interface UserListProps {
     loading: boolean
     navigate: (path: string) => void
     serverUrl: string
+    imageLoaded: (data: Photos) => void
+    photos:Photos[]
 }
 
 
@@ -138,6 +140,9 @@ export interface ChatScreenProps {
         isTablet: boolean
         isMobile: boolean
     }
+    loadedImage:(data: Photos) => void
+    photos: Photos[]
+
 }
 
 export interface SocketMessageProps {
@@ -165,6 +170,8 @@ export interface FriendContentProps {
     socket: Socket,
     serverUrl: string
     setUnreads: (data: Message[]) => void
+    images: (data: Photos) => void
+    photos: Photos[]
 }
 
 export interface MessageProps {
@@ -190,6 +197,8 @@ export interface NavigatorProps {
         isMobile: boolean;
     };
     serverUrl: string
+    loadedImage: (data: Photos) => void
+    photos:Photos[]
 }
 
 export interface Notification {
@@ -210,4 +219,9 @@ export interface FileMessagePreviewProps {
     key: number
     data: File;
     cancelFile: (fileName: string) => void;
+}
+
+export interface Photos {
+    photo: string
+    key: string
 }

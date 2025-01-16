@@ -3,15 +3,18 @@ import { editUserProfilePicture, getFile } from "../api/api";
 import Modal from "react-modal";
 import { useParams } from "react-router-dom";
 import FileUploader from "./FileUploader";
+import { Photos } from "../interfaces/interfaces";
 
 Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
     profilePicture: string; // Profile picture file name
     serverUrl: string;
+    loadedImage: (data: Photos) => void
+    photos: Photos[]
 }
 
-export default function ProfilePicturePreview({ profilePicture, serverUrl }: ProfilePicturePreviewProps) {
+export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("/image.png");
     const [error, setError] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -25,8 +28,19 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl }: Pro
         const fetchProfilePicture = async () => {
             try {
                 if (profilePicture) {
+                    if (photos) console.log(photos)
+                    const isPhotoAvailable = photos.filter((photo) => photo.key === profilePicture)[0];
+                    if (isPhotoAvailable) {
+                        setImageSrc(isPhotoAvailable.photo);
+                        return
+                    }
                     const response = await getFile(serverUrl, profilePicture);
                     setImageSrc(response.file);
+                    const newProfilePic: Photos = {
+                        key: profilePicture,
+                        photo: response.file
+                    }
+                    loadedImage(newProfilePic)
                 } else {
                     setImageSrc("/image.png");
                 }

@@ -4,7 +4,7 @@ import GroupContent from "../content/GroupContent";
 import FriendContent from "../content/FriendContent";
 import { getProfileApi, getUsersApi } from "../api/api";
 import { useEffect, useState } from "react";
-import { DashboardProps, Message, User, UserListProps } from "../interfaces/interfaces";
+import { DashboardProps, Message, Photos, User, UserListProps } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
@@ -24,6 +24,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const [typingUsers, setTypingUsers] = useState<string[]>([])
     const { friendId, sessionType } = useParams()
     const [loading, setLoading] = useState(true)
+    const [photos, setPhotos] = useState<Photos[]>([]);
+
+
 
     // Fetch data and initialize state
     useEffect(() => {
@@ -179,6 +182,17 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         else return false
     }
 
+    const storePhotos = (data: Photos) => {
+        setPhotos((prev): Photos[] => {
+            if (prev.length <= 0) return [data]
+            const doesPhotoExists = prev.filter(photo => photo.key === data.key)[0]
+            if (doesPhotoExists) return prev
+            return [...prev, data]
+        })
+
+    }
+
+
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
@@ -204,6 +218,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             loading={loading}
                             navigate={navigate}
                             serverUrl={serverUrl}
+                            imageLoaded={storePhotos}
+                            photos={photos}
                         />
                     </div>
                 )}
@@ -216,6 +232,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             sentMessage={updateUsers}
                             onlineUsers={onlineUsers}
                             mediaType={mediaType}
+                            loadedImage={storePhotos}
+                            photos={photos}
                         />
                     </div>
                 )}
@@ -231,7 +249,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             case 'setting':
                 return <Setting
                     serverUrl={serverUrl}
-                    userData={currentUser} />
+                    userData={currentUser}
+                    loadedImage={storePhotos}
+                    photos={photos} />
 
             case 'create-group':
                 return <CreateGroup
@@ -259,7 +279,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     socket={socket}
                     initialCurrentUser={currentUser}
                     mediaType={mediaType}
-                    serverUrl={serverUrl} />
+                    serverUrl={serverUrl}
+                    loadedImage={storePhotos}
+                    photos={photos} />
 
             </div>
             <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
@@ -284,7 +306,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl }: UserListProps) => (
+const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded,photos }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-black rounded-2xl h-full overflow-y-auto">
             {!loading ? (
@@ -303,6 +325,8 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socke
                         socket={socket}
                         setUnreads={handleSetUnreads}
                         serverUrl={serverUrl}
+                        images={imageLoaded}
+                        photos={photos}
                     />
                 </>
             ) : (

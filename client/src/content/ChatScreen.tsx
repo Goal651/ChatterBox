@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
-const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType }: ChatScreenProps) => {
+const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType,loadedImage,photos }: ChatScreenProps) => {
     const [user, setUser] = useState<User | null>(null);
     const [message, setMessage] = useState<Message | null>(null);
     const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null);
@@ -86,7 +86,11 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
                         className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full"
 
                     >
-                        <ProfilePicturePreview profilePicture={user?.image} serverUrl={serverUrl} />
+                        <ProfilePicturePreview 
+                        profilePicture={user?.image} 
+                        serverUrl={serverUrl}
+                        loadedImage={loadedImage}
+                        photos={photos} />
                     </div>
 
                     <div className="flex flex-col">
