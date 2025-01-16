@@ -61,6 +61,8 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
         return () => {
             socket.off("receiveMessage", handleSentMessage);
             socket.off("messageSent", handleSocketMessage);
+            socket.off("userTyping", handleTypingUser)
+            socket.off("userNotTyping", handleNotTypingUser)
         };
     }, [socket]);
 
