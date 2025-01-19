@@ -35,7 +35,7 @@ app.use(cookieParser());
 app.use('/api', routes)
 
 // Connect to MongoDB
-mongoose.connect(process.env.test_uri as string)
+mongoose.connect(process.env.MONGO_URI as string)
     .then(async () => {
         server.listen(3001, () => {
             console.log('Server is running on port 3001');
