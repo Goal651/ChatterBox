@@ -1,7 +1,6 @@
 import { Socket, Server } from 'socket.io';
 import SocketAuthController from '../auth/SocketAuthController';
 import model from '../model/model';
-import { Message } from '../interface/interface';
 import WebPusherController from './WebPusherController';
 
 interface SentMessages {
@@ -11,14 +10,7 @@ interface SentMessages {
     messageId: string | number;
 }
 
-interface SignalData {
-    type: string;
-    offer?: RTCSessionDescriptionInit;
-    answer?: RTCSessionDescriptionInit;
-    candidate?: RTCIceCandidateInit;
-    peerId: string;
-    target: string;
-}
+
 
 const SocketController = (io: Server) => {
     const userSockets: Record<string, string[]> = {};
@@ -40,7 +32,9 @@ const SocketController = (io: Server) => {
         userSockets[userId].push(socket.id);
 
         const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0);
-        io.emit('onlineUsers', onlineUsers);
+        socket.broadcast.emit('onlineUsers', onlineUsers);
+        io.to(socket.id).emit('onlineUsers', onlineUsers);
+        socket.broadcast.emit('onlineUsers', onlineUsers);
 
         const emitToUserSockets = (userId: string, event: string, data: any) => {
             if (userSockets[userId]) {
@@ -49,48 +43,43 @@ const SocketController = (io: Server) => {
         };
 
 
-        socket.on('signal', (data: SignalData) => {
-            const { target, ...signalData } = data;
-
-            if (userSockets[target]) {
-                emitToUserSockets(target, 'signal', { ...signalData, peerId: userId });
-            } else {
-                console.log(`User ${target} is not online.`);
-            }
-        });
-
         // Handle initiating a video call
-        socket.on('startCall', (data: { receiverId: string }) => {
-            const { receiverId } = data;
+        socket.on('startCall', (data: { receiverId: string, offer: RTCSessionDescriptionInit }) => {
+            const { receiverId, offer } = data;
+
 
             if (userSockets[receiverId]) {
-                emitToUserSockets(receiverId, 'incomingCall', { callerId: userId });
+                emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer });
             } else {
                 console.log(`User ${receiverId} is not online.`);
             }
-        });
+        })
 
         // Handle call acceptance
-        socket.on('acceptCall', (data: { callerId: string, signal: SignalData }) => {
-            const { callerId, signal } = data;
+        socket.on('acceptCall', (data: { callerId: string, offer: RTCSessionDescriptionInit }) => {
+            const { callerId, offer } = data;
 
             if (userSockets[callerId]) {
-                emitToUserSockets(callerId, 'callAccepted', { callerId: userId, signal });
+                emitToUserSockets(callerId, 'callAccepted', { callerId: userId, offer });
             }
-        });
+        })
 
-        // Handle call rejection
+        socket.on('cancelCall', (data: { receiverId: string }) => {
+            const { receiverId } = data;
+
+            if (userSockets[receiverId]) {
+                emitToUserSockets(receiverId, 'callCancelled', { callerId: receiverId });
+            }
+        })
+
         socket.on('rejectCall', (data: { callerId: string }) => {
             const { callerId } = data;
 
             if (userSockets[callerId]) {
                 emitToUserSockets(callerId, 'callRejected', { peerId: userId });
             }
-            // Redirect the user to the chat page
-            io.to(socket.id).emit('navigateToChat', { path: `/chat/${callerId}` });
-        });
+        })
 
-        // Message handling
         socket.on('message', async (data: SentMessages) => {
             try {
                 const { receiverId, message, messageType, messageId } = data;
@@ -127,13 +116,13 @@ const SocketController = (io: Server) => {
                 console.error(error);
                 socket.emit('messageError', 'Failed to send message');
             }
-        });
+        })
 
         socket.on('messageSeen', async (data: { messageId: string, receiverId: string }) => {
             const { messageId, receiverId } = data;
             await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true, isMessageReceived: true });
             emitToUserSockets(receiverId, 'messageSeen', { messageId });
-        });
+        })
 
 
         socket.on("markMessageAsRead", async (data: string[]) => {
@@ -142,17 +131,21 @@ const SocketController = (io: Server) => {
             } catch (error) {
                 socket.emit("markMessageAsReadError", "Failed to mark messages as read");
             }
-        });
+        })
 
 
         // Typing notifications
         socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
             emitToUserSockets(receiverId, 'userTyping', { typingUserId: userId });
-        });
+        })
 
         socket.on('userNotTyping', ({ receiverId }: { receiverId: string }) => {
             emitToUserSockets(receiverId, 'userNotTyping', { typingUserId: userId });
-        });
+        })
+
+        socket.on("iceCandidate", ({ candidate, to }) => {
+            socket.to(to).emit("iceCandidate", { candidate });
+        })
 
         // Disconnect handling
         socket.on('disconnect', () => {

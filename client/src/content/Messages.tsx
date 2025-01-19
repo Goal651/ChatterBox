@@ -155,7 +155,7 @@ export default function Messages({
                                     {message.type == 'text' ? (
                                         <div className="text-white ">{message.message}</div>
                                     ) : (
-                                        <div className={`bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl" : "h-fif w-full"}`}>
+                                        <div className={`bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl w-full" : "h-fif w-full"}`}>
                                             <FilePreview
                                                 files={message.message}
                                                 serverUrl={serverUrl}

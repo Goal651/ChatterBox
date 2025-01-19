@@ -118,8 +118,9 @@ const formatGroupMessageData = async ({ message, privateKey, iv }: { message: Gr
 
 const getMessage = async (req: Request, res: Response) => {
     try {
-        const { receiverId } = req.params
+        const { receiverId, phase } = req.params as unknown as { receiverId: string, phase: number }
         const { userId } = res.locals.user
+        const numberOfMessagesToSkip = phase * 10
 
         if (!userId && !receiverId) {
             res.status(400).json({ message: 'Sender and receiver are required' })
@@ -127,18 +128,21 @@ const getMessage = async (req: Request, res: Response) => {
         }
 
 
-        const messages = await model.Message.find({
-            $or: [
-                { sender: userId, receiver: receiverId },
-                { sender: receiverId, receiver: userId },
-            ],
-        }) as unknown[] as Message[]
+        const messages = await model.Message
+            .find({
+                $or: [
+                    { sender: userId, receiver: receiverId },
+                    { sender: receiverId, receiver: userId },
+                ],
+            })
+            .sort({ createdAt: -1 })
+            .skip(numberOfMessagesToSkip)
+            .limit(10) as unknown[] as Message[]
 
         if (messages.length <= 0) {
             res.status(200).json({ messages: [] })
             return
         }
-
 
         res.status(200).json({ messages })
     } catch (error) {

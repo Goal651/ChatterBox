@@ -206,7 +206,7 @@ const editUserProfilePicture = async (req: Request, res: Response) => {
         const userId = res.locals.user.userId
         const { finalFileName } = req.body as { finalFileName: string }
         await model.User.findByIdAndUpdate(userId, { image: finalFileName })
-        res.status(200).json({message:'profile picture updated successfull'})
+        res.status(200).json({ message: 'profile picture updated successfull' })
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Server error' })

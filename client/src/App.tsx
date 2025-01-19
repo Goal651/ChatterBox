@@ -13,7 +13,6 @@ const LoginPage = lazy(() => import('./auth/Login'))
 const SignUpPage = lazy(() => import('./auth/Signup'))
 const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
-const PeerCaller = lazy(() => import('./utilities/PeerCaller'))
 
 
 //https://chatterbox-production-bb1f.up.railway.app/
@@ -25,12 +24,12 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
   const [status, setStatus] = useState(false)
-  const host: string = "https://chatterbox-production-bb1f.up.railway.app"
+  const host: string = "http://localhost:3001"
   const socket = useSocketConfig({ serverUrl: host, status })
   const serverUrl = host + '/api'
 
-  const handleLogin = (data: boolean) =>     setStatus(data)
-  
+  const handleLogin = (data: boolean) => setStatus(data)
+
   return (
     <Router>
       <Suspense fallback={<div><LoadingPage /></div>}>
@@ -42,7 +41,6 @@ export default function App() {
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} status={handleLogin} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
-          <Route path='/videoCall/:friendId' element={<PeerCaller socket={socket} />} />
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

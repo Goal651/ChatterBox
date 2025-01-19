@@ -95,7 +95,7 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
                     key={index}
                     src={file}
                     controls
-                    className={`h-10 cursor-pointer ${mediaType.isMobile ? "w-60" : "w-80"}`}
+                    className={`h-10 cursor-pointer ${mediaType.isMobile ? "w-60" : "w-80"} w-full`}
                     onClick={() => openModal(index)}
                 />
             );
@@ -152,7 +152,9 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
                 {filePreviews.length > 3 && (
                     <div className="relative">
                         {renderFilePreview(filePreviews[3].file, filePreviews[3].type, 3)}
-                        <div className="absolute inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center text-white text-xl font-bold rounded-md">
+                        <div
+                            onClick={() => openModal(3)}
+                            className="absolute inset-0 bg-gray-800 bg-opacity-70 flex items-center justify-center text-white text-xl font-bold rounded-md cursor-pointer">
                             +{filePreviews.length - 4} more
                         </div>
                     </div>
@@ -184,13 +186,13 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
     return (
         <div className="bg-transparent w-full h-full flex items-center justify-center ">
             <div className="w-full h-full">
-            {renderFileList()}
+                {renderFileList()}
             </div>
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
                 contentLabel="File Preview"
-                className="fixed top-0 left-0  h-full w-full bg-opacity-90 bg-black"
+                className="fixed top-0 left-0  h-screen w-screen bg-opacity-90 bg-black overflow-hidden"
                 overlayClassName="modal-overlay"
             >
                 <button onClick={closeModal} className="text-white absolute top-4 right-4">Close</button>
@@ -206,8 +208,8 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
                 >
                     Next
                 </button>
-                <div className="h-full w-full flex items-center justify-center">
-                    <div className="bg-black rounded-lg p-4">
+                <div className="flex w-full h-full  items-center justify-center p-10">
+                    <div className="bg-black rounded-lg w-1/3">
                         {renderModalContent()}
                     </div>
                 </div>
