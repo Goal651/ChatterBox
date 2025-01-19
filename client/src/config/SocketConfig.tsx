@@ -36,7 +36,11 @@ export default function useSocketConfig({ serverUrl, status }: { serverUrl: stri
                     localStorage.setItem('redirected', 'true');
                     window.location.href = '/login';
                 }
-            } else if (error.message.includes('xhr poll error')) console.log('server down', error)
+            } else if (error.message.includes('xhr poll error')) {
+                if(localStorage.getItem('noInternet') === 'true') return
+                localStorage.setItem('noInternet', 'true');
+                window.location.href = '/no-internet';
+            }
             //  else connectToServer()
 
         };
