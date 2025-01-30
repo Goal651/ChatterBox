@@ -2,6 +2,8 @@ import { Socket, Server } from 'socket.io';
 import SocketAuthController from '../auth/SocketAuthController';
 import model from '../model/model';
 import WebPusherController from './WebPusherController';
+import encryptionController from '../security/Encryption';
+import decryptionController from '../security/Decryption';
 
 interface SentMessages {
     receiverId: string;
@@ -9,8 +11,6 @@ interface SentMessages {
     messageType: string;
     messageId: string | number;
 }
-
-
 
 const SocketController = (io: Server) => {
     const userSockets: Record<string, string[]> = {};
@@ -44,23 +44,23 @@ const SocketController = (io: Server) => {
 
 
         // Handle initiating a video call
-        socket.on('startCall', (data: { receiverId: string, offer: RTCSessionDescriptionInit }) => {
-            const { receiverId, offer } = data;
+        socket.on('startCall', (data: { receiverId: string, offer: RTCSessionDescriptionInit, isVideoCall: boolean }) => {
+            const { receiverId, offer, isVideoCall } = data;
 
 
             if (userSockets[receiverId]) {
-                emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer });
+                emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer, isVideoCall: isVideoCall });
             } else {
                 console.log(`User ${receiverId} is not online.`);
             }
         })
 
         // Handle call acceptance
-        socket.on('acceptCall', (data: { callerId: string, offer: RTCSessionDescriptionInit }) => {
-            const { callerId, offer } = data;
+        socket.on('acceptCall', (data: { callerId: string, answer: RTCSessionDescriptionInit }) => {
+            const { callerId, answer } = data;
 
             if (userSockets[callerId]) {
-                emitToUserSockets(callerId, 'callAccepted', { callerId: userId, offer });
+                emitToUserSockets(callerId, 'callAccepted', { callerId: userId, answer });
             }
         })
 
@@ -83,11 +83,14 @@ const SocketController = (io: Server) => {
         socket.on('message', async (data: SentMessages) => {
             try {
                 const { receiverId, message, messageType, messageId } = data;
-                const senderUserName = await model.User.findById(userId).select('username') as unknown as { username: string };
+                const senderUserName = await model.User.findById(userId).select('username publicKey privateKey') as unknown as { username: string, publicKey: string };
+
+                const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
+
                 const newMessage = new model.Message({
                     sender: userId,
                     receiver: receiverId,
-                    message,
+                    message: encryptedMessage,
                     type: messageType,
                 });
 
@@ -95,6 +98,7 @@ const SocketController = (io: Server) => {
 
                 const sentMessage = {
                     ...newMessage.toObject(),
+                    message,
                     sender: userId,
                     receiver: receiverId,
                 };
@@ -143,8 +147,12 @@ const SocketController = (io: Server) => {
             emitToUserSockets(receiverId, 'userNotTyping', { typingUserId: userId });
         })
 
-        socket.on("iceCandidate", ({ candidate, to }) => {
-            socket.to(to).emit("iceCandidate", { candidate });
+        socket.on("iceCandidate", (data: { candidate: RTCIceCandidate, receiverId: string }) => {
+            try {
+                emitToUserSockets(data.receiverId, "iceCandidate", { candidate: data.candidate, receiverId: userId });
+            } catch (error) {
+                console.error(error)
+            }
         })
 
         // Disconnect handling

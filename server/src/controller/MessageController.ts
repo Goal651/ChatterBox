@@ -4,20 +4,9 @@ import { Request, Response } from 'express'
 import crypto from 'crypto'
 import { Message, GroupMessage, User, Group } from '../interface/interface'
 import model from '../model/model'
+import decryptController from '../security/Decryption'
 
-const decryptPrivateKey = (encryptedPrivateKey: string): string => {
-    try {
-        const keyObject = crypto.createPrivateKey({
-            key: encryptedPrivateKey,
-            format: 'pem',
-            passphrase: process.env.KEY_PASSPHRASE,
-        })
-        return keyObject.export({ type: 'pkcs1', format: 'pem' }) as string
-    } catch (err) {
-        console.error('Error decrypting private key:', err)
-        throw err
-    }
-}
+
 
 const decryptData = (data: string, aesKey: string, iv: string): string | null => {
     try {
@@ -56,15 +45,6 @@ const getFileData = async (filePath: string, mimeType: string): Promise<string |
     }
 }
 
-const getPrivateKey = async (email: string): Promise<string | undefined> => {
-    try {
-        const user = await model.User.findOne({ email }).select('privateKey')
-        return user?.privateKey
-    } catch (err) {
-        console.error('Error reading private key from config:', err)
-        throw err
-    }
-}
 
 const decryptMessageContent = async (message: string, privateKey: string): Promise<string> => {
     try {
@@ -144,7 +124,13 @@ const getMessage = async (req: Request, res: Response) => {
             return
         }
 
-        res.status(200).json({ messages })
+        const result = await Promise.all(messages.map(async m => {
+            const decryptedMessage = await decryptController.decryptMessage(m.sender.toString(), m.message)
+            m.message = decryptedMessage
+            return m
+        }))
+
+        res.status(200).json({ messages: result.reverse() })
     } catch (error) {
         console.error(error)
         res.sendStatus(500)
@@ -191,7 +177,6 @@ const getGMessage = async (req: Request, res: Response) => {
 
             return { ...message, senderUsername, file, message: decryptedMessage, replyingMessage: decryptedReplyingToMessage || null }
         })
-
         res.status(200).json({ gmessages: gmsWithDetails })
     } catch (error) {
         console.error(error)

@@ -5,7 +5,7 @@ import { ChatScreenProps, Message, SocketMessageProps, User } from "../interface
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
-import AudioCall from "../utilities/AudioCall";
+import CallComponent from "../components/CallComponent";
 
 const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType, loadedImage, photos }: ChatScreenProps) => {
     const [user, setUser] = useState<User | null>(null);
@@ -14,10 +14,8 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
     const [isUserTyping, setIsUserTyping] = useState(false)
     const { friendId } = useParams();
     const navigate = useNavigate()
-    const [isCalling, setIsCalling] = useState(false)
-    const [stream, setStream] = useState<MediaStream | null>(null);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null)
+    const [callType, setCallType] = useState(false)
+    const [isUserCalling, setIsUserCalling] = useState(false)
 
     useEffect(() => {
         const result = users.find((user) => user._id === friendId);
@@ -33,38 +31,6 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
             sentMessage(message);
         }
     };
-
-    const handleVideoCall = () => {
-        setIsCalling(true)
-        navigator.mediaDevices
-            .getUserMedia({ video: true, audio: true })
-            .then(async (stream) => {
-                setStream(stream);
-                const myPeerConnection = new RTCPeerConnection();
-                setPeerConnection(myPeerConnection)
-                stream.getTracks().forEach(track => myPeerConnection.addTrack(track, stream))
-                myPeerConnection.onicecandidate = (data) => {
-                    if (data.candidate) {
-                        socket.emit('sendIceCandidate', {
-                            receiverId: friendId,
-                            candidate: data.candidate
-                        })
-                    }
-                }
-                const offer = await myPeerConnection.createOffer()
-                await myPeerConnection.setLocalDescription(offer)
-
-                socket.emit("startCall", { offer, receiverId: friendId })
-            })
-            .catch((error) => console.error(error));
-    }
-
-    const handleVideoCallCancel = () => {
-        setIsCalling(false)
-        if (socket) socket.emit('cancelCall', { receiverId: friendId })
-        if (stream) stream.getTracks().forEach((track) => track.stop());
-
-    }
 
 
     useEffect(() => {
@@ -87,72 +53,38 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
             }
         }
 
-        const handleCallRejected = () => {
-            if (stream) stream.getTracks().forEach((track) => track.stop());
-            setIsCalling(false)
-        }
-
-        const handleCallAccepted = (data: { offer: RTCSessionDescriptionInit; receiverId: string }) => {
-            try {
-                // Stop any existing tracks in the local stream
-                if (stream) stream.getTracks().forEach((track) => track.stop());
-                
-                // Update the calling state
-                setIsCalling(true);
-        
-                // Ensure the peer connection exists
-                if (!peerConnection) return;
-        
-                // Add local tracks to the peer connection
-                stream?.getTracks().forEach((track) => peerConnection.addTrack(track, stream));
-        
-                // Handle ICE candidates
-                peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        socket.emit('sendIceCandidate', {
-                            receiverId: friendId,
-                            candidate: event.candidate,
-                        });
-                    }
-                };
-        
-                // Handle remote streams
-                peerConnection.ontrack = (event) => {
-                    const [remoteStream] = event.streams; // Get the remote stream
-                    setRemoteStream(remoteStream); // Update state with the remote stream
-                };
-        
-                // Set the remote description from the offer
-                peerConnection.setRemoteDescription(data.offer);
-        
-                // Create and send an answer
-                peerConnection
-                    .createAnswer()
-                    .then((answer) => {
-                        peerConnection.setLocalDescription(answer);
-                        socket.emit('callAccepted', { answer, receiverId: friendId });
-                    })
-                    .catch((error) => console.error("Error creating answer:", error));
-            } catch (error) {
-                console.error("Error handling call acceptance:", error);
-            }
-        };
-        
         socket.on("receiveMessage", handleSentMessage);
         socket.on("messageSent", handleSocketMessage);
         socket.on("userTyping", handleTypingUser)
         socket.on("userNotTyping", handleNotTypingUser)
-        socket.on("callRejected", handleCallRejected)
-        socket.on("callAccepted", handleCallAccepted)
 
         return () => {
             socket.off("receiveMessage", handleSentMessage);
             socket.off("messageSent", handleSocketMessage);
             socket.off("userTyping", handleTypingUser)
             socket.off("userNotTyping", handleNotTypingUser)
-            socket.off("callRejected", handleCallRejected)
         };
     }, [socket]);
+
+    const handleAudioCall = () => {
+        setCallType(false)
+        setIsUserCalling(true)
+    }
+
+    const handleVideoCall = () => {
+        setCallType(true)
+        setIsUserCalling(true)
+    }
+
+    const handleCallCancellation = () => {
+        setCallType(false)
+        setIsUserCalling(false)
+    }
+    const handleCallEnded = () => {
+        setCallType(false)
+        setIsUserCalling(false)
+    }
+
 
     if (!user) return (
         <div className="flex items-center justify-center w-full h-full">
@@ -164,12 +96,16 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
 
     return (
         <>
-            <AudioCall
-                onCancel={handleVideoCallCancel}
-                visible={isCalling}
-                to={user.username}
-                stream={stream}
-                remoteStream={remoteStream} />
+            <CallComponent
+                users={users}
+                isVideoCall={callType}
+                socket={socket}
+                isUserCalling={isUserCalling}
+                onCancel={handleCallCancellation}
+                isOutgoingCall={isUserCalling}
+                isIngoingCall={false}
+                callEnded={handleCallEnded}
+            />
 
             <div className=" flex justify-between border-b border-slate-700 pb-6 ">
                 <div className="flex space-x-2 items-center">
@@ -200,7 +136,9 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
                     </div>
                 </div>
                 <div className="flex space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 items-center">
-                    <FaPhone className="rotate-90 text-blue-500 w-6 h-6" />
+                    <FaPhone
+                        onClick={handleAudioCall}
+                        className="rotate-90 text-blue-500 w-6 h-6" />
                     <FaVideo
                         onClick={handleVideoCall}
                         className="text-blue-500 w-6 h-6" />

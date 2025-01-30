@@ -24,7 +24,7 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
   const [status, setStatus] = useState(false)
-  const host: string = "https://chatterbox-production-bb1f.up.railway.app"
+  const host: string = "http://localhost:3001"
   const socket = useSocketConfig({ serverUrl: host, status })
   const serverUrl = host + '/api'
 

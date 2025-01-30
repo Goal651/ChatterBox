@@ -102,7 +102,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
     };
 
     return (
-        <div className="w-full flex flex-col items-center p-6 space-y-6 bg-black h-full rounded-2xl overflow-y-auto overflow-x-hidden">
+        <div className="w-full flex flex-col items-center p-6 space-y-6 bg-slate-950 h-full rounded-2xl overflow-y-auto overflow-x-hidden">
             <h1 className="text-2xl font-bold text-gray-500">Settings</h1>
 
             {notification.visible && (

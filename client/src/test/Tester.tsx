@@ -1,8 +1,12 @@
+import AudioWave from "../components/AudioWave";
+
 export default function Tester() {
 
 
     return (
-        <div>Tester</div>
+        <div>
+            <AudioWave />
+        </div>
     )
 }
 

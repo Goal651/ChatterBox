@@ -45,7 +45,7 @@ export default function Notifications() {
     };
 
     return (
-        <div className="w-full  mx-auto p-6 bg-black rounded-2xl shadow-lg">
+        <div className="w-full  mx-auto p-6 bg-slate-950 rounded-2xl shadow-lg">
             <h1 className="text-2xl font-bold text-gray-300 mb-5 text-center">Notifications</h1>
             <div className="space-y-4">
                 {notifications.length > 0 ? (

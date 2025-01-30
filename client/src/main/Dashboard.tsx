@@ -13,7 +13,7 @@ import CreateGroup from "../content/CreateGroup";
 import Notifications from "../content/Notifications";
 import PusherManager from '../config/PusherManager'
 import NotificationRequest from "../utilities/Permissions";
-import CallPopup from "../utilities/CallingIndicator";
+import CallComponent from "../components/CallComponent";
 
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
@@ -26,11 +26,9 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const { friendId, sessionType } = useParams()
     const [loading, setLoading] = useState(true)
     const [photos, setPhotos] = useState<Photos[]>([]);
-    const [isUserBeingCalled, setIsUserBeingCalled] = useState(false);
-    const [callingUser, setCallingUser] = useState('')
-    const [stream, setStream] = useState<MediaStream | null>(null);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-    const [offer, setOffer] = useState<RTCSessionDescriptionInit | null>(null)
+    const [isOutgoingCall, setIsOutgoingCall] = useState(false);
+    const [isIncomingCall, setIsIncomingCall] = useState(false);
+    const [isVideoCall, setIsVideoCall] = useState(false);
 
     // Fetch data and initialize state
     useEffect(() => {
@@ -64,7 +62,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
         const handleOnlineUsers = (users: string[]) => {
             setOnlineUsers(users);
-            console.log(users)
         }
         const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
         const handleReceiveSentMessage = (data: Message) => {
@@ -82,17 +79,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             setTypingUsers(prev => prev.filter(id => id !== data.typingUserId));
         };
 
-        const handleIncomingCall = (data: { callerId: string, offer: RTCSessionDescriptionInit }) => {
-            setIsUserBeingCalled(true)
-            setCallingUser(data.callerId)
-            setOffer(offer)
-        }
-
-        const handleCallCancelled = () => {
-            setIsUserBeingCalled(false)
-            setCallingUser('')
-            setOffer(null)
-        }
 
 
         socket.on("messageSent", handleSentMessage);
@@ -103,8 +89,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         socket.on("onlineUsers", handleOnlineUsers);
         socket.on("userTyping", handleTypingUsers)
         socket.on("userNotTyping", handleStoppedTypingUsers)
-        socket.on("incomingCall", handleIncomingCall)
-        socket.on("callCancelled", handleCallCancelled)
 
 
 
@@ -115,8 +99,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             socket.off("onlineUsers", handleOnlineUsers);
             socket.off("userTyping", handleTypingUsers)
             socket.off("userNotTyping", handleStoppedTypingUsers)
-            socket.off("incomingCall", handleIncomingCall)
-            socket.off("callCancelled", handleCallCancelled)
         }
     }, [socket]);
 
@@ -214,6 +196,12 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
     }
 
+    const handleCallCancellation = () => {
+        setIsIncomingCall(false)
+        setIsOutgoingCall(false)
+        setIsVideoCall(false)
+    }
+
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
@@ -246,7 +234,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-black py-2 px-2 sm:px-8  flex flex-col`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-slate-950 py-2 px-2 sm:px-8  flex flex-col`}>
                         <ChatScreen
                             socket={socket}
                             users={filteredUsers}
@@ -291,71 +279,20 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         }
     }
 
-    const handleAcceptingCall = async () => {
-        try {
-            
-            const pc = new RTCPeerConnection();
-            const localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            setStream(localStream);
-            localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
-
-            pc.onicecandidate = (event) => {
-                if (event.candidate) {
-                    socket.emit("iceCandidate", { candidate: event.candidate, to: friendId });
-                }
-            };
-
-            pc.ontrack = (event) => {
-                const [remoteStream] = event.streams;
-                setRemoteStream(remoteStream);
-            };
-
-            // Check if the offer is available
-            if (offer) {
-                await pc.setRemoteDescription(new RTCSessionDescription(offer));
-            } else {
-                console.error("No offer provided");
-                return;
-            }
-
-            // Create an answer to the received offer
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-
-            // Notify the caller that the call is accepted
-            socket.emit("acceptCall", { offer: answer, callerId: friendId });
-
-            socket.on("iceCandidate", ({ candidate }) => {
-                if (candidate) {
-                    pc.addIceCandidate(new RTCIceCandidate(candidate))
-                        .then(() => console.log("Added ICE candidate successfully"))
-                        .catch((error) => console.error("Error adding ICE candidate:", error));
-                }
-            });
-        } catch (error) {
-            console.error("Error accepting call:", error);
-        }
-    };
-
-    const handleDeclineCall = () => {
-        setIsUserBeingCalled(false)
-        if (socket) socket.emit('rejectCall', { callerId: callingUser })
-        setCallingUser('')
-    }
-
 
     return (
         <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-4 p-2' : 'space-x-4 p-3'} bg-slate-700 h-screen  overflow-hidden`}>
-            <CallPopup
-                onAccept={handleAcceptingCall}
-                onDecline={handleDeclineCall}
-                visible={isUserBeingCalled}
-                from={callingUser}
+            <CallComponent
                 users={users}
-                stream={stream}
-                remoteStream={remoteStream}
+                isVideoCall={isVideoCall}
+                socket={socket}
+                isOutgoingCall={isOutgoingCall}
+                isIngoingCall={isIncomingCall}
+                isUserCalling={false}
+                onCancel={handleCallCancellation}
+                callEnded={handleCallCancellation}
             />
-            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-blue-600 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
+            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-blue-800 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
                 <Navigator
                     socket={socket}
                     initialCurrentUser={currentUser}
@@ -373,7 +310,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 }
 
 const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
-    <div className="flex bg-black w-full h-fit rounded-xl md:p-1 lg:p-2 xl:p-3 space-x-6">
+    <div className="flex bg-slate-950 w-full h-fit rounded-xl p-2 lg:p-2 xl:p-3 space-x-6">
         <div className="w-8 h-8">
             <FaSearch className="text-white" size={"100%"} />
         </div>
@@ -389,12 +326,12 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
 
 const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos }: UserListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
-        <div className="bg-black rounded-2xl h-full overflow-y-auto">
+        <div className="bg-slate-950 rounded-2xl h-full overflow-y-auto">
             {!loading ? (
-                <>
+                <div className="flex flex-col justify-evenly">
                     <button
                         onClick={() => navigate('/create-group')}
-                        className="flex border-0 mt-4 btn bg-blue-500 text-white hover:bg-blue-700 justify-self-center">
+                        className="flex border-0 mt-4 btn mx-auto bg-blue-500 text-white hover:bg-blue-700 ">
                         Create new group
                     </button>
                     <GroupContent />
@@ -409,7 +346,7 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socke
                         images={imageLoaded}
                         photos={photos}
                     />
-                </>
+                </div>
             ) : (
                 <div className="flex justify-center items-center h-full text-white text-lg">
                     loading  <span className="ml-2 loading loading-bars" />

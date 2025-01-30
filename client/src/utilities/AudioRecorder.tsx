@@ -1,15 +1,22 @@
 import { useState, useRef } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import RecordRTC from "recordrtc";
+import AudioWave from "../components/AudioWave";
 
 interface AudioRecorderProps {
     onRecordingComplete: (audioBlob: Blob, audioUrl: string) => void;
+}
+
+interface RecordedMediaType{
+    audioBlob: Blob;
+    audioUrl: string;
 }
 
 export default function AudioRecorder({ onRecordingComplete }: AudioRecorderProps): JSX.Element {
     const [isRecording, setIsRecording] = useState<boolean>(false);
     const recorderRef = useRef<RecordRTC | null>(null);
     const mediaStreamRef = useRef<MediaStream | null>(null); // Ref to store the media stream
+    const [recodedMedia,setRecordedMedia] = useState<RecordedMediaType | null>(null);
 
     const startRecording = (): void => {
         navigator.mediaDevices.getUserMedia({ audio: true })
@@ -33,19 +40,27 @@ export default function AudioRecorder({ onRecordingComplete }: AudioRecorderProp
                 if (blob) {
                     const url = URL.createObjectURL(blob);
                     onRecordingComplete(blob, url);
+                    setRecordedMedia({ audioBlob: blob, audioUrl: url });
                 }
-                recorderRef.current = null; // Clean up the recorder reference
+                recorderRef.current = null; 
             });
         }
 
         // Stop all tracks of the media stream
         if (mediaStreamRef.current) {
             mediaStreamRef.current.getTracks().forEach((track: MediaStreamTrack) => track.stop());
-            mediaStreamRef.current = null; // Clean up the media stream reference
+            mediaStreamRef.current = null; 
         }
 
         setIsRecording(false);
     };
+    if (recodedMedia?.audioBlob) {
+        return (
+            <div className="">
+                <AudioWave audio={recodedMedia.audioBlob} />
+            </div>
+        )
+    }
 
     return (
         <div className="flex space-x-4">
@@ -56,6 +71,7 @@ export default function AudioRecorder({ onRecordingComplete }: AudioRecorderProp
             ) : (
                 <button onClick={stopRecording}>
                     <FaMicrophone className="text-xl text-red-900" />
+
                 </button>
             )}
         </div>
