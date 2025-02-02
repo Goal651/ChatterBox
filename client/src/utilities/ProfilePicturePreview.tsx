@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { editUserProfilePicture, getFile } from "../api/api";
 import Modal from "react-modal";
 import { useParams } from "react-router-dom";
 import FileUploader from "./FileUploader";
 import { Photos } from "../interfaces/interfaces";
+import { getFile } from "../api/FileApi";
+import { editUserProfilePicture } from "../api/UserApi";
 
 Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
-    profilePicture: string; // Profile picture file name
+    profilePicture?: string; 
     serverUrl: string;
     loadedImage: (data: Photos) => void
     photos: Photos[]

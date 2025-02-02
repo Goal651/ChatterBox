@@ -1,12 +1,12 @@
 import * as iconsFa from "react-icons/fa";
-import { CreateGroupProps, Group, User } from "../interfaces/interfaces";
+import { CreateGroupProps, User } from "../interfaces/interfaces";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { createGroup } from "../api/api";
+import { useState } from "react";
+import { createGroup } from "../api/GroupApi";
 import axios from "axios";
 
 
-export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupProps) {
+export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -21,16 +21,12 @@ export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupP
         if (!groupName) {
             setGroupNameError(true);
             hasError = true;
-        } else {
-            setGroupNameError(false);
-        }
+        } else setGroupNameError(false);
 
         if (selectedMembers.length === 0) {
             setMembersError(true);
             hasError = true;
-        } else {
-            setMembersError(false);
-        }
+        } else setMembersError(false);
 
         if (hasError) return;
 
@@ -38,9 +34,7 @@ export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupP
 
     const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setGroupName(e.target.value);
-        if (e.target.value.trim()) {
-            setGroupNameError(false);
-        }
+        if (e.target.value.trim()) setGroupNameError(false);
     };
 
     const handleGroupDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -48,14 +42,10 @@ export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupP
     };
 
     const toggleMemberSelection = (member: User) => {
-        if (selectedMembers.find((m) => m._id === member._id)) {
-            setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id));
-        } else {
-            setSelectedMembers([...selectedMembers, member]);
-        }
-        if (selectedMembers.length > 0) {
-            setMembersError(false);
-        }
+        if (selectedMembers.find((m) => m._id === member._id)) setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id));
+        else setSelectedMembers([...selectedMembers, member]);
+
+        if (selectedMembers.length > 0) setMembersError(false);
     };
 
     const filteredUserList = userList.filter(
@@ -64,21 +54,6 @@ export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupP
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    useEffect(() => {
-        if (!socket) return;
-
-        const handleCreatedGroup = (data: Group) => {
-            console.log(data);
-            setLoading(false);
-            navigate("/dashboard");
-        };
-
-        socket.on("groupCreated", handleCreatedGroup);
-
-        return () => {
-            socket.off("groupCreated", handleCreatedGroup);
-        };
-    }, [socket, navigate]);
 
     const handleCreateGroup = async () => {
         try {
@@ -92,8 +67,7 @@ export default function CreateGroup({ socket, userList,serverUrl }: CreateGroupP
                 setLoading(true);
                 const response = await createGroup(serverUrl, groupData);
                 if (response.status === 200) {
-                    const groupId: string = response.data.groupId;
-                    if (socket) socket.emit("groupCreated", groupId);
+                    setLoading(false)
                 }
             }
         } catch (error) {

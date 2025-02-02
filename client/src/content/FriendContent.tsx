@@ -59,6 +59,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
             );
         }
     };
+    if (friends.length <= 0) return null
 
     return (
         <div className="bg-transparent p-4 flex flex-col space-y-4  overflow-x-hidden">

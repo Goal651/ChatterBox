@@ -2,9 +2,9 @@ import { FaSearch } from "react-icons/fa";
 import Navigator from "../content/Navigator";
 import GroupContent from "../content/GroupContent";
 import FriendContent from "../content/FriendContent";
-import { getProfileApi, getUsersApi } from "../api/api";
+import { getProfileApi, getUsersApi } from "../api/UserApi";
 import { useEffect, useState } from "react";
-import { DashboardProps, Message, Photos, User, UserListProps } from "../interfaces/interfaces";
+import { DashboardProps, Group, GroupMessage, Message, Photos, User, UserGroupListProps } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
@@ -14,33 +14,38 @@ import Notifications from "../content/Notifications";
 import PusherManager from '../config/PusherManager'
 import NotificationRequest from "../utilities/Permissions";
 import CallComponent from "../components/CallComponent";
+import { getGroupsApi } from "../api/GroupApi";
 
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
     const navigate = useNavigate()
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<User[]>([])
+    const [groups, setGroups] = useState<Group[]>([])
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([])
-    const { friendId, sessionType } = useParams()
+    const { componentId, sessionType } = useParams()
     const [loading, setLoading] = useState(true)
     const [photos, setPhotos] = useState<Photos[]>([]);
     const [isOutgoingCall, setIsOutgoingCall] = useState(false);
     const [isIncomingCall, setIsIncomingCall] = useState(false);
     const [isVideoCall, setIsVideoCall] = useState(false);
 
-    // Fetch data and initialize state
     useEffect(() => {
         const fetchInitialData = async () => {
             setLoading(true)
             const usersData = await getUsersApi(serverUrl);
             const currentUserData = await getProfileApi(serverUrl);
+            const initialGroups = await getGroupsApi(serverUrl)
             const sortedUsers = sortUsersByLatestMessage(usersData);
             setUsers(sortedUsers);
             setCurrentUser(currentUserData);
+            setGroups(initialGroups.groups)
             sessionStorage.setItem('users', JSON.stringify(sortedUsers));
             sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
+            sessionStorage.setItem('groups', JSON.stringify(initialGroups.groups));
+
             setLoading(false)
         };
         fetchInitialData();
@@ -52,11 +57,12 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
         const handleSocketMessage = ({ message, senderUserName }: { message: Message, senderUserName: string }) => {
             if (!message) return;
-            Notifier({ from: senderUserName, message: message.message, users });
+            Notifier({ from: senderUserName, message: message.message, users, title: 'New message' });
 
             // Update user messages
             updateUserMessage(message);
         };
+
 
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId);
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId);
@@ -77,8 +83,15 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
         const handleStoppedTypingUsers = (data: { typingUserId: string }) => {
             setTypingUsers(prev => prev.filter(id => id !== data.typingUserId));
-        };
+        }
 
+        const handleReceiveGroupMessage = ({ message, groupName, senderName }: { message: GroupMessage, groupName: string, senderName: string }) => {
+            if (!message) return;
+            console.log(message, groupName)
+            Notifier({ from: senderName, message: message.message, users, title: groupName });
+
+            // updateUserMessage(message);
+        };
 
 
         socket.on("messageSent", handleSentMessage);
@@ -89,8 +102,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         socket.on("onlineUsers", handleOnlineUsers);
         socket.on("userTyping", handleTypingUsers)
         socket.on("userNotTyping", handleStoppedTypingUsers)
-
-
+        socket.on("receiveGroupMessage", handleReceiveGroupMessage)
 
         return () => {
             socket.off("messageSent", handleSocketMessage);
@@ -128,6 +140,14 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             ))
         );
     }
+    const updateGroups = (message: GroupMessage) => {
+        if (!message) return;
+        setGroups(prevUsers =>
+            prevUsers.map(group =>
+                group._id === message.group ? { ...group, latestMessage: message } : group
+            )
+        );
+    }
 
     const markMessageAsReceived = (messageId: string) => {
         setUsers(prevUsers =>
@@ -163,11 +183,11 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const hideUsers = (): boolean => {
         if (mediaType.isDesktop) return false;
         else if (mediaType.isTablet) {
-            if (friendId) return true
+            if (componentId) return true
             else return false
         }
         else if (mediaType.isMobile) {
-            if (friendId) return true
+            if (componentId) return true
             else return false
         }
         else return false
@@ -176,11 +196,11 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const hideChatScreen = (): boolean => {
         if (mediaType.isDesktop) return false;
         else if (mediaType.isTablet) {
-            if (friendId) return false
+            if (componentId) return false
             else return true
         }
         else if (mediaType.isMobile) {
-            if (friendId) return false
+            if (componentId) return false
             else return true
         }
         else return false
@@ -205,7 +225,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
-    const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm));
+    const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm));
 
     function chattingScreen() {
         return (
@@ -218,11 +238,12 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             searchTerm={searchTerm}
                             onSearchChange={handleSearchChange}
                         />
-                        <UserLists
+                        <UserGroupLists
                             filteredUsers={filteredUsers}
                             currentUser={currentUser}
                             onlineUsers={onlineUsers}
                             typingUsers={typingUsers}
+                            groups={groups}
                             socket={socket}
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
@@ -237,6 +258,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-slate-950 py-2 px-2 sm:px-8  flex flex-col`}>
                         <ChatScreen
                             socket={socket}
+                            groups={groups}
                             users={filteredUsers}
                             serverUrl={serverUrl}
                             sentMessage={updateUsers}
@@ -244,6 +266,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             mediaType={mediaType}
                             loadedImage={storePhotos}
                             photos={photos}
+                            sentGroupMessage={updateGroups}
                         />
                     </div>
                 )}
@@ -254,6 +277,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const renderScreen = () => {
         switch (sessionType) {
             case 'chat':
+                return chattingScreen()
+            case 'group':
                 return chattingScreen()
 
             case 'setting':
@@ -324,7 +349,7 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
     </div>
 );
 
-const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos }: UserListProps) => (
+const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos, groups }: UserGroupListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-slate-950 rounded-2xl h-full overflow-y-auto">
             {!loading ? (
@@ -334,7 +359,13 @@ const UserLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socke
                         className="flex border-0 mt-4 btn mx-auto bg-blue-500 text-white hover:bg-blue-700 ">
                         Create new group
                     </button>
-                    <GroupContent />
+                    <GroupContent
+                        groups={groups}
+                        socket={socket}
+                        images={imageLoaded}
+                        photos={photos}
+                        serverUrl={serverUrl}
+                    />
                     <FriendContent
                         unreads={currentUser?.unreads}
                         initialFriends={filteredUsers}

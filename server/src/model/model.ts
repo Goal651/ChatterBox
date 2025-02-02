@@ -104,7 +104,8 @@ const groupMessageSchema = new mongoose.Schema({
             ref: 'User',
             required: true
         },
-        seenAt: { type: Date, default: Date.now }
+        seenAt: { type: Date, default: Date.now },
+        default: []
     }],
     replying: {
         type: mongoose.Schema.Types.ObjectId,
@@ -113,7 +114,6 @@ const groupMessageSchema = new mongoose.Schema({
     },
     isMessageSent: { type: Boolean, default: true },
     type: { type: String, required: true },
-    time: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 });
 

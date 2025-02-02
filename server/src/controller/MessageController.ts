@@ -140,44 +140,27 @@ const getMessage = async (req: Request, res: Response) => {
 const getGMessage = async (req: Request, res: Response) => {
     try {
         const { group } = req.params
-        const groupData = await model.Group.findOne({ name: group })
+        const groupData = await model.Group.findById(group)
 
         if (!groupData) {
-            res.status(404).json({ message: 'No messages found' })
+            res.status(404).json({ message: 'Group not found' })
             return
         }
 
-        const { aesKey, iv, encryptedPrivateKey } = groupData as { aesKey: string, iv: string, encryptedPrivateKey: string }
-        const privateKey = decryptData(encryptedPrivateKey, aesKey, iv) as string
 
-        const gmessages = await model.GMessage.find({ group }).populate([
-            { path: 'group' },
-            { path: 'sender' },
-            { path: 'replying' }
-        ]) as unknown[] as GroupMessage[]
+        const messages = await model.GMessage.find({ group })
+            .populate([
+                { path: 'replying' },
+                { path: 'sender', select: '-privateKey -publicKey -password' }
+            ]) as unknown[] as GroupMessage[]
 
-        if (gmessages.length <= 0) {
-            res.status(200).json({ gmessages: null })
+        if (messages.length <= 0) {
+            res.status(200).json({ messages: [] })
             return
         }
 
-        const gmsWithDetails = gmessages.map(async (message) => {
-            const senderUser = message.sender as unknown as User
-            const senderUsername = senderUser ? senderUser.username : null
 
-            const { message: decryptedMessage, file } = await formatGroupMessageData({ message, privateKey, iv, aesKey })
-
-            let decryptedReplyingToMessage = null
-            if (message.replying) {
-                const replyingToMessage = message.replying as unknown as GroupMessage
-                if (replyingToMessage) {
-                    decryptedReplyingToMessage = { ...replyingToMessage, message: decryptGroupMessage({ message: replyingToMessage.message, privateKey, iv }) }
-                }
-            }
-
-            return { ...message, senderUsername, file, message: decryptedMessage, replyingMessage: decryptedReplyingToMessage || null }
-        })
-        res.status(200).json({ gmessages: gmsWithDetails })
+        res.status(200).json({ messages: messages })
     } catch (error) {
         console.error(error)
         res.sendStatus(500)

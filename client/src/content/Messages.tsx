@@ -1,54 +1,59 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { Message, MessageProps, User } from "../interfaces/interfaces";
+import { GroupMessage, Message, MessageProps } from "../interfaces/interfaces";
 import { useParams } from "react-router-dom";
-import { getMessagesApi } from "../api/api";
-import FilePreview from "../utilities/FilePreview";
+import { getGroupMessagesApi, getMessagesApi } from "../api/MessageApi";
+import UserMessages from "../components/UserMessages";
+import GroupMessages from "../components/GroupMessages";
 
 
 export default function Messages({
     serverUrl,
     sentMessages,
+    sentGroupMessage,
     socketMessage,
     socket,
-    friend,
-    mediaType
+    photos,
+    images,
+    mediaType,
+    component
 }: MessageProps) {
-    const { friendId } = useParams();
-    const user: User = JSON.parse(sessionStorage.getItem("currentUser") || "{}") || null;
-    const [messages, setMessages] = useState<Message[]>([]);
+    const { componentId, sessionType } = useParams();
+    const [userMessages, setUserMessages] = useState<Message[]>([]);
+    const [groupMessages, setGroupMessages] = useState<GroupMessage[]>([]);
     const [lastMessage, setLastMessage] = useState<Message | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const messagesRef = useRef<Message[]>([]);
-    const endMessageRef = useRef<HTMLDivElement | null>(null);
-    const currentUser = user._id;
 
-    const scrollBottom = useCallback(() => {
-        endMessageRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, []);
 
 
     const fetchMessages = useCallback(async () => {
-        if (!friendId) return;
+        if (!componentId) return;
         try {
             setIsLoading(true);
-            const result = await getMessagesApi(serverUrl, friendId, 0);
-            const resultMessages: Message[] | null = result.messages;
-
-            if (resultMessages) {
-                setMessages(resultMessages);
-                messagesRef.current = resultMessages;
-                setLastMessage(resultMessages[resultMessages.length - 1] || null);
+            if (sessionType === 'chat') {
+                const result = await getMessagesApi(serverUrl, componentId, 0);
+                const resultMessages: Message[] | null = result.messages;
+                if (resultMessages) {
+                    setUserMessages(resultMessages);
+                    messagesRef.current = resultMessages;
+                    setLastMessage(resultMessages[resultMessages.length - 1] || null);
+                }
+            } else {
+                const result2 = await getGroupMessagesApi(serverUrl, componentId)
+                if (result2) {
+                    setGroupMessages(result2.messages)
+                }
             }
         } catch (error) {
             console.error("Error fetching messages:", error);
         } finally {
             setIsLoading(false);
         }
-    }, [friendId, serverUrl]);
+    }, [componentId, serverUrl]);
 
     useEffect(() => {
         if (sentMessages) {
-            setMessages((prev) => {
+            setUserMessages((prev) => {
                 if (!prev.some((msg) => msg._id === sentMessages._id)) {
                     return [...prev, sentMessages];
                 }
@@ -56,24 +61,36 @@ export default function Messages({
             });
             setLastMessage(sentMessages);
         }
-    }, [sentMessages]);
+
+        if (sentGroupMessage) {
+            setGroupMessages((prev) => {
+                if (!prev.some((msg) => msg._id === sentGroupMessage._id)) {
+                    return [...prev, sentGroupMessage];
+                }
+                return prev;
+            });
+            setLastMessage(sentMessages);
+        }
+
+    }, [sentMessages,sentGroupMessage])
+
 
     useEffect(() => {
         const handleReceiveMessage = ({ message }: { message: Message }) => {
-            if (message.sender === friend._id) {
-                setMessages((prev) => [...prev, message]);
+            if (message.sender === component._id) {
+                setUserMessages((prev) => [...prev, message]);
                 socket.emit("messageSeen", { messageId: message._id, receiverId: message.sender });
             }
         };
 
         const handleSocketMessage = (data: { sentMessage: Message; messageId: string }) => {
-            setMessages((prev): Message[] =>
+            setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? data.sentMessage : msg)
             );
         };
 
         const handleSentMessage = (data: Message) => {
-            setMessages((prev): Message[] => {
+            setUserMessages((prev): Message[] => {
                 const isMessageThere = prev.filter(x => x._id == data._id)
                 if (isMessageThere.length > 0) return prev
                 return [...prev, data]
@@ -82,15 +99,23 @@ export default function Messages({
         };
 
         const handleReceivedMessage = (data: { messageId: string }) => {
-            setMessages((prev): Message[] =>
+            setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true } : msg)
             );
         }
 
         const handleSeenMessage = (data: { messageId: string }) => {
-            setMessages((prev): Message[] =>
+            setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true, isMessageSeen: true } : msg)
             );
+        }
+
+        const handleReceiveGroupMessage = ({ message }: { message: GroupMessage }) => {
+            console.log(message)
+            if (message.group === componentId) {
+                setGroupMessages((prev) => [...prev, message]);
+                socket.emit("groupMessageSeen", { messageId: message._id, receiverId: message.sender });
+            }
         }
 
         if (socket) {
@@ -99,6 +124,7 @@ export default function Messages({
             socket.on("receiveSentMessage", handleSentMessage)
             socket.on("messageReceived", handleReceivedMessage);
             socket.on("messageSeen", handleSeenMessage);
+            socket.on("receiveGroupMessage", handleReceiveGroupMessage)
         }
 
         return () => {
@@ -108,23 +134,22 @@ export default function Messages({
                 socket.off("receiveSentMessage", handleSentMessage)
                 socket.off("messageReceived", handleReceivedMessage);
                 socket.off("messageSeen", handleSeenMessage);
+                socket.off("receiveGroupMessage", handleReceiveGroupMessage)
+
             }
         };
     }, [socket, socketMessage]);
 
-    useEffect(() => {
-        scrollBottom();
-    }, [messages, friendId, scrollBottom]);
 
     useEffect(() => {
         fetchMessages();
     }, [fetchMessages]);
 
     useEffect(() => {
-        if (socket && lastMessage && lastMessage.sender === friendId && !lastMessage.isMessageSeen) {
-            socket.emit("messageSeen", { messageId: lastMessage._id, receiverId: user._id });
+        if (socket && lastMessage && lastMessage.sender === componentId && !lastMessage.isMessageSeen) {
+            socket.emit("messageSeen", { messageId: lastMessage._id, receiverId: component._id });
         }
-    }, [friendId, lastMessage, socket, user]);
+    }, [componentId, lastMessage, socket, component]);
 
     if (isLoading) {
         return (
@@ -134,52 +159,31 @@ export default function Messages({
         );
     }
 
-    if (!friendId) {
+    if (!componentId) {
         return (
             <div className="h-full flex flex-col space-y-4 items-center justify-center">
-                <div className="text-gray-400 text-center">Select a friend to continue</div>
+                <div className="text-gray-400 text-center">Select a component to continue</div>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full flex flex-col overflow-x-hidden overflow-y-auto space-y-4">
-            {messages.length > 0 ? (
-                messages.map((message) => {
-                    const isReceiver = message.receiver === friendId;
-                    const bubbleClass = isReceiver ? "bg-blue-600" : "bg-gray-900";
-                    return (
-                        <div key={message._id}>
-                            <div className={`chat ${isReceiver ? "chat-end " : "chat-start"} max-h-full w-full`}>
-                                <div className={`chat-bubble rounded-lg break-words min-w-16 ${bubbleClass} ${mediaType.isMobile ? "max-w-full" : "max-w-96 "}`}>
-                                    {message.type == 'text' ? (
-                                        <div className="text-white ">{message.message}</div>
-                                    ) : (
-                                        <div className={`bg-transparent rounded-xl ${message.message.split(".").pop() === "mp3" ? "h-12 rounded-3xl w-full" : "h-fif w-full"}`}>
-                                            <FilePreview
-                                                files={message.message}
-                                                serverUrl={serverUrl}
-                                                mediaType={mediaType}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                                {message.sender === currentUser && (
-                                    <div className="chat-footer text-gray-500">
-                                        {message.isMessageSent ? (
-                                            message.isMessageReceived ? (
-                                                message.isMessageSeen ? 'seen' : 'received'
-                                            ) : 'sent') : "not sent"}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    );
-                })
+        <>
+            {sessionType === 'chat' ? (
+                <UserMessages
+                    mediaType={mediaType}
+                    messages={userMessages}
+                    serverUrl={serverUrl}
+                />
             ) : (
-                <div className="text-gray-400 text-center">No messages yet!</div>
+                <GroupMessages
+                    mediaType={mediaType}
+                    messages={groupMessages}
+                    serverUrl={serverUrl}
+                    photos={photos}
+                    images={images}
+                />
             )}
-            <div ref={endMessageRef} />
-        </div>
+        </>
     );
 }

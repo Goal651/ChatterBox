@@ -1,29 +1,43 @@
 import { FaArrowLeft, FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
 import Messages from "./Messages";
 import Sender from "./Sender";
-import { ChatScreenProps, Message, SocketMessageProps, User } from "../interfaces/interfaces";
+import { ChatScreenProps, GroupMessage, GroupUser, Message, SocketMessageProps, } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 import CallComponent from "../components/CallComponent";
 
-const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaType, loadedImage, photos }: ChatScreenProps) => {
-    const [user, setUser] = useState<User | null>(null);
-    const [message, setMessage] = useState<Message | null>(null);
-    const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null);
+const ChatScreen = ({
+    socket,
+    users,
+    serverUrl,
+    sentMessage,
+    sentGroupMessage,
+    onlineUsers,
+    mediaType,
+    loadedImage,
+    photos,
+    groups }: ChatScreenProps) => {
+
+    const [component, setComponent] = useState<GroupUser | null>(null)
+    const [message, setMessage] = useState<Message | null>(null)
+    const [groupMessage, setGroupMessage] = useState<GroupMessage | null>(null)
+    const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null)
     const [isUserTyping, setIsUserTyping] = useState(false)
-    const { friendId } = useParams();
+    const { componentId, sessionType } = useParams();
     const navigate = useNavigate()
     const [callType, setCallType] = useState(false)
     const [isUserCalling, setIsUserCalling] = useState(false)
 
     useEffect(() => {
-        const result = users.find((user) => user._id === friendId);
+        let result;
+        if (sessionType == 'chat') result = users.find((user) => user._id === componentId);
+        else if (sessionType == 'group') result = groups.find((group) => group._id === componentId)
         if (result) {
-            setUser(result);
+            setComponent(result);
             sessionStorage.setItem("selectedUser", JSON.stringify(result));
         }
-    }, [users, friendId]);
+    }, [users, componentId, groups, sessionType]);
 
     const handleSentMessage = ({ message }: { message: Message }) => {
         if (message) {
@@ -31,6 +45,13 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
             sentMessage(message);
         }
     };
+
+    const handleSentGroupMessage = ({ message }: { message: GroupMessage }) => {
+        if (message) {
+            setGroupMessage(message);
+            sentGroupMessage(message);
+        }
+    }
 
 
     useEffect(() => {
@@ -42,13 +63,13 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
         };
 
         const handleTypingUser = (data: { typingUserId: string }) => {
-            if (friendId == data.typingUserId) {
+            if (componentId == data.typingUserId) {
                 setIsUserTyping(true)
             } else setIsUserTyping(false)
         }
 
         const handleNotTypingUser = (data: { typingUserId: string }) => {
-            if (friendId == data.typingUserId) {
+            if (componentId == data.typingUserId) {
                 setIsUserTyping(false)
             }
         }
@@ -86,10 +107,10 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
     }
 
 
-    if (!user) return (
+    if (!component) return (
         <div className="flex items-center justify-center w-full h-full">
             <div className="text-center">
-                Select friend to start chatting
+                Select friend or group to start chatting
             </div>
         </div>
     )
@@ -120,17 +141,20 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
 
                     >
                         <ProfilePicturePreview
-                            profilePicture={user?.image}
+                            profilePicture={component?.image}
                             serverUrl={serverUrl}
                             loadedImage={loadedImage}
                             photos={photos} />
                     </div>
 
                     <div className="flex flex-col">
-                        <div className="text-white font-semibold text-xl">{user?.username}</div>
+                        <div className="text-white font-semibold text-xl">
+                            {sessionType == 'chat' ? component.username : component.groupName
+                            }
+                        </div>
                         {isUserTyping ? (
                             <div className="text-green-500">typing...</div>
-                        ) : (onlineUsers.includes(user?._id) && (
+                        ) : (onlineUsers.includes(component?._id) && (
                             <div className="text-gray-400">Online</div>
                         ))}
                     </div>
@@ -149,17 +173,23 @@ const ChatScreen = ({ socket, users, serverUrl, sentMessage, onlineUsers, mediaT
             <div className="h-full flex flex-col space-y-4 overflow-hidden">
                 <div className="h-[40rem] w-full lg:mt-6 xl:mt-10 overflow-hidden">
                     <Messages
-                        user={user}
+                        component={component}
                         serverUrl={serverUrl}
                         sentMessages={message}
+                        sentGroupMessage={groupMessage}
                         socketMessage={socketMessage}
                         socket={socket}
-                        friend={user}
                         mediaType={mediaType}
+                        photos={photos}
+                        images={loadedImage}
                     />
                 </div>
                 <div className="h-1/6 flex items-center">
-                    <Sender socket={socket} sentMessage={handleSentMessage} serverUrl={serverUrl} />
+                    <Sender
+                        socket={socket}
+                        sentMessage={handleSentMessage}
+                        sentGroupMessage={handleSentGroupMessage}
+                        serverUrl={serverUrl} />
                 </div>
             </div>
         </>

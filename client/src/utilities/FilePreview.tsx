@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getFile } from "../api/api";
+import { getFile } from "../api/FileApi";
 import Modal from "react-modal"
 
 Modal.setAppElement("#root");

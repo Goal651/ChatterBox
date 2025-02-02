@@ -4,7 +4,7 @@ import data from '@emoji-mart/data'
 import Picker from '@emoji-mart/react'
 import { useEffect, useRef, useState } from "react"
 import FileMessagePreview from "../utilities/FileMessagePreview"
-import { Message, SenderProps, User } from "../interfaces/interfaces"
+import { GroupMessage, Message, SenderProps, User } from "../interfaces/interfaces"
 import FileUploader from "../utilities/FileUploader"
 import AudioRecorder from "../utilities/AudioRecorder"
 import StyledAudioPlayer from "../utilities/StyledAudioPlayer"
@@ -13,7 +13,7 @@ import PhotoCapture from "../utilities/PhotoCapture"
 
 
 
-export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) {
+export default function Sender({ socket, sentMessage, serverUrl ,sentGroupMessage}: SenderProps) {
     const user = sessionStorage.getItem('currentUser') || ''
     const selectedUser = sessionStorage.getItem('selectedUser') || ''
     const currentUser: User = user ? JSON.parse(user) : null
@@ -26,7 +26,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
     const [isTakingPhoto, setIsTakingPhoto] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const pickerRef = useRef<HTMLDivElement | null>(null);
-    const { friendId } = useParams()
+    const { componentId, sessionType } = useParams()
 
 
     useEffect(() => {
@@ -34,10 +34,8 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
             if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
                 setShowEmojiPicker(false);
             }
-        };
-
+        }
         document.addEventListener("mousedown", handleClickOutside);
-
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -58,7 +56,7 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
         setRecordedAudioUrl(null)
     }
 
-    useEffect(() => resetSenderComponent, [friendId])
+    useEffect(() => resetSenderComponent, [componentId])
 
 
     const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,47 +114,46 @@ export default function Sender({ socket, sentMessage, serverUrl }: SenderProps) 
 
     const sendMessage = async (e: React.FormEvent) => {
         e.preventDefault()
+        if (!componentId) return
         if (!message && !fileData && !recordedAudio) return;
         if (!friend || !currentUser) return
         const result = await handleFileUploads()
         const audioResult: string = await uploadRecordedAudio()
-        const textMessage: Message = {
+        const userMessage: Message = {
             _id: Date.now(),
             sender: currentUser._id,
             receiver: friend._id,
-            message: message,
+            message: result.length > 0 || audioResult ? result.length > 0 ? result.toString() : audioResult : message,
             isMessageSeen: false,
             edited: false,
             isMessageSent: false,
             isMessageReceived: false,
             reactions: [],
             replying: null,
-            type: 'text',
+            type: result.length > 0 || audioResult ? 'file' : 'text',
             createdAt: new Date()
         }
 
-        const fileMessage: Message = {
+        const groupMessage: GroupMessage = {
             _id: Date.now(),
-            sender: currentUser._id,
-            receiver: friend._id,
-            message: result.length > 0 ? result.toString() : audioResult,
-            isMessageSeen: false,
-            edited: false,
+            sender: currentUser,
+            group: componentId,
+            message: result.length > 0 || audioResult ? result.length > 0 ? result.toString() : audioResult : message,
             isMessageSent: false,
-            isMessageReceived: false,
+            edited: false,
+            seen: [],
             reactions: [],
             replying: null,
-            type: 'file',
+            type: result.length > 0 || audioResult ? 'file' : 'text',
             createdAt: new Date()
         }
 
-        if (result.length > 0 || audioResult) {
-            socket.emit("message", { message: result.length > 0 ? result.toString() : audioResult, receiverId: friend._id, messageType: 'file', messageId: fileMessage._id })
-            sentMessage({ message: fileMessage })
-        }
-        else {
-            socket.emit("message", { message, receiverId: friend._id, messageType: 'text', messageId: textMessage._id });
-            sentMessage({ message: textMessage })
+        if (sessionType === 'chat') {
+            socket.emit("message", { message: userMessage.message, receiverId: friend._id, messageType: userMessage.type, messageId: userMessage._id })
+            sentMessage({ message: userMessage })
+        }else{
+            socket.emit("groupMessage", { message: groupMessage.message, group:groupMessage.group, messageType: groupMessage.type, messageId: userMessage._id,sender:currentUser })
+            sentGroupMessage({ message: groupMessage })
         }
         resetSenderComponent()
         socket.emit('userNotTyping', { receiverId: friend._id })

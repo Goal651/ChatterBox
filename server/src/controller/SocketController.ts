@@ -4,6 +4,7 @@ import model from '../model/model';
 import WebPusherController from './WebPusherController';
 import encryptionController from '../security/Encryption';
 import decryptionController from '../security/Decryption';
+import { models } from 'mongoose';
 
 interface SentMessages {
     receiverId: string;
@@ -12,7 +13,7 @@ interface SentMessages {
     messageId: string | number;
 }
 
-const SocketController = (io: Server) => {
+ const SocketController = (io: Server) => {
     const userSockets: Record<string, string[]> = {};
 
     // Handle authorization
@@ -25,7 +26,11 @@ const SocketController = (io: Server) => {
         }
 
         const userId: string = socket.data.user.userId;
-
+        const user = await models.User.findById(userId).select('groups')
+        const userGroups: string[] = user.groups
+        userGroups.forEach(element => {
+            socket.join(element.toString())
+        });
         await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() });
 
         userSockets[userId] = userSockets[userId] || [];
@@ -80,6 +85,8 @@ const SocketController = (io: Server) => {
             }
         })
 
+
+
         socket.on('message', async (data: SentMessages) => {
             try {
                 const { receiverId, message, messageType, messageId } = data;
@@ -115,6 +122,36 @@ const SocketController = (io: Server) => {
                     await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
                     await WebPusherController.sendDataToWebPush(senderUserName.username, data);
                 }
+            }
+            catch (error) {
+                console.error(error);
+                socket.emit('messageError', 'Failed to send message');
+            }
+        })
+
+        socket.on("groupMessage", async (data) => {
+            try {
+                const { group, message, messageType, messageId,sender } = data;
+                const senderName = await models.User.findById(userId)
+                const groupName = await model.Group.findById(group).select('groupName')
+
+                const newMessage = new model.GMessage({
+                    sender: userId,
+                    group: group,
+                    message: message,
+                    type: messageType,
+                })
+
+                await newMessage.save();
+
+                const sentMessage = {
+                    ...newMessage.toObject(),
+                    message,
+                    sender: sender,
+                    group: group,
+                };
+
+                socket.to(group).emit("receiveGroupMessage", { message: sentMessage, groupName: groupName?.groupName, senderName: senderName?.username });
             }
             catch (error) {
                 console.error(error);

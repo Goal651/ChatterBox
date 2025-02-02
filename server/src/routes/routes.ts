@@ -26,7 +26,7 @@ router.put('/editUserProfilePicture',auth.checkToken,userController.editUserProf
 //apis for groups
 router.get('/getGroups', auth.checkToken, groupController.getGroups);
 router.get('/getGroup/:name', auth.checkToken, groupController.getGroup);
-router.post('/create-group', auth.checkToken, groupController.createGroup)
+router.post('/createGroup', auth.checkToken, groupController.createGroup)
 router.put('/editGroupProfile/:group', auth.checkToken, groupController.updateGroup)
 router.put('/updateGroupProfile/:group', auth.checkToken, groupController.updateGroup)
 router.post('/addMember', auth.checkToken, groupController.addMember)

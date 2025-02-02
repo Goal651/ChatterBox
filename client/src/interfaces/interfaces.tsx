@@ -48,18 +48,18 @@ export interface Group {
 
 
 export interface GroupMessage {
-    _id: string,
+    _id: string | number,
     sender: User,
     message: string,
-    group: Group,
-    seen: {
+    group: string,
+    seen: [{
         member: User,
         seenAt: Date
-    },
+    }] | [],
     edited: boolean,
     isMessageSent: boolean,
     reactions: string[],
-    replying: GroupMessage,
+    replying?: GroupMessage | null,
     type: string,
     createdAt: Date
 }
@@ -80,8 +80,9 @@ export interface DashboardProps {
     socket: Socket
 }
 
-export interface UserListProps {
+export interface UserGroupListProps {
     filteredUsers: User[];
+    groups: Group[]
     currentUser: User | null;
     onlineUsers: string[],
     typingUsers: string[],
@@ -91,7 +92,7 @@ export interface UserListProps {
     navigate: (path: string) => void
     serverUrl: string
     imageLoaded: (data: Photos) => void
-    photos:Photos[]
+    photos: Photos[]
 }
 
 
@@ -130,24 +131,40 @@ export interface EmailInputProps {
 }
 
 export interface ChatScreenProps {
+    groups: Group[]
     socket: Socket;
     users: User[];
     serverUrl: string;
     sentMessage: (message: Message) => void;
+    sentGroupMessage: (message: GroupMessage) => void;
     onlineUsers: string[]
     mediaType: {
         isDesktop: boolean
         isTablet: boolean
         isMobile: boolean
     }
-    loadedImage:(data: Photos) => void
+    loadedImage: (data: Photos) => void
     photos: Photos[]
-
 }
 
 export interface SocketMessageProps {
     sentMessage: Message;
     messageId: string | number;
+}
+
+export interface GroupUser {
+    _id: string,
+    username?: string,
+    names?: string,
+    email?: string,
+    image: string,
+    lastActiveTime?: Date,
+    groupName?: string;
+    description?: string;
+    members?: User[];
+    admins?: User[];
+    createdTime?: Date;
+    latestMessage?: GroupMessage | Message | null;
 }
 
 
@@ -174,19 +191,43 @@ export interface FriendContentProps {
     photos: Photos[]
 }
 
+export interface GroupContentProps {
+    groups: Group[];
+    socket: Socket,
+    serverUrl: string
+    images: (data: Photos) => void
+    photos: Photos[]
+}
+
 export interface MessageProps {
-    user: User | null;
+    component: GroupUser
     serverUrl: string;
     sentMessages: Message | null;
+    sentGroupMessage:  GroupMessage | null;
     socketMessage: { sentMessage: Message; messageId: string | number } | null;
     socket: Socket;
-    friend: User
     mediaType: {
         isDesktop: boolean
         isTablet: boolean
         isMobile: boolean
     }
+    photos: Photos[]
+    images: (data: Photos) => void
 }
+
+
+export interface GroupMessagesProps {
+    messages: GroupMessage[],
+    mediaType: {
+        isDesktop: boolean
+        isTablet: boolean
+        isMobile: boolean
+    }
+    serverUrl: string
+    photos: Photos[]
+    images: (data: Photos) => void
+}
+
 
 export interface NavigatorProps {
     initialCurrentUser: User | null;
@@ -198,7 +239,7 @@ export interface NavigatorProps {
     };
     serverUrl: string
     loadedImage: (data: Photos) => void
-    photos:Photos[]
+    photos: Photos[]
 }
 
 export interface Notification {
@@ -212,6 +253,7 @@ export interface Notification {
 export interface SenderProps {
     socket: Socket,
     sentMessage: ({ message }: { message: Message }) => void
+    sentGroupMessage: ({ message }: { message: GroupMessage }) => void
     serverUrl: string
 }
 

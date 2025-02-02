@@ -24,7 +24,7 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
   const [status, setStatus] = useState(false)
-  const host: string = "https://chatterbox-production-bb1f.up.railway.app"
+  const host: string = "http://localhost:3001"
   const socket = useSocketConfig({ serverUrl: host, status })
   const serverUrl = host + '/api'
 
@@ -35,7 +35,7 @@ export default function App() {
       <Suspense fallback={<div><LoadingPage /></div>}>
         <Routes>
           <Route path="/" element={<Auth serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/:friendId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/:componentId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} status={handleLogin} />} />
