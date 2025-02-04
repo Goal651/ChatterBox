@@ -3,6 +3,7 @@ import validator from '../validator/validator';
 import model from '../model/model';
 import { User, Group, GroupMember } from '../interface/interface'
 import keyController from '../security/KeysController'
+import { models } from 'mongoose';
 
 
 const groupDetails = async (group: string) => {
@@ -107,7 +108,11 @@ const getGroups = async (req: Request, res: Response) => {
 
         const groupsWithDetails = await Promise.all(groups.map(async (group) => {
             const details = await groupDetails(group.groupName)
-            return { ...group, files: details }
+            const latestMessage = await model.GMessage.findOne({ group: group._id })
+                .populate('sender')
+                .sort({ createdAt: -1 })
+                .exec();
+            return { ...group, files: details, latestMessage }
         }))
 
         res.status(200).json({ groups: groupsWithDetails });
@@ -115,7 +120,7 @@ const getGroups = async (req: Request, res: Response) => {
         console.error(err)
         res.status(500).json({ message: 'Server error' + err });
     }
-};
+}
 
 const getGroup = async (req: Request, res: Response) => {
     try {

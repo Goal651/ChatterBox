@@ -104,7 +104,7 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
                                 </div>
                             </div>
                             <div className="h-fit flex flex-col">
-                                <div>{new Date(friend.lastActiveTime).toLocaleDateString('en-US', { hour: 'numeric', minute: 'numeric' })}</div>
+                                <div>{new Date(friend.lastActiveTime).toLocaleTimeString()}</div>
                                 {renderFriendStatus(friend)}
                             </div>
                         </div>

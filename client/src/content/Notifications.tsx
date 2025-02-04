@@ -3,32 +3,8 @@ import { Notification } from "../interfaces/interfaces";
 
 
 
-const sampleNotifications: Notification[] = [
-    {
-        id: "1",
-        title: "Welcome!",
-        message: "Thanks for joining us. Explore the features now!",
-        timestamp: "2025-01-05T10:30:00Z",
-        read: false,
-    },
-    {
-        id: "2",
-        title: "Group Created",
-        message: "Your new group 'React Developers' has been created.",
-        timestamp: "2025-01-04T15:45:00Z",
-        read: true,
-    },
-    {
-        id: "3",
-        title: "New Message",
-        message: "You have a new message from John Doe.",
-        timestamp: "2025-01-03T08:20:00Z",
-        read: false,
-    },
-];
-
-export default function Notifications() {
-    const [notifications, setNotifications] = useState<Notification[]>(sampleNotifications);
+export default function Notifications(data: { notification: Notification[] }) {
+    const [notifications, setNotifications] = useState<Notification[]>(data.notification);
 
     const markAsRead = (id: string) => {
         setNotifications((prevNotifications) =>

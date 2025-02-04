@@ -9,14 +9,11 @@ const NotificationRequest: React.FC = () => {
         // Check if notifications are supported and set initial permission status
         if ('Notification' in window) {
             const currentPermission = Notification.permission;
-            console.log('Notification API supported');
-            console.log('Current Notification Permission:', currentPermission);
             setPermission(currentPermission);
             if (currentPermission === 'default') {
                 setTimeout(() => setShowModal(true), 3000); // Delay the modal display to control timing
             }
         } else {
-            console.log('Notifications are not supported in this browser.');
             setShowModal(false);
         }
     }, []);
@@ -40,13 +37,12 @@ const NotificationRequest: React.FC = () => {
         if (permission === 'default') {
             try {
                 const result = await Notification.requestPermission();
-                console.log('Notification Permission Result:', result);
                 setPermission(result);
                 if (result === 'granted') {
-                    console.log('Notification permission granted');
                     new Notification('Test Notification', { body: 'This is a test notification.' });
+                    setShowModal(false)
                 } else if (result === 'denied') {
-                    console.log('Notification permission denied');
+                    setShowModal(false)
                 }
             } catch (error) {
                 console.error('Error requesting notification permission:', error);

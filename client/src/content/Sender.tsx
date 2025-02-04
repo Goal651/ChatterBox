@@ -13,7 +13,7 @@ import PhotoCapture from "../utilities/PhotoCapture"
 
 
 
-export default function Sender({ socket, sentMessage, serverUrl ,sentGroupMessage}: SenderProps) {
+export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessage }: SenderProps) {
     const user = sessionStorage.getItem('currentUser') || ''
     const selectedUser = sessionStorage.getItem('selectedUser') || ''
     const currentUser: User = user ? JSON.parse(user) : null
@@ -151,8 +151,8 @@ export default function Sender({ socket, sentMessage, serverUrl ,sentGroupMessag
         if (sessionType === 'chat') {
             socket.emit("message", { message: userMessage.message, receiverId: friend._id, messageType: userMessage.type, messageId: userMessage._id })
             sentMessage({ message: userMessage })
-        }else{
-            socket.emit("groupMessage", { message: groupMessage.message, group:groupMessage.group, messageType: groupMessage.type, messageId: userMessage._id,sender:currentUser })
+        } else {
+            socket.emit("groupMessage", { message: groupMessage.message, group: groupMessage.group, messageType: groupMessage.type, messageId: userMessage._id, sender: currentUser })
             sentGroupMessage({ message: groupMessage })
         }
         resetSenderComponent()
@@ -192,7 +192,7 @@ export default function Sender({ socket, sentMessage, serverUrl ,sentGroupMessag
                             placeholder="message..."
                             onChange={handleChange}
                             value={message}
-                            className="bg-transparent w-full placeholder:text-gray-400 outline-0 text-white"
+                            className="bg-transparent w-full placeholder:text-gray-400 outline-0 text-white focus:outline-none"
                         />
                         <div className="flex space-x-4">
                             <FaFaceLaugh

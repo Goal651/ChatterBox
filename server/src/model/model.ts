@@ -117,18 +117,31 @@ const groupMessageSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-const SubscriptionSchema = new mongoose.Schema({
+const subscriptionSchema = new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
     subscription: { type: Object, required: true },
     createdAt: { type: Date, default: Date.now }
 });
 
-const Subscription = mongoose.model("Subscription", SubscriptionSchema);
+const notificationSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        ref: 'User'
+    },
+    details: { type: String, required: true },
+    readonly: { type: Boolean, default:false},
+    timestamp: { type: Date, default: Date.now }
+})
+
+const Subscription = mongoose.model("Subscription", subscriptionSchema);
 const User = mongoose.model("User", userSchema);
 const Tokens = mongoose.model("Token", tokenSchema);
 const Message = mongoose.model("Message", messageSchema);
 const Group = mongoose.model("Group", groupSchema);
 const GMessage = mongoose.model('GMessage', groupMessageSchema);
+const Notification = mongoose.model('Notification', notificationSchema)
 
 export default {
     User,
@@ -136,5 +149,6 @@ export default {
     Message,
     Group,
     GMessage,
-    Subscription
+    Subscription,
+    Notification
 };

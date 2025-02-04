@@ -4,7 +4,7 @@ import GroupContent from "../content/GroupContent";
 import FriendContent from "../content/FriendContent";
 import { getProfileApi, getUsersApi } from "../api/UserApi";
 import { useEffect, useState } from "react";
-import { DashboardProps, Group, GroupMessage, Message, Photos, User, UserGroupListProps } from "../interfaces/interfaces";
+import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User, UserGroupListProps } from "../interfaces/interfaces";
 import ChatScreen from "../content/ChatScreen";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
@@ -15,6 +15,7 @@ import PusherManager from '../config/PusherManager'
 import NotificationRequest from "../utilities/Permissions";
 import CallComponent from "../components/CallComponent";
 import { getGroupsApi } from "../api/GroupApi";
+import { getNotification } from "../api/NotificationApi";
 
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
@@ -25,6 +26,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const [searchTerm, setSearchTerm] = useState("");
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([])
+    const [notifications, setNotifications] = useState<Notification[]>([])
     const { componentId, sessionType } = useParams()
     const [loading, setLoading] = useState(true)
     const [photos, setPhotos] = useState<Photos[]>([]);
@@ -38,14 +40,17 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             const usersData = await getUsersApi(serverUrl);
             const currentUserData = await getProfileApi(serverUrl);
             const initialGroups = await getGroupsApi(serverUrl)
+            const initialNotifications = await getNotification(serverUrl)
             const sortedUsers = sortUsersByLatestMessage(usersData);
+            const sortedGroups = sortGroupsByLatestMessage(initialGroups.groups)
             setUsers(sortedUsers);
             setCurrentUser(currentUserData);
-            setGroups(initialGroups.groups)
+            setGroups(sortedGroups)
+            setNotifications(initialNotifications.notifications)
             sessionStorage.setItem('users', JSON.stringify(sortedUsers));
             sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
-            sessionStorage.setItem('groups', JSON.stringify(initialGroups.groups));
-
+            sessionStorage.setItem('groups', JSON.stringify(sortedGroups));
+            sessionStorage.setItem('notifications', JSON.stringify(notifications));
             setLoading(false)
         };
         fetchInitialData();
@@ -70,9 +75,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             setOnlineUsers(users);
         }
         const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
-        const handleReceiveSentMessage = (data: Message) => {
-            console.log(data); updateUsers(data)
-        }
+        const handleReceiveSentMessage = (data: Message) => updateUsers(data)
+
 
         const handleTypingUsers = (data: { typingUserId: string }) => {
             setTypingUsers(prev => {
@@ -115,13 +119,21 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     }, [socket]);
 
     // Helper functions
-    const sortUsersByLatestMessage = (users: User[]): User[] => {
+    const sortUsersByLatestMessage = (users: User[]) => {
         return users.sort((a, b) => {
             const aTime = a.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
             const bTime = b.latestMessage?.createdAt ? new Date(b.latestMessage.createdAt).getTime() : 0;
             return bTime - aTime;
         });
     };
+
+    const sortGroupsByLatestMessage = (groups: Group[]) => {
+        return groups.sort((a, b) => {
+            const aTime = a.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
+            const bTime = b.latestMessage?.createdAt ? new Date(b.latestMessage.createdAt).getTime() : 0;
+            return bTime - aTime;
+        })
+    }
 
     const updateUserMessage = (message: Message) => {
         if (!message) return;
@@ -143,8 +155,10 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const updateGroups = (message: GroupMessage) => {
         if (!message) return;
         setGroups(prevUsers =>
-            prevUsers.map(group =>
-                group._id === message.group ? { ...group, latestMessage: message } : group
+            sortGroupsByLatestMessage(
+                prevUsers.map(group =>
+                    group._id === message.group ? { ...group, latestMessage: message } : group
+                )
             )
         );
     }
@@ -226,7 +240,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
 
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm));
-
+    const filteredGroups = groups.filter(group => group.groupName.toLowerCase().includes(searchTerm))
     function chattingScreen() {
         return (
             <>
@@ -243,7 +257,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             currentUser={currentUser}
                             onlineUsers={onlineUsers}
                             typingUsers={typingUsers}
-                            groups={groups}
+                            groups={filteredGroups}
                             socket={socket}
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
@@ -255,7 +269,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-slate-950 py-2 px-2 sm:px-8  flex flex-col`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-slate-950 py-2 px-2 sm:px-8  flex flex-col `}>
                         <ChatScreen
                             socket={socket}
                             groups={groups}
@@ -297,7 +311,8 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 />
 
             case 'notification':
-                return <Notifications />
+                return <Notifications
+                    notification={notifications} />
 
             default:
                 break;
@@ -341,42 +356,55 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string; onSea
         </div>
         <input
             type="search"
+
             placeholder="Search"
             value={searchTerm}
             onChange={onSearchChange}
-            className="bg-transparent w-full placeholder:text-gray-600 outline-0 text-white"
+            className="bg-transparent w-full placeholder:text-gray-600 outline-0 text-white focus:outline-none"
         />
     </div>
 );
 
 const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos, groups }: UserGroupListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
-        <div className="bg-slate-950 rounded-2xl h-full overflow-y-auto">
+        <div className="bg-transparent  h-full overflow-y-auto">
             {!loading ? (
-                <div className="flex flex-col justify-evenly">
-                    <button
-                        onClick={() => navigate('/create-group')}
-                        className="flex border-0 mt-4 btn mx-auto bg-blue-500 text-white hover:bg-blue-700 ">
-                        Create new group
-                    </button>
-                    <GroupContent
-                        groups={groups}
-                        socket={socket}
-                        images={imageLoaded}
-                        photos={photos}
-                        serverUrl={serverUrl}
-                    />
-                    <FriendContent
-                        unreads={currentUser?.unreads}
-                        initialFriends={filteredUsers}
-                        onlineUsers={onlineUsers}
-                        typingUsers={typingUsers}
-                        socket={socket}
-                        setUnreads={handleSetUnreads}
-                        serverUrl={serverUrl}
-                        images={imageLoaded}
-                        photos={photos}
-                    />
+                <div className="flex flex-col justify-center h-full w-full gap-y-12 ">
+                    <div className="rounded-2xl bg-slate-950 h-1/2 w-full overflow-y-auto shadow-lg shadow-blue-500">
+                        <div className="mt-4 flex w-full justify-between  items-center px-10">
+                            <div className="text-2xl font-bold text-slate-300">
+                                Groups
+                            </div>
+                            <button
+                                onClick={() => navigate('/create-group')}
+                                className="rounded-lg btn text-white ">
+                                ➕ New
+                            </button>
+                        </div>
+                        <GroupContent
+                            groups={groups}
+                            socket={socket}
+                            images={imageLoaded}
+                            photos={photos}
+                            serverUrl={serverUrl}
+                        />
+                    </div>
+                    <div className="rounded-3xl bg-slate-950 h-1/2 w-full overflow-y-auto shadow-lg shadow-blue-500">
+                        <div className="mt-4 px-10 text-2xl font-bold text-slate-300 ">
+                            Friends
+                        </div>
+                        <FriendContent
+                            unreads={currentUser?.unreads}
+                            initialFriends={filteredUsers}
+                            onlineUsers={onlineUsers}
+                            typingUsers={typingUsers}
+                            socket={socket}
+                            setUnreads={handleSetUnreads}
+                            serverUrl={serverUrl}
+                            images={imageLoaded}
+                            photos={photos}
+                        />
+                    </div>
                 </div>
             ) : (
                 <div className="flex justify-center items-center h-full text-white text-lg">

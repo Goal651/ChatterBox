@@ -5,6 +5,8 @@ import messageController from '../controller/MessageController'
 import auth from '../auth/AuthController'
 import mediaController from '../controller/MultimediaController'
 import webPusherController from '../controller/WebPusherController'
+import notificationController from '../controller/NotificationController'
+
 const router = express.Router()
 
 //Authentication
@@ -21,7 +23,7 @@ router.get('/getUsers', auth.checkToken, userController.getUsers)
 router.post('/signup', userController.signup)
 router.put('/editUser/', auth.checkToken, userController.updateUser)
 router.put('/editUserPassword', auth.checkToken, userController.editUserPassword)
-router.put('/editUserProfilePicture',auth.checkToken,userController.editUserProfilePicture)
+router.put('/editUserProfilePicture', auth.checkToken, userController.editUserProfilePicture)
 
 //apis for groups
 router.get('/getGroups', auth.checkToken, groupController.getGroups);
@@ -40,7 +42,9 @@ router.post('/uploadFile', auth.checkToken, mediaController.fileUpload)
 router.get('/getFile/:fileName', auth.checkToken, mediaController.sendFile)
 
 //apis for pusher
-router.post('/webPusher/subscribe', auth.checkToken,webPusherController.webPusherController)
+router.post('/webPusher/subscribe', auth.checkToken, webPusherController.webPusherController)
 
+//apis for notifications
+router.get('/getNotifications', auth.checkToken, notificationController.getNotification)
 
 export default router;

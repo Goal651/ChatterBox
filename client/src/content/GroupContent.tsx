@@ -1,12 +1,11 @@
 import { useNavigate } from "react-router-dom"
-import { GroupContentProps } from "../interfaces/interfaces"
+import { GroupContentProps, User } from "../interfaces/interfaces"
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview"
-
-
-
 
 export default function GroupContent({ groups, socket, images, serverUrl, photos }: GroupContentProps) {
     const navigate = useNavigate()
+    const currentUserData = sessionStorage.getItem('currentUser')
+    const currentUser: User = JSON.parse(currentUserData || '{}')
     const handleOnClick = (data: string) => {
         if (socket) socket.emit('connectGroup', { groupId: data })
         navigate('/group/' + data)
@@ -33,12 +32,20 @@ export default function GroupContent({ groups, socket, images, serverUrl, photos
                             <div>
                                 <div className="text-white font-semibold text-lg">{group.groupName}</div>
                                 <div className="text-gray-400">
-                                    {group.latestMessage ? '' : 'Say hey to your new group'}
+                                    {group.latestMessage ? (<span className="flex gap-x-2">
+                                        <span className="font-semibold text-blue-700">
+                                            {group.latestMessage.sender._id === currentUser._id ? 'you' : group.latestMessage.sender.username}
+                                        </span>
+                                        <span>
+                                            {group.latestMessage.message}
+                                        </span>
+                                    </span>)
+                                        : 'Say hey to your new group'}
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <div>{group.latestMessage ? group.latestMessage.createdAt.toISOString() : ''}</div>
+                            <div>{group.latestMessage ? new Date(group.latestMessage.createdAt).toLocaleTimeString() : ''}</div>
                         </div>
                     </div>
                 </div>
