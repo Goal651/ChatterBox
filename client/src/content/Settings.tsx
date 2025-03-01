@@ -138,7 +138,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
                                     loadedImage={loadedImage}
                                     photos={photos}
                                     username={profileData.username}
-                                    bgColor="bg-slate-950"
+                                    textSize="text-2xl"
                                     />
                             </div>
                         </div>

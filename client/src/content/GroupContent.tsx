@@ -43,6 +43,7 @@ export default function GroupContent({ groups, socket, images, serverUrl, photos
                                     loadedImage={images}
                                     photos={photos}
                                     username={group.groupName}
+                                    textSize="text-2xl"
                                 />
 
                             </div>
