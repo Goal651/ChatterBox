@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads, serverUrl, images, photos }: FriendContentProps) {
+export default function FriendContent({ initialFriends, unreads, onlineUsers, typingUsers, socket, setUnreads, serverUrl, images, photos, loading }: FriendContentProps) {
     const navigate = useNavigate();
     const [friends, setFriends] = useState(initialFriends)
     const [unreadMessages, setUnreadMessages] = useState(unreads)
@@ -59,7 +59,23 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
             );
         }
     };
-    if (friends.length <= 0) return null
+
+
+    if (loading) return (
+        <div className="h-full flex justify-center pt-20">
+            <div className=" text-center font-bold text-gray-500 text-3xl">
+                <span className="loading loading-ring loading-lg" />
+            </div>
+        </div>
+    )
+    if (friends.length <= 0) return (
+        <div className="h-full flex justify-center pt-20">
+            <div className=" text-center font-bold text-gray-500 text-xl">
+                No friends available
+            </div>
+        </div>
+
+    )
 
     return (
         <div className="bg-transparent p-4 flex flex-col space-y-4  overflow-x-hidden">
@@ -74,7 +90,10 @@ export default function FriendContent({ initialFriends, unreads, onlineUsers, ty
                                             profilePicture={friend.image}
                                             serverUrl={serverUrl}
                                             loadedImage={images}
-                                            photos={photos} />
+                                            photos={photos} 
+                                            username={friend.username}
+                                            textSize="text-3xl"
+                                            />
 
                                     </div>
                                     {onlineUsers.includes(friend._id) && (

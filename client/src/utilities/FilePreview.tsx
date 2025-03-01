@@ -94,8 +94,8 @@ export default function FilePreview({ files, serverUrl, mediaType }: FilePreview
                 <audio
                     key={index}
                     src={file}
-                    controls
-                    className={`h-10 cursor-pointer ${mediaType.isMobile ? "w-60" : "w-80"} w-full`}
+                    controls             
+                    className={`h-10 cursor-pointer bg-slate-900  min-w-full `}
                     onClick={() => openModal(index)}
                 />
             );

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from "react";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 
 
-export default function GroupMessages({ messages, mediaType, serverUrl,photos,images }: GroupMessagesProps) {
+export default function GroupMessages({ messages, mediaType, serverUrl, photos, images }: GroupMessagesProps) {
     const { componentId } = useParams()
     const endMessageRef = useRef<HTMLDivElement | null>(null);
     const currentUserData = sessionStorage.getItem('currentUser')
@@ -38,7 +38,8 @@ export default function GroupMessages({ messages, mediaType, serverUrl,photos,im
                                                 serverUrl={serverUrl}
                                                 loadedImage={images}
                                                 photos={photos}
-                                                />
+                                                username={message.sender.username}
+                                            />
                                         </div>
                                     </div>
                                 )}

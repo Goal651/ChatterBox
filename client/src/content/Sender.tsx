@@ -170,8 +170,8 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
                     <button className="btn btn-error text-white  w-14" onClick={() => setRecordedAudio(null)}>cancel</button>
                 </div>
             ) : (
-                <div className=" bg-slate-700 w-4/6 sm:w-5/6 lg:w-full p-4 rounded-lg space-y-4">
-                    <form onSubmit={sendMessage} className="flex space-x-4">
+                <div className=" bg-slate-800 w-4/6 sm:w-5/6 lg:w-full p-4 rounded-lg space-y-4">
+                    <form onSubmit={sendMessage} className="flex space-x-4  bg-slate-800 items-center">
                         <div>
                             <label className="cursor-pointer"
                                 htmlFor="fileInput">
@@ -192,7 +192,7 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
                             placeholder="message..."
                             onChange={handleChange}
                             value={message}
-                            className="bg-transparent w-full placeholder:text-gray-400 outline-0 text-white focus:outline-none"
+                            className=" input input-ghost focus:bg-slate-800  w-full placeholder:text-gray-400 outline-0 text-white focus:outline-none"
                         />
                         <div className="flex space-x-4">
                             <FaFaceLaugh
@@ -217,21 +217,21 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
                     </div>
                 </div>
             )}
-            <div className="flex items-center w-1/6 md:w-fit">
+            <div className="flex items-center w-1/6 md:w-fit ">
                 {isUploading ? (
                     <button
                         onClick={sendMessage}
-                        className="btn bg-blue-500 border-0 flex items-center">
+                        className="btn bg-blue-500 border-0 flex items-center ">
                         <div className=" text-xl text-black loading loading-spinner" />
                     </button>
                 ) : (message || fileData || recordedAudio ? (
                     <button
                         onClick={sendMessage}
-                        className="btn bg-blue-500 border-0 flex items-center">
+                        className="btn bg-blue-500 border-0 flex items-center py-10 px-auto">
                         <FaPaperPlane className="text-xl text-black" />
                     </button>
                 ) : (
-                    <div className="btn bg-blue-500 border-0 flex items-center">
+                    <div className="btn bg-blue-500 border-0 flex items-center py-10 px-auto">
                         <AudioRecorder
                             onRecordingComplete={handleVoiceRecorded}
                         />

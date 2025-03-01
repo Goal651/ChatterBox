@@ -36,14 +36,13 @@ export interface Group {
     groupName: string;
     image: string
     description: string;
-    members: User[];
-    admins: User[];
+    members: [{
+        member: User,
+        role: string
+    }];
     messages: Message[];
     createdTime: Date;
     latestMessage: GroupMessage | null;
-    aesKey: string,
-    iv: string,
-    encryptedPrivateKey: string
 }
 
 
@@ -189,9 +188,11 @@ export interface FriendContentProps {
     setUnreads: (data: Message[]) => void
     images: (data: Photos) => void
     photos: Photos[]
+    loading: boolean
 }
 
 export interface GroupContentProps {
+    loading: boolean
     groups: Group[];
     socket: Socket,
     serverUrl: string
@@ -203,7 +204,7 @@ export interface MessageProps {
     component: GroupUser
     serverUrl: string;
     sentMessages: Message | null;
-    sentGroupMessage:  GroupMessage | null;
+    sentGroupMessage: GroupMessage | null;
     socketMessage: { sentMessage: Message; messageId: string | number } | null;
     socket: Socket;
     mediaType: {

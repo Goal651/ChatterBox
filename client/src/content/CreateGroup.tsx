@@ -1,85 +1,84 @@
-import * as iconsFa from "react-icons/fa";
-import { CreateGroupProps, User } from "../interfaces/interfaces";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { createGroup } from "../api/GroupApi";
-import axios from "axios";
+import * as iconsFa from "react-icons/fa"
+import { CreateGroupProps, User } from "../interfaces/interfaces"
+import { useNavigate } from "react-router-dom"
+import { useState } from "react"
+import { createGroup } from "../api/GroupApi"
+import axios from "axios"
 
 
 export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [groupName, setGroupName] = useState("");
-    const [groupDescription, setGroupDescription] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
-    const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
-    const [groupNameError, setGroupNameError] = useState(false);
-    const [membersError, setMembersError] = useState(false);
+    const navigate = useNavigate()
+    const [loading, setLoading] = useState(false)
+    const [groupName, setGroupName] = useState("")
+    const [groupDescription, setGroupDescription] = useState("")
+    const [searchTerm, setSearchTerm] = useState("")
+    const [selectedMembers, setSelectedMembers] = useState<User[]>([])
+    const [groupNameError, setGroupNameError] = useState(false)
 
     const checkInputs = () => {
-        let hasError = false;
+        let hasError = false
         if (!groupName) {
-            setGroupNameError(true);
-            hasError = true;
-        } else setGroupNameError(false);
+            setGroupNameError(true)
+            hasError = true
+        } else {
+            setGroupNameError(false)
+        }
+        return !hasError // Return false if there's an error
+    }
 
-        if (selectedMembers.length === 0) {
-            setMembersError(true);
-            hasError = true;
-        } else setMembersError(false);
-
-        if (hasError) return;
-
-    };
 
     const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setGroupName(e.target.value);
-        if (e.target.value.trim()) setGroupNameError(false);
-    };
+        setGroupName(e.target.value)
+        if (e.target.value.trim()) setGroupNameError(false)
+    }
 
     const handleGroupDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setGroupDescription(e.target.value);
-    };
+        setGroupDescription(e.target.value)
+    }
 
     const toggleMemberSelection = (member: User) => {
-        if (selectedMembers.find((m) => m._id === member._id)) setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id));
-        else setSelectedMembers([...selectedMembers, member]);
+        if (selectedMembers.find((m) => m._id === member._id)) setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id))
+        else setSelectedMembers([...selectedMembers, member])
 
-        if (selectedMembers.length > 0) setMembersError(false);
-    };
+    }
 
     const filteredUserList = userList.filter(
         (user) =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
 
 
     const handleCreateGroup = async () => {
+        if (!checkInputs()) {
+            console.log("error")
+            return
+        }
+
         try {
-            checkInputs();
+
             const groupData = {
                 groupName,
                 description: groupDescription,
-                members: selectedMembers.map((member) => member._id),
+                members: selectedMembers ? selectedMembers.map((member) => member._id) : [],
             }
-            if (groupName && selectedMembers.length > 0) {
-                setLoading(true);
-                const response = await createGroup(serverUrl, groupData);
-                if (response.status === 200) {
+            if (groupName) {
+                setLoading(true)
+                const response = await createGroup(serverUrl, groupData)
+                if (response.status === 201) {
                     setLoading(false)
                 }
             }
         } catch (error) {
-            setLoading(false);
+            setLoading(false)
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
-                    navigate("/no-internet");
-                    return;
+                    navigate("/no-internet")
+                    return
                 }
             }
         }
-    };
+    }
 
     return (
         <div className="w-full flex flex-col items-center p-6 space-y-6 bg-black h-full rounded-2xl overflow-y-auto overflow-x-hidden">
@@ -135,8 +134,7 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                     </div>
                     <div className="text-sm text-gray-500">Available Members:</div>
                     <div
-                        className={`max-h-40 overflow-y-auto space-y-2 border ${membersError ? "border-red-500" : "border-gray-700"
-                            } rounded-md p-2`}
+                        className={`max-h-40 overflow-y-auto space-y-2 border border-gray-700 rounded-md p-2`}
                     >
                         {filteredUserList.map((user) => (
                             <div
@@ -175,5 +173,5 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 </button>
             </div>
         </div>
-    );
+    )
 }

@@ -136,7 +136,10 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
                                     profilePicture={profileData.profilePicture}
                                     serverUrl={serverUrl}
                                     loadedImage={loadedImage}
-                                    photos={photos} />
+                                    photos={photos}
+                                    username={profileData.username}
+                                    bgColor="bg-slate-950"
+                                    />
                             </div>
                         </div>
                         <div>

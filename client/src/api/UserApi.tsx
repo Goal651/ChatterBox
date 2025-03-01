@@ -35,7 +35,7 @@ export async function getUsersApi(serverUrl: string) {
         }
     });
     const data = response.data
-    const users: User[] | [] = data.users
+    const users: User[]  = data.users
     return users
 }
 

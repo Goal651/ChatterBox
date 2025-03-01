@@ -62,4 +62,11 @@ export async function createGroup(serverUrl: string, groupData: {
     return response;
 }
 
-
+export async function updateGroup(serverUrl: string, group: string, groupData: object) {
+    const response = await axios.put(serverUrl + '/updateGroup/' + group, groupData, {
+        headers: {
+            accesstoken: localStorage.getItem('token'),
+        }
+    });
+    return response;
+}

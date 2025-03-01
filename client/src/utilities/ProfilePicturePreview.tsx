@@ -9,18 +9,19 @@ import { editUserProfilePicture } from "../api/UserApi";
 Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
-    profilePicture?: string; 
+    profilePicture?: string;
     serverUrl: string;
     loadedImage: (data: Photos) => void
     photos: Photos[]
+    username: string
+    textSize: string
 }
 
-export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos }: ProfilePicturePreviewProps) {
-    const [imageSrc, setImageSrc] = useState<string>("/image.png");
-    const [error, setError] = useState<string>("");
+export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos, username, textSize }: ProfilePicturePreviewProps) {
+    const [imageSrc, setImageSrc] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
-    const [previewSrc, setPreviewSrc] = useState<string>(""); // Preview of new image
+    const [previewSrc, setPreviewSrc] = useState<string>("");
     const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null);
     const [allowedToEdit, setAllowedToEdit] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -42,11 +43,10 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                         photo: response.file
                     }
                     loadedImage(newProfilePic)
-                } else setImageSrc("/image.png");
+                }
 
             } catch (err) {
                 console.error("Error", err);
-                setImageSrc("/image.png");
             }
         };
 
@@ -91,7 +91,6 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                 }
             } catch (err) {
                 console.error("Error uploading profile picture:", err);
-                setError("Failed to save profile picture.");
             } finally {
                 resetEditingState();
                 setIsSubmitting(false);
@@ -100,9 +99,13 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
     };
 
     return (
-        <div className="w-full h-full">
-            {error ? (
-                <div className="text-red-500">{error}</div>
+        <div className="w-full h-full ">
+            {!imageSrc ? (<div onClick={openModal}
+                className={`w-full h-full  rounded-full cursor-pointer flex justify-center items-center bg-slate-800 `}>
+                <div className={`font-extrabold  text-slate-200 ${textSize}`}>
+                    {username.slice(0, 1).toUpperCase()}
+                </div>
+            </div>
             ) : (
                 <img
                     src={imageSrc}
@@ -126,11 +129,21 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                     Close
                 </button>
                 <div className="flex flex-col items-center justify-center">
-                    <img
-                        src={previewSrc || imageSrc} // Show preview if available, else current image
-                        alt="Profile Large"
-                        className="w-auto max-w-96 max-h-96 rounded-lg mb-4"
-                    />
+
+                    {!imageSrc ? (<div onClick={openModal}
+                        className={`w-96 h-96 rounded-lg mb-4 bg-slate-800 flex items-center justify-center`}>
+                        <div className="font-extrabold text-blue-800 text-9xl">
+                            {username.slice(0, 1).toUpperCase()}
+                        </div>
+                    </div>
+                    ) : (
+                        <img
+                            src={previewSrc || imageSrc}
+                            alt="Profile Large"
+                            className="w-auto max-w-96 max-h-96 rounded-lg mb-4"
+                        />
+                    )}
+
                     {allowedToEdit && (
                         !isEditing ? (
                             <button

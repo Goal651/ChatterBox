@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { GroupContentProps, User } from "../interfaces/interfaces"
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview"
 
-export default function GroupContent({ groups, socket, images, serverUrl, photos }: GroupContentProps) {
+export default function GroupContent({ groups, socket, images, serverUrl, photos, loading }: GroupContentProps) {
     const navigate = useNavigate()
     const currentUserData = sessionStorage.getItem('currentUser')
     const currentUser: User = JSON.parse(currentUserData || '{}')
@@ -11,7 +11,22 @@ export default function GroupContent({ groups, socket, images, serverUrl, photos
         navigate('/group/' + data)
     }
 
-    if (groups.length <= 0) return null
+    if (loading) return (
+        <div className="h-full flex justify-center pt-20">
+            <div className=" text-center font-bold text-gray-500 text-xl">
+                <span className="loading loading-ring loading-lg" />
+            </div>
+        </div>
+    )
+
+    if (groups.length <= 0) return (
+        <div className="h-full flex justify-center pt-20">
+            <div className=" text-center font-bold text-gray-500 text-xl">
+                No groups available
+            </div>
+        </div>
+
+    )
     return (
         groups.map(group => (
             <div
@@ -26,7 +41,9 @@ export default function GroupContent({ groups, socket, images, serverUrl, photos
                                     profilePicture={group.image}
                                     serverUrl={serverUrl}
                                     loadedImage={images}
-                                    photos={photos} />
+                                    photos={photos}
+                                    username={group.groupName}
+                                />
 
                             </div>
                             <div>
