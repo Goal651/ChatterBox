@@ -3,7 +3,6 @@ import validator from '../validator/validator';
 import model from '../model/model';
 import { User, Group, GroupMember } from '../interface/interface'
 import keyController from '../security/KeysController'
-import { models } from 'mongoose';
 
 
 const groupDetails = async (group: string) => {
@@ -43,9 +42,9 @@ const createGroup = async (req: Request, res: Response) => {
             res.status(400).json({ message: 'Group name is already taken' });
             return;
         }
-
-        const uniqueMembers = new Set(members);
         members.push(userId)
+        const uniqueMembers = new Set(members);
+
 
         const membersToBeSaved = Array.from(uniqueMembers).map((member) => ({
             member,
@@ -88,10 +87,11 @@ const getGroups = async (req: Request, res: Response) => {
             .select('groups')
             .populate({
                 path: 'groups',
-                select: 'groupName image members',
+                select: 'groupName image members description',
                 populate: {
                     path: 'members.member',
                     select: 'username email image',
+                    model: 'User'
                 }
             })
         const groups = user?.toObject().groups as unknown as Group[]
@@ -140,19 +140,6 @@ const getGroup = async (req: Request, res: Response) => {
             res.status(400).json({ message: 'Group not found' })
         }
         const details = await groupDetails(group.groupName)
-        const members = groupMembers.map(async (member) => {
-            if (!member) return null
-            return {
-                id: member.member._id,
-                username: member.member.username,
-                names: member.member.names,
-                email: member.member.email,
-                image: member.member.image,
-                role: member.role,
-            }
-        }) as unknown[] as User[];
-
-
 
         const groupObject = {
             id: group._id,
@@ -167,7 +154,7 @@ const getGroup = async (req: Request, res: Response) => {
     }
 };
 
-const updateGroup = async (req: Request, res: Response) => {
+const updateGroupPhoto = async (req: Request, res: Response) => {
     try {
         const { group } = req.params
         const filePath = req.body as string
@@ -222,6 +209,50 @@ const addMember = async (req: Request, res: Response) => {
     }
 };
 
+const updateGroup = async (req: Request, res: Response) => {
+    try {
+        const { groupId } = req.params;
+        const { groupName, description, members } = req.body as { groupName: string; description: string; members: string[] };
+
+        // Fetch the existing group to get current members
+        const group = await model.Group.findById(groupId);
+
+        if (!group) {
+            
+            res.status(404).json({ message: 'Group not found' });
+            return
+        }
+
+        // Merge new members with existing members if not already present
+        const newMembers = members.map((member) => ({
+            member,
+            role: 'member'
+        }));
+
+        // Add new members to the group while preserving existing ones
+        const updatedMembers = [
+            ...group.members, 
+            ...newMembers.filter(newMember => !group.members.some(existing => existing.member.toString() === newMember.member.toString()))
+        ];
+
+        // Update the group with new members
+        await model.Group.updateOne(
+            { _id: groupId },
+            { groupName, description, members: updatedMembers }
+        );
+
+        // Add the group to the new users
+        await model.User.updateMany(
+            { _id: { $in: members } },
+            { $addToSet: { groups: groupId } }
+        );
+
+        res.status(200).json({ message: 'Group updated successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Server error', err });
+    }
+};
+
 
 const ping = async (req: Request, res: Response) => {
     res.status(204).send()
@@ -233,7 +264,8 @@ export default {
     getGroups,
     getGroup,
     createGroup,
-    updateGroup,
+    updateGroupPhoto,
     addMember,
+    updateGroup,
     ping
 };
