@@ -116,7 +116,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
             )}
 
             {/* Profile Settings */}
-            <div className="w-full max-w-md bg-slate-800 p-4 rounded-lg shadow-md">
+            <div className="w-full max-w-md bg-slate-900 p-4 rounded-lg shadow-md">
                 <div
                     className="text-xl font-semibold text-gray-700 mb-4 flex items-center cursor-pointer"
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -198,7 +198,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
             </div>
 
             {/* Account Settings */}
-            <div className="w-full max-w-md bg-slate-800 p-4 rounded-lg shadow-md">
+            <div className="w-full max-w-md bg-slate-900 p-4 rounded-lg shadow-md">
                 <div
                     className="text-xl font-semibold text-gray-700 mb-4 flex items-center cursor-pointer"
                     onClick={() => setIsAccountOpen(!isAccountOpen)}
