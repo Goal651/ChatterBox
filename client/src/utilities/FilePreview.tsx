@@ -19,7 +19,7 @@ interface FilePreviewProps {
     }
 }
 
-export default function FilePreview({ files, serverUrl, mediaType }: FilePreviewProps) {
+export default function FilePreview({ files, serverUrl,  }: FilePreviewProps) {
     const [filePreviews, setFilePreviews] = useState<FilePreviewData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");

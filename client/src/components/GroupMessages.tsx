@@ -35,6 +35,7 @@ export default function GroupMessages({ messages, mediaType, serverUrl, photos, 
                                         <div className="w-12 h-12">
                                             <ProfilePicturePreview
                                                 profilePicture={message.sender.image}
+                                                textSize="text-2xl"
                                                 serverUrl={serverUrl}
                                                 loadedImage={images}
                                                 photos={photos}

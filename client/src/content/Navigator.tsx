@@ -61,7 +61,10 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
 
             <div className={`flex   space-y-2 flex-col w-full`}>
                 <button
-                    onClick={() => document.getElementById('my_modal_5')?.showModal()}
+                    onClick={() => {
+                        const modal = document.getElementById('my_modal_5') as HTMLDialogElement;
+                        modal?.showModal();
+                    }}
                     className="flex  space-x-4 cursor-pointer"
                 >
                     <div className="w-8 h-8">
