@@ -70,7 +70,7 @@ const createGroup = async (req: Request, res: Response) => {
             { $addToSet: { groups: newGroup._id } }
         )
 
-        res.status(201).json({ message: 'Group created successfully', groupId: newGroup._id });
+        res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
     } catch (err) {
         res.status(500).json({ message: `Server error: ${err}` });
         console.error(err)
