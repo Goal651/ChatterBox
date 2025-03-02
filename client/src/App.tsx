@@ -15,7 +15,7 @@ const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
 
 
-//https://chatterbox-production-bb1f.up.railway.app/
+//https://chatterbox-production-b137.up.railway.app
 export default function App() {
 
   const deviceType = {
