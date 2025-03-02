@@ -84,7 +84,7 @@ const createGroup = async (req: Request, res: Response) => {
 
     } catch (err) {
         console.error('Error creating group:', err);
-        return res.status(500).json({ message: 'An internal server error occurred' });
+        res.status(500).json({ message: 'An internal server error occurred' });
     }
 };
 
