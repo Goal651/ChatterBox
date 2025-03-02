@@ -55,7 +55,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 setLoading(false)
             }
             catch (err) {
-                console.log("Error fetching initial data:", err);
+                console.error("Error fetching initial data:", err);
             }
         }
         fetchInitialData()
@@ -93,7 +93,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
         const handleReceiveGroupMessage = ({ message, groupName, senderName }: { message: GroupMessage, groupName: string, senderName: string }) => {
             if (!message) return
-            console.log(message, groupName)
             Notifier({ from: senderName, message: message.message, users, title: groupName })
         }
 

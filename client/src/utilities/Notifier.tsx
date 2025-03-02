@@ -18,10 +18,6 @@ export default function Notifier(data: NotifierProps) {
                 },
             )
             notification.onclick = () => window.focus();
-       } else if (result === 'denied') {
-            console.log('Notification permission denied');
-        } else if (result === 'default') {
-            console.log('Notification permission default');
-        }
+       }
     });
 }

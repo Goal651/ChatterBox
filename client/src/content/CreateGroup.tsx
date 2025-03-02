@@ -51,7 +51,7 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
 
     const handleCreateGroup = async () => {
         if (!checkInputs()) {
-            console.log("error")
+            console.error("error")
             return
         }
 

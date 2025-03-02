@@ -44,7 +44,6 @@ const CallComponent: React.FC<CallComponentProps> = ({ users, isVideoCall, socke
 
     useEffect(() => {
         const userData = users.find((user) => user._id === friendId);
-        console.log(userData)
         if (userData) setCallingUser(userData.username);
     }, [users, friendId]);
 

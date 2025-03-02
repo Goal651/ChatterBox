@@ -26,7 +26,6 @@ const webPusherController = async (req: Request, res: Response) => {
 const sendDataToWebPush = async (to: string, message: object) => {
     const subscription = await model.Subscription.findOne({ userId: to });
     if (!subscription) {
-        console.log('No subscription found');
         return;
     }
     webPush.sendNotification(subscription.subscription, JSON.stringify(message));

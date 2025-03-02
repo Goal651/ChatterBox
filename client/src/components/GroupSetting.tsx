@@ -55,7 +55,6 @@ export default function GroupSetting({ groups, users, serverUrl }: { groups: Gro
         e.preventDefault();
         try {
             const newMembersIds = newMembers.map(user => user._id);
-            console.log(newMembersIds)
             const response = await updateGroup(serverUrl, componentId, { groupName, description, members: newMembersIds });
             if (response.status === 200) {
                 const newMember = [...members, ...newMembers.map(user => ({ member: user, role: 'member' }))];

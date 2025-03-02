@@ -96,10 +96,9 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
             handleNotification("Password updated successfully!", "success");
             setIsSubmittingPassword(false);
         } catch (error) {
-            handleNotification("Failed to update password.", "error");
+            handleNotification("Failed to update password.","error");
             setIsSubmittingPassword(false);
-            console.log(error);
-        }
+            console.error(error);}
     };
 
     return (

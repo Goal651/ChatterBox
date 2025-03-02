@@ -25,8 +25,6 @@ export default function UserMessages({ messages, mediaType, serverUrl }: UserMes
 
     useEffect(() => {
         scrollBottom();
-        console.log(messages)
-
     }, [messages, componentId, scrollBottom]);
 
 

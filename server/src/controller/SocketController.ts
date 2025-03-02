@@ -61,9 +61,7 @@ const SocketController = (io: Server) => {
 
             if (userSockets[receiverId]) {
                 emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer, isVideoCall: isVideoCall })
-            } else {
-                console.log(`User ${receiverId} is not online.`)
-            }
+            } 
         })
 
         // Handle call acceptance
@@ -97,7 +95,6 @@ const SocketController = (io: Server) => {
             try {
                 const { receiverId, message, messageType, messageId } = data
                 const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
-                console.log(senderUserName)
                 const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
 
                 const newMessage = new model.Message({

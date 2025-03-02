@@ -53,7 +53,7 @@ const AudioWave = (data: AudioWaveProps) => {
             reader.readAsArrayBuffer(data.audio);
         
         }
-        console.log(data.audio)
+      
         // Cleanup on unmount
         return () => {
             if (audioContextRef.current) {
