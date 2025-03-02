@@ -28,8 +28,8 @@ const createGroup = async (req: Request, res: Response) => {
         // Validate request body
         const { error, value } = validator.groupCreationSchema.validate(req.body);
         if (error) {
-             res.status(400).json({ message: error.details[0].message });
-             return
+            res.status(400).json({ message: error.details[0].message });
+            return
         }
 
         const { groupName, description, members } = value as {
@@ -58,8 +58,8 @@ const createGroup = async (req: Request, res: Response) => {
         // Generate cryptographic keys
         const keys = keyController.generateGroupKeys();
         if (!keys || !keys.aesKey || !keys.iv || !keys.encryptedPrivateKey) {
-             res.status(500).json({ message: 'Failed to generate group encryption keys' });
-             return
+            res.status(500).json({ message: 'Failed to generate group encryption keys' });
+            return
         }
 
         // Create and save the new group
@@ -80,7 +80,7 @@ const createGroup = async (req: Request, res: Response) => {
             ),
         ]);
 
-      res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
+        res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
 
     } catch (err) {
         console.error('Error creating group:', err);
@@ -230,7 +230,7 @@ const updateGroup = async (req: Request, res: Response) => {
         const group = await model.Group.findById(groupId);
 
         if (!group) {
-            
+
             res.status(404).json({ message: 'Group not found' });
             return
         }
@@ -243,7 +243,7 @@ const updateGroup = async (req: Request, res: Response) => {
 
         // Add new members to the group while preserving existing ones
         const updatedMembers = [
-            ...group.members, 
+            ...group.members,
             ...newMembers.filter(newMember => !group.members.some(existing => existing.member.toString() === newMember.member.toString()))
         ];
 

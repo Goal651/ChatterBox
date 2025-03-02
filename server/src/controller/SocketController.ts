@@ -31,6 +31,10 @@ const SocketController = (io: Server) => {
         }
 
         const user = await models.User.findById(userId).select('groups')
+        if (!user) {
+            socket.disconnect()
+            return
+        }
 
         const userGroups: string[] = user.groups || []
 

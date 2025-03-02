@@ -43,9 +43,6 @@ export default function Login({ serverUrl, status }: LoginProps) {
     ref.current?.classList.remove("border-red-500", "focus:ring-red-500")
   }
 
-
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -70,14 +67,14 @@ export default function Login({ serverUrl, status }: LoginProps) {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-linear-to-r from-slate-950  via-slate-700  to-slate-950">
-      <div className="w-full max-w-md p-8 space-y-6 bg-slate-900 rounded-lg">
+      <div className="w-full max-w-lg  p-10 space-y-10 bg-slate-900 rounded-2xl">
         <h2 className="text-4xl font-bold text-center text-white">Login</h2>
         {errorMessage && (
-          <div className="alert alert-error text-white rounded  text-center w-full ">
+          <div className="alert alert-error bg-red-800 text-lg text-white rounded  text-center w-full ">
             {errorMessage}
           </div>
         )}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-y-5" >
           <div>
             <input
               className="input validator w-full rounded-lg input-lg bg-slate-800"
@@ -86,7 +83,7 @@ export default function Login({ serverUrl, status }: LoginProps) {
               placeholder="mail@site.com"
               onChange={handleInputChange}
             />
-            <div className="validator-hint">Enter valid email address</div>
+            <div className="validator-hint text-lg ">Enter valid email address</div>
           </div>
           <div>
 
@@ -100,17 +97,16 @@ export default function Login({ serverUrl, status }: LoginProps) {
               onChange={handleInputChange}
               className="w-full input validator rounded-lg input-lg bg-slate-800"
             />
-            <div className="validator-hint">Enter valid password</div>
-
+            <div className="validator-hint text-lg">Enter valid password</div>
           </div>
           <div className="flex flex-col gap-y-4 justify-center items-center w-full">
             <button
               type="submit"
-              className={`btn btn-wide btn-lg border-0 text-white bg-black rounded-md `}
+              className={`btn  btn-lg border-0 text-white btn-neutral rounded-2xl px-10 `}
             >
               {loading ? "Logging in..." : "Login"}
             </button>
-            <Link to="/signup" className="link link-info text-xl">
+            <Link to="/signup" className="link link-info text-lg link-hover">
               Don’t have an account? Sign Up
             </Link>
           </div>

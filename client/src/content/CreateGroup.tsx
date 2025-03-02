@@ -48,7 +48,6 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-
     const handleCreateGroup = async () => {
         if (!checkInputs()) {
             console.error("error")
@@ -56,7 +55,6 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
         }
 
         try {
-
             const groupData = {
                 groupName,
                 description: groupDescription,
@@ -65,8 +63,9 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
             if (groupName) {
                 setLoading(true)
                 const response = await createGroup(serverUrl, groupData)
-                if (response.status === 201) {
+                if (response.status === 200) {
                     setLoading(false)
+                    navigate("/group/" + response.data.groupId)
                 }
             }
         } catch (error) {
@@ -75,6 +74,9 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 if (!error.response) {
                     navigate("/no-internet")
                     return
+                }
+                if (error.response.status === 500) {
+                    console.error(error.response.data.message)
                 }
             }
         }

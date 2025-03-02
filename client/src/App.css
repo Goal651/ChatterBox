@@ -3,3 +3,7 @@
 body {
     font-family: 'Quicksand', sans-serif;
 }
+
+.custom-box-shadow {
+    box-shadow: 0 4px 6px rgba(5, 188, 255, 0.608);
+}

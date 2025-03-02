@@ -72,13 +72,11 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             updateUserMessage(message)
         }
 
-
         const handleReceivedMessage = ({ messageId }: { messageId: string }) => markMessageAsReceived(messageId)
         const handleSeenMessage = ({ messageId }: { messageId: string }) => markMessageAsSeen(messageId)
         const handleOnlineUsers = (users: string[]) => setOnlineUsers(users)
         const handleSentMessage = (data: { message: Message }) => updateUsers(data.message)
         const handleReceiveSentMessage = (data: Message) => updateUsers(data)
-
 
         const handleTypingUsers = (data: { typingUserId: string }) => {
             setTypingUsers(prev => {
@@ -386,8 +384,8 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string, onSea
 const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos, groups }: UserGroupListProps) => (
     <div className="w-full space-y-4 overflow-hidden h-full">
         <div className="bg-transparent  h-full overflow-y-auto">
-            <div className="flex flex-col justify-center h-full w-full gap-y-12 ">
-                <div className="rounded-2xl bg-slate-950 h-1/2 w-full overflow-y-auto shadow-lg shadow-blue-500">
+            <div className="flex flex-col justify-center h-full w-full gap-y-12 z-10 ">
+                <div className="rounded-2xl bg-slate-950 h-1/2 w-full overflow-y-auto ">
                     <div className="mt-4 flex w-full justify-between  items-center px-10">
                         <div className="text-2xl font-bold text-slate-300">
                             Groups
