@@ -28,7 +28,8 @@ const createGroup = async (req: Request, res: Response) => {
         // Validate request body
         const { error, value } = validator.groupCreationSchema.validate(req.body);
         if (error) {
-            return res.status(400).json({ message: error.details[0].message });
+             res.status(400).json({ message: error.details[0].message });
+             return
         }
 
         const { groupName, description, members } = value as {
@@ -41,7 +42,8 @@ const createGroup = async (req: Request, res: Response) => {
         // Check if group name is already taken
         const existingGroup = await model.Group.findOne({ groupName }).select('_id');
         if (existingGroup) {
-            return res.status(400).json({ message: 'Group name is already taken' });
+            res.status(400).json({ message: 'Group name is already taken' });
+            return
         }
 
         // Ensure the creator is in the group and remove duplicates
@@ -56,7 +58,8 @@ const createGroup = async (req: Request, res: Response) => {
         // Generate cryptographic keys
         const keys = keyController.generateGroupKeys();
         if (!keys || !keys.aesKey || !keys.iv || !keys.encryptedPrivateKey) {
-            return res.status(500).json({ message: 'Failed to generate group encryption keys' });
+             res.status(500).json({ message: 'Failed to generate group encryption keys' });
+             return
         }
 
         // Create and save the new group
@@ -77,7 +80,7 @@ const createGroup = async (req: Request, res: Response) => {
             ),
         ]);
 
-        return res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
+      res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
 
     } catch (err) {
         console.error('Error creating group:', err);
