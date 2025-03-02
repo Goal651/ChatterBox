@@ -23,11 +23,12 @@ const groupDetails = async (group: string) => {
 
 const createGroup = async (req: Request, res: Response) => {
     try {
-        const { userId } = res.locals.user
+        const { userId } = res.locals.user;
+
+        // Validate request body
         const { error, value } = validator.groupCreationSchema.validate(req.body);
         if (error) {
-            res.status(400).json({ message: error.details[0].message });
-            return;
+            return res.status(400).json({ message: error.details[0].message });
         }
 
         const { groupName, description, members } = value as {
@@ -37,45 +38,53 @@ const createGroup = async (req: Request, res: Response) => {
             members: string[];
         };
 
-        const existingGroup = await model.Group.findOne({ groupName: groupName });
+        // Check if group name is already taken
+        const existingGroup = await model.Group.findOne({ groupName }).select('_id');
         if (existingGroup) {
-            res.status(400).json({ message: 'Group name is already taken' });
-            return;
+            return res.status(400).json({ message: 'Group name is already taken' });
         }
-        members.push(userId)
-        const uniqueMembers = new Set(members);
 
+        // Ensure the creator is in the group and remove duplicates
+        const uniqueMembers = Array.from(new Set([...members, userId]));
 
-        const membersToBeSaved = Array.from(uniqueMembers).map((member) => ({
+        // Assign roles (admin for creator, member for others)
+        const membersToBeSaved = uniqueMembers.map((member) => ({
             member,
             role: member === userId ? 'admin' : 'member',
-        }))
+        }));
 
-        const { aesKey, encryptedPrivateKey, iv } = keyController.generateGroupKeys();
+        // Generate cryptographic keys
+        const keys = keyController.generateGroupKeys();
+        if (!keys || !keys.aesKey || !keys.iv || !keys.encryptedPrivateKey) {
+            return res.status(500).json({ message: 'Failed to generate group encryption keys' });
+        }
 
+        // Create and save the new group
         const newGroup = new model.Group({
-            groupName: groupName,
+            groupName,
             description,
             members: membersToBeSaved,
-            aesKey: aesKey.toString('hex'),
-            iv: iv.toString('hex'),
-            encryptedPrivateKey,
+            aesKey: keys.aesKey.toString('hex'),
+            iv: keys.iv.toString('hex'),
+            encryptedPrivateKey: keys.encryptedPrivateKey,
         });
 
-        await newGroup.save();
+        await Promise.all([
+            newGroup.save(),
+            model.User.updateMany(
+                { _id: { $in: uniqueMembers } },
+                { $addToSet: { groups: newGroup._id } }
+            ),
+        ]);
 
+        return res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
 
-        await model.User.updateMany(
-            { _id: { $in: members } },
-            { $addToSet: { groups: newGroup._id } }
-        )
-
-        res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
     } catch (err) {
-        res.status(500).json({ message: `Server error: ${err}` });
-        console.error(err)
+        console.error('Error creating group:', err);
+        return res.status(500).json({ message: 'An internal server error occurred' });
     }
-}
+};
+
 
 const getGroups = async (req: Request, res: Response) => {
     try {
