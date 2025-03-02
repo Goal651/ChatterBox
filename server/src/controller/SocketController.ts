@@ -25,9 +25,15 @@ const SocketController = (io: Server) => {
         }
 
         const userId: string = socket.data.user.userId
+        if (!userId) {
+            socket.disconnect()
+            return
+        }
 
         const user = await models.User.findById(userId).select('groups')
+
         const userGroups: string[] = user.groups || []
+
         userGroups.forEach(element => {
             socket.join(element.toString())
         })
@@ -90,8 +96,8 @@ const SocketController = (io: Server) => {
         socket.on('message', async (data: SentMessages) => {
             try {
                 const { receiverId, message, messageType, messageId } = data
-                const senderUserName = await model.User.findById(userId).select('username publicKey privateKey') as unknown as { username: string, publicKey: string }
-
+                const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
+                console.log(senderUserName)
                 const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
 
                 const newMessage = new model.Message({
@@ -113,7 +119,6 @@ const SocketController = (io: Server) => {
                 emitToUserSockets(userId, 'receiveSentMessage', sentMessage)
 
                 if (userSockets[receiverId]) {
-                    console.log(senderUserName.username)
                     emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username })
                     await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true })
                     io.to(socket.id).emit('messageReceived', { messageId: newMessage._id })
