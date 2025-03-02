@@ -32,12 +32,16 @@ const createGroup = async (req: Request, res: Response) => {
             return
         }
 
+        console.log("test coming data",value)
+
         const { groupName, description, members } = value as {
             groupName: string;
             image: string;
             description: string;
             members: string[];
         };
+
+
 
         // Check if group name is already taken
         const existingGroup = await model.Group.findOne({ groupName }).select('_id');
@@ -71,6 +75,9 @@ const createGroup = async (req: Request, res: Response) => {
             iv: keys.iv.toString('hex'),
             encryptedPrivateKey: keys.encryptedPrivateKey,
         });
+
+        console.log("test processed data",newGroup)
+
 
         await Promise.all([
             newGroup.save(),
