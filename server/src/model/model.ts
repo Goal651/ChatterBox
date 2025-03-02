@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const groupSchema = new mongoose.Schema({
-    groupName: { type: String, required: true, unique: true },
+    groupName: { type: String, required: true },
     image: { type: String, default: '' },
     members: [{
         member: {
