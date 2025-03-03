@@ -43,7 +43,7 @@ const signup = async (req: Request, res: Response) => {
             title: "Email Verification",
             email: email,
             name: names,
-            message: `Click <a href="http://localhost:5173/verify/${verificationToken}">here</a> to verify your email address.</p>`,
+            verificationToken
         }
         emailService.sendEmail(emailObject)
         await newUser.save();
@@ -75,8 +75,6 @@ const login = async (req: Request, res: Response) => {
             res.status(400).json({ message: 'Incorrect Password' })
             return
         };
-        
-        console.log(user)
 
         if (!user.isVerified) {
             res.status(400).json({ message: 'Email not verified check your inbox for verification link' })
