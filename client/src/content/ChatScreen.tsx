@@ -32,7 +32,7 @@ const ChatScreen = ({
     useEffect(() => {
         let result;
         if (sessionType == 'chat') result = users.find((user) => user._id === componentId) as GroupUser;
-        else if (sessionType == 'group') result = groups.find((group) => group._id === componentId)as unknown as GroupUser
+        else if (sessionType == 'group') result = groups.find((group) => group._id === componentId) as unknown as GroupUser
         if (result) {
             setComponent(result);
             sessionStorage.setItem("selectedUser", JSON.stringify(result));
@@ -40,7 +40,7 @@ const ChatScreen = ({
     }, [users, componentId, groups, sessionType]);
 
     const handleSentMessage = ({ message }: { message: Message }) => {
-        if (message) {
+        if (message && message.sender == componentId) {
             setMessage(message);
             sentMessage(message);
         }
@@ -145,7 +145,7 @@ const ChatScreen = ({
                             serverUrl={serverUrl}
                             loadedImage={loadedImage}
                             photos={photos}
-                            username={sessionType == 'chat' ? component.username||'U' : component.groupName || ''}
+                            username={sessionType == 'chat' ? component.username || 'U' : component.groupName || ''}
                             textSize="text-3xl"
                         />
                     </div>
@@ -169,8 +169,8 @@ const ChatScreen = ({
                     <FaVideo
                         onClick={handleVideoCall}
                         className="text-blue-500 w-6 h-6" />
-                    <FaEllipsisV className="text-blue-500 w-6 h-6" 
-                    onClick={()=>navigate('setting')}
+                    <FaEllipsisV className="text-blue-500 w-6 h-6"
+                        onClick={() => navigate('setting')}
                     />
                 </div>
             </div>
