@@ -6,7 +6,11 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import keyController from "../security/KeysController";
 import decryptionController from "../security/Decryption"
+import emailService from "../services/emailService";
 
+const generateVerificationToken = (userId: string) => {
+    return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: "1h" });
+};
 
 const signup = async (req: Request, res: Response) => {
     try {
@@ -34,6 +38,14 @@ const signup = async (req: Request, res: Response) => {
             publicKey,
             privateKey
         });
+        const verificationToken = generateVerificationToken(newUser._id.toString());
+        const emailObject = {
+            title: "Email Verification",
+            email: email,
+            name: names,
+            message: `Click <a href="http://localhost:5173/verify/${verificationToken}">here</a> to verify your email address.</p>`,
+        }
+        emailService.sendEmail(emailObject)
         await newUser.save();
         res.status(201).json({ message: 'Account created successfully' });
     } catch (err) {
@@ -51,16 +63,26 @@ const login = async (req: Request, res: Response) => {
             return
         }
         const { email, password } = value as User
-        const user = await model.User.findOne({ email: email }).select('email password');
+        const user = await model.User.findOne({ email: email }).select('email password isVerified');
         if (!user) {
             res.status(400).json({ message: 'Invalid email or password' })
             return
         };
+
+
         const validated = bcrypt.compareSync(password, user.password);
         if (!validated) {
-            res.status(400).json({ message: 'Invalid email or password' })
+            res.status(400).json({ message: 'Incorrect Password' })
             return
         };
+        
+        console.log(user)
+
+        if (!user.isVerified) {
+            res.status(400).json({ message: 'Email not verified check your inbox for verification link' })
+            return
+        }
+
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
         if (!accessToken) {
             res.status(500).json({ message: 'Internal server error' })

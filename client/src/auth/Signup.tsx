@@ -63,7 +63,7 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
         setIsLoading(true);
         try {
             const response = await axios.post(`${serverUrl}/signUp`, formData);
-            if (response.status === 201) navigate('/login');
+            if (response.status === 201) navigate('/email-sent');
         } catch (error) {
             if (axios.isAxiosError(error)) {
                 if (!error.response) {

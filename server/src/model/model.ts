@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
         ref: 'Message',
         default: []
     }],
-    activated: { type: Boolean, default: false },
+    isVerified: { type: Boolean, default: false },
     publicKey: { type: String, required: true },
     privateKey: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }

@@ -15,6 +15,7 @@ const SignUpPage = lazy(() => import('./auth/Signup'))
 const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
 const VerifyEmail = lazy(() => import('./auth/VerifyEmail'))
+const EmailSent = lazy(() => import('./auth/EmailSent'))
 
 //https://chatterbox-production-b137.up.railway.app
 export default function App() {
@@ -36,14 +37,17 @@ export default function App() {
       <Suspense fallback={<div><LoadingPage /></div>}>
         <Routes>
           <Route path="/" element={<Auth serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/:componentId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/:componentId/:setting" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-          <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-          <Route path="/verify-email" element={<VerifyEmail serverUrl={serverUrl} />} />
+          <Route path="/verify/:token" element={<VerifyEmail serverUrl={serverUrl} />} />
+          <Route path="/email-sent" element={<EmailSent />} />
           <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
           <Route path="/login" element={<LoginPage serverUrl={serverUrl} status={handleLogin} />} />
           <Route path='/signup' element={<SignUpPage serverUrl={serverUrl} />} />
           <Route path='/test' element={<FileUploaderTest />} />
+          <Route path="/:sessionType/:componentId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/:componentId/:setting" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
+          <Route path="/:sessionType/*" element={<PageNotFound/>} />
+
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>

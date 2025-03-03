@@ -1,20 +1,19 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
 const VerifyEmail = ({ serverUrl }: { serverUrl: string }) => {
-    const [searchParams] = useSearchParams();
+    const { token } = useParams();
     const [status, setStatus] = useState("Verifying...");
 
     useEffect(() => {
         const verifyEmail = async () => {
-            const token = searchParams.get("token");
             if (!token) {
                 setStatus("Invalid verification link");
                 return;
             }
             try {
-                const response = await axios.get(serverUrl + `/verify-email?token=${token}`);
+                const response = await axios.get(serverUrl + `/verifyEmail/${token}`);
                 setStatus(response.data.message);
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -23,13 +22,16 @@ const VerifyEmail = ({ serverUrl }: { serverUrl: string }) => {
             }
         };
         verifyEmail();
-    }, [searchParams]);
+    }, [token, serverUrl]);
 
     return (
-        <div className="flex items-center justify-center h-screen bg-gray-100">
-            <div className="p-6 bg-white shadow-lg rounded-lg">
-                <h2 className="text-xl font-semibold">Email Verification</h2>
-                <p className="mt-2 text-gray-600">{status}</p>
+        <div className="flex items-center justify-center h-screen bg-slate-800">
+            <div className="px-20 py-10 bg-slate-950 shadow-lg rounded-xl">
+                <h2 className="text-2xl font-semibold">Email Verification</h2>
+                <p className="text-lg mt-2 text-gray-600">{status}</p>
+                <div className="flex items-center justify-center mt-10">
+                    <Link to="/login" className="link link-hover text-xl text-center text-blue-500">Back To login</Link>
+                </div>
             </div>
         </div>
     );
