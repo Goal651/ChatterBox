@@ -8,6 +8,7 @@ interface NotifierProps {
 }
 
 export default function Notifier(data: NotifierProps) {
+    
     const { from, message } = data
     Notification.requestPermission().then((result) => {
         if (result === 'granted') {
@@ -17,7 +18,7 @@ export default function Notifier(data: NotifierProps) {
                     icon: '/AppIcon.png',
                 },
             )
-            notification.onclick = () => window.focus();
-       }
+            notification.onclick = () => window.focus()
+        }
     });
 }

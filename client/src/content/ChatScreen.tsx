@@ -40,10 +40,10 @@ const ChatScreen = ({
     }, [users, componentId, groups, sessionType]);
 
     const handleSentMessage = ({ message }: { message: Message }) => {
-        if (message && message.sender == componentId) {
-            setMessage(message);
-            sentMessage(message);
-        }
+
+        setMessage(message);
+        sentMessage(message);
+
     };
 
     const handleSentGroupMessage = ({ message }: { message: GroupMessage }) => {
