@@ -1,35 +1,36 @@
-import { Request, Response } from "express";
-import validator from "../validator/validator";
-import model from "../model/model";
-import { User } from "../interface/interface";
-import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import keyController from "../security/KeysController";
+import { Request, Response } from "express"
+import validator from "../validator/validator"
+import model from "../model/model"
+import { User } from "../interface/interface"
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+import keyController from "../security/KeysController"
 import decryptionController from "../security/Decryption"
-import emailService from "../services/emailService";
+import emailService from "../services/emailService"
 
 const generateVerificationToken = (userId: string) => {
-    return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: "1h" });
-};
+    return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: "1h" })
+}
 
 const signup = async (req: Request, res: Response) => {
     try {
-        const { error, value } = validator.registerSchema.validate(req.body);
+        const { error, value } = validator.registerSchema.validate(req.body)
         if (error) {
-            const errorMessages = error.details.map((err) => err.message);
-            res.status(400).json({ message: 'Validation failed', errors: errorMessages });
-            return;
+            const errorMessages = error.details.map((err) => err.message)
+            res.status(400).json({ message: 'Validation failed', errors: errorMessages })
+            return
         }
 
-        const { email, password, username, names } = value as User;
-        const existingUser = await model.User.findOne({ email }).select('username');
+        const { email, password, username, names } = value as User
+        const existingUser = await model.User.findOne({ email }).select('username')
         if (existingUser) {
             res.status(400).json({ message: "User exist" })
             return
-        };
-        const { publicKey, privateKey } = await keyController.generateKeyPair() as { publicKey: string, privateKey: string };
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(password, salt);
+        }
+
+        const { publicKey, privateKey } = await keyController.generateKeyPair() as { publicKey: string, privateKey: string }
+        const salt = await bcrypt.genSalt(10)
+        const hash = await bcrypt.hash(password, salt)
         const newUser = new model.User({
             email,
             password: hash,
@@ -37,8 +38,8 @@ const signup = async (req: Request, res: Response) => {
             names,
             publicKey,
             privateKey
-        });
-        const verificationToken = generateVerificationToken(newUser._id.toString());
+        })
+        const verificationToken = generateVerificationToken(newUser._id.toString())
         const emailObject = {
             title: "Email Verification",
             email: email,
@@ -46,47 +47,54 @@ const signup = async (req: Request, res: Response) => {
             verificationToken
         }
         emailService.sendEmail(emailObject)
-        await newUser.save();
-        res.status(201).json({ message: 'Account created successfully' });
+        await newUser.save()
+        res.status(200).json({ message: 'Account created successfully' })
     } catch (err) {
-        res.sendStatus(500);
-        console.error(err);
+        res.sendStatus(500)
+        console.error(err)
     }
-};
+}
 
 // User Login
 const login = async (req: Request, res: Response) => {
     try {
-        const { error, value } = validator.loginSchema.validate(req.body);
+        const { error, value } = validator.loginSchema.validate(req.body)
         if (error) {
             res.status(400).json({ message: error.details[0].message })
             return
         }
         const { email, password } = value as User
-        const user = await model.User.findOne({ email: email }).select('email password isVerified');
+        const user = await model.User.findOne({ email: email }).select('email names password isVerified')
         if (!user) {
             res.status(400).json({ message: 'Invalid email or password' })
             return
-        };
+        }
 
-
-        const validated = bcrypt.compareSync(password, user.password);
+        const validated = bcrypt.compareSync(password, user.password)
         if (!validated) {
             res.status(400).json({ message: 'Incorrect Password' })
             return
-        };
+        }
 
         if (!user.isVerified) {
+            const verificationToken = generateVerificationToken(user._id.toString());
+            const emailObject = {
+                title: "Email Verification",
+                email: email,
+                name: user.names,
+                verificationToken
+            }
+            emailService.sendEmail(emailObject)
             res.status(400).json({ message: 'Email not verified check your inbox for verification link' })
             return
         }
 
-        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });
+        const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' })
         if (!accessToken) {
             res.status(500).json({ message: 'Internal server error' })
             return
-        };
-        res.status(200).json({ accessToken });
+        }
+        res.status(200).json({ accessToken })
     } catch (err) {
         res.status(500).json({ message: 'Internal server error' })
         console.error(err)
@@ -95,7 +103,7 @@ const login = async (req: Request, res: Response) => {
 
 const getUsers = async (req: Request, res: Response) => {
     try {
-        const { userId } = res.locals.user as { userId: string };
+        const { userId } = res.locals.user as { userId: string }
         const page = req.headers['page'] as unknown as number || 0
         const numberOfUsersToSkip = 10 * page
         const users = await model.User.find({ _id: { $ne: userId } })
@@ -112,28 +120,30 @@ const getUsers = async (req: Request, res: Response) => {
                     ]
                 })
                     .sort({ createdAt: -1 })
-                    .exec();
+                    .exec()
+
                 if (latestMessage) {
                     const decryptedMessage = await decryptionController.decryptMessage(latestMessage.sender.toString(), latestMessage.message)
                     latestMessage.message = decryptedMessage
                 }
-                return {
-                    ...user.toObject(),  // Spread the user data
-                    latestMessage: latestMessage || null,  // Add the latest message data
-                };
-            })
-        );
 
-        res.status(200).json({ users: usersWithMessages });
+                return {
+                    ...user.toObject(), 
+                    latestMessage: latestMessage || null, 
+                }
+            })
+        )
+
+        res.status(200).json({ users: usersWithMessages })
     } catch (err) {
         res.status(500).json({ message: 'Server error ' + err })
     }
-};
+}
 
 
 const getUserProfile = async (req: Request, res: Response) => {
     try {
-        const { userId } = res.locals.user;
+        const { userId } = res.locals.user
         const user = await model.User.findById(userId).populate('unreads')
         if (!user) {
             res.status(404).json({ message: 'user not found' })
@@ -145,9 +155,9 @@ const getUserProfile = async (req: Request, res: Response) => {
                 { sender: userId, receiver: user._id },
                 { sender: user._id, receiver: userId }
             ]
-        }).sort({ createdAt: -1 }).exec();
+        }).sort({ createdAt: -1 }).exec()
         if (latestMessage) {
-            const decryptedMessage = await decryptionController.decryptMessage(latestMessage.sender.toString(), latestMessage?.message);
+            const decryptedMessage = await decryptionController.decryptMessage(latestMessage.sender.toString(), latestMessage?.message)
             latestMessage.message = decryptedMessage
 
         }
@@ -164,14 +174,14 @@ const getUserProfile = async (req: Request, res: Response) => {
 
         res.status(200).json({ user: userObject })
     } catch (err) { res.status(500).json({ message: 'Server error ' + err }) }
-};
+}
 
 const getUser = async (req: Request, res: Response) => {
     try {
-        const { userId } = req.params;
-        const user = await model.User.findById(userId).select('_id username names email image lastActiveTime groups ');
+        const { userId } = req.params
+        const user = await model.User.findById(userId).select('_id username names email image lastActiveTime groups ')
         if (!user) {
-            res.status(404).json({ message: 'user not found' });
+            res.status(404).json({ message: 'user not found' })
             return
         }
         const userObject = {
@@ -183,22 +193,22 @@ const getUser = async (req: Request, res: Response) => {
             groups: user.groups,
             lastActiveTime: user.lastActiveTime
         }
-        res.status(200).json({ user: userObject });
+        res.status(200).json({ user: userObject })
     } catch (err) { res.status(500).json({ message: 'Server error' + err }) }
-};
+}
 
 
 
 const updateUser = async (req: Request, res: Response) => {
     try {
-        const { userId } = res.locals.user;
+        const { userId } = res.locals.user
         const { error, value } = validator.updateUserSchema.validate(req.body)
         if (error) {
             res.status(400).json({ error: error.details })
             return
         }
-        await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email });
-        res.status(201).json({ message: 'user updated' });
+        await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email })
+        res.status(200).json({ message: 'user updated' })
     } catch (err) { res.status(500).json({ message: 'server error ', err }) }
 }
 
@@ -206,20 +216,20 @@ const editUserPassword = async (req: Request, res: Response) => {
     try {
         const userId = res.locals.user.userId
         const { oldPassword, newPassword } = req.body
-        const user = await model.User.findById(userId).select('password');
+        const user = await model.User.findById(userId).select('password')
         if (!user) {
-            res.status(404).json({ message: 'user not found' });
+            res.status(404).json({ message: 'user not found' })
             return
         }
-        const validated = bcrypt.compareSync(oldPassword, user.password);
+        const validated = bcrypt.compareSync(oldPassword, user.password)
         if (!validated) {
             res.status(400).json({ message: 'Invalid password' })
             return
-        };
-        const salt = await bcrypt.genSalt(10);
-        const hash = await bcrypt.hash(newPassword, salt);
-        await model.User.findByIdAndUpdate(userId, { password: hash });
-        res.status(201).json({ message: 'user updated' });
+        }
+        const salt = await bcrypt.genSalt(10)
+        const hash = await bcrypt.hash(newPassword, salt)
+        await model.User.findByIdAndUpdate(userId, { password: hash })
+        res.status(200).json({ message: 'user updated' })
     } catch (err) {
         if (err instanceof Error) {
             res.status(500).json({ message: 'server error ', err })

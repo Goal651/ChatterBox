@@ -3,7 +3,6 @@ import SocketAuthController from '../auth/SocketAuthController'
 import model from '../model/model'
 import WebPusherController from './WebPusherController'
 import encryptionController from '../security/Encryption'
-import { models } from 'mongoose'
 
 interface SentMessages {
     receiverId: string
@@ -30,17 +29,15 @@ const SocketController = (io: Server) => {
             return
         }
 
-        const user = await models.User.findById(userId).select('groups')
+        const user = await model.User.findById(userId).select('groups')
         if (!user) {
             socket.disconnect()
             return
         }
 
-        const userGroups: string[] = user.groups || []
+        const userGroups: string[] = user.groups.map(x => x.toString()) || []
 
-        userGroups.forEach(element => {
-            socket.join(element.toString())
-        })
+        userGroups.forEach(element => socket.join(element))
         await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() })
 
         userSockets[userId] = userSockets[userId] || []
@@ -65,7 +62,7 @@ const SocketController = (io: Server) => {
 
             if (userSockets[receiverId]) {
                 emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer, isVideoCall: isVideoCall })
-            } 
+            }
         })
 
         // Handle call acceptance
@@ -138,7 +135,7 @@ const SocketController = (io: Server) => {
         socket.on("groupMessage", async (data) => {
             try {
                 const { group, message, messageType, messageId, sender } = data
-                const senderName = await models.User.findById(userId)
+                const senderName = await model.User.findById(userId)
                 const groupName = await model.Group.findById(group).select('groupName')
 
                 const newMessage = new model.GMessage({

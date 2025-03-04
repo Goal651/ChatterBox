@@ -20,7 +20,7 @@ const sendEmail = async ({ name, email, verificationToken, title }: EmailSenderP
             template_params: {
                 to_email: email,
                 to_name: name,
-                verification_link: 'https://chatter-box-three.vercel.app/verify/'+verificationToken,
+                verification_link: 'https://chatter-box-three.vercel.app/verify/' + verificationToken,
                 message_title: title,
             },
             accessToken: process.env.EMAILJS_PRIVATE_KEY
@@ -37,6 +37,7 @@ const sendEmail = async ({ name, email, verificationToken, title }: EmailSenderP
     }
 }
 
+
 export default {
-    sendEmail
+    sendEmail,
 }
