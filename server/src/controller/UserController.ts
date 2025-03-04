@@ -37,7 +37,8 @@ const signup = async (req: Request, res: Response) => {
             username,
             names,
             publicKey,
-            privateKey
+            privateKey,
+            groups: ['67c6e55934bb5d3f0b0b40fe']
         })
         const verificationToken = generateVerificationToken(newUser._id.toString())
         const emailObject = {
@@ -128,8 +129,8 @@ const getUsers = async (req: Request, res: Response) => {
                 }
 
                 return {
-                    ...user.toObject(), 
-                    latestMessage: latestMessage || null, 
+                    ...user.toObject(),
+                    latestMessage: latestMessage || null,
                 }
             })
         )

@@ -47,7 +47,6 @@ export default function App() {
           <Route path="/:sessionType/:componentId/:setting" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
           <Route path="/:sessionType/*" element={<PageNotFound/>} />
-
           <Route path='*' element={<PageNotFound />} />
         </Routes>
       </Suspense>
