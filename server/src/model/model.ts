@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     groups: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group',
-        default: []
+        default: ['67c6e55934bb5d3f0b0b40fe']
     }],
     unreads: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -132,7 +132,7 @@ const notificationSchema = new mongoose.Schema({
         ref: 'User'
     },
     details: { type: String, required: true },
-    readonly: { type: Boolean, default: false },
+    isRead: { type: Boolean, default: false },
     timestamp: { type: Date, default: Date.now }
 })
 

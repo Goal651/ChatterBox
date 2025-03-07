@@ -2,20 +2,20 @@ import './App.css'
 import { lazy, Suspense, useState } from 'react'
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import { useMediaQuery } from 'react-responsive'
-import LoadingPage from './main/LoadingPage'
+import LoadingPage from './pages/LoadingPage'
 import useSocketConfig from './config/SocketConfig'
 
 
 
-const Dashboard = lazy(() => import('./main/Dashboard'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Auth = lazy(() => import('./auth/Auth'))
 const NetworkChecker = lazy(() => import('./error/NetworkChecker'))
 const LoginPage = lazy(() => import('./auth/Login'))
 const SignUpPage = lazy(() => import('./auth/Signup'))
 const FileUploaderTest = lazy(() => import('./test/Tester'))
 const PageNotFound = lazy(() => import('./error/PageNotFound'))
-const VerifyEmail = lazy(() => import('./auth/VerifyEmail'))
-const EmailSent = lazy(() => import('./auth/EmailSent'))
+const VerifyEmail = lazy(() => import('./services/VerifyEmail'))
+const EmailSent = lazy(() => import('./services/EmailSent'))
 
 //https://chatterbox-production-b137.up.railway.app
 export default function App() {

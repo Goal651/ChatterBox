@@ -49,7 +49,7 @@ export default function Messages({
         } finally {
             setIsLoading(false);
         }
-    }, [componentId, serverUrl]);
+    }, [componentId, serverUrl, sessionType]);
 
     useEffect(() => {
         if (sentMessages) {
@@ -138,7 +138,7 @@ export default function Messages({
 
             }
         };
-    }, [socket, socketMessage]);
+    }, [component._id, componentId, socket, socketMessage]);
 
 
     useEffect(() => {

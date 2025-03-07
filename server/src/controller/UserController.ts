@@ -38,7 +38,6 @@ const signup = async (req: Request, res: Response) => {
             names,
             publicKey,
             privateKey,
-            groups: ['67c6e55934bb5d3f0b0b40fe']
         })
         const verificationToken = generateVerificationToken(newUser._id.toString())
         const emailObject = {
@@ -110,7 +109,6 @@ const getUsers = async (req: Request, res: Response) => {
         const users = await model.User.find({ _id: { $ne: userId } })
             .select('email username names image  lastActiveTime  unreads')
             .skip(numberOfUsersToSkip)
-
 
         const usersWithMessages = await Promise.all(
             users.map(async (user) => {
