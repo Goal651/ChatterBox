@@ -19,7 +19,6 @@ const ChatScreen = ({
     photos,
     groups
 }: ChatScreenProps) => {
-
     const [component, setComponent] = useState<GroupUser | null>(null);
     const [message, setMessage] = useState<Message | null>(null);
     const [messageInEdition, setMessageInEdition] = useState<Message | null>(null);
@@ -116,15 +115,13 @@ const ChatScreen = ({
     };
 
     if (!component) return (
-        <div className="flex items-center justify-center w-full h-full">
-            <div className="text-center">
-                Select friend or group to start chatting
-            </div>
+        <div className="flex items-center justify-center w-full h-full bg-gray-950/95 rounded-2xl">
+            <div className="text-gray-300 text-lg font-medium">Select a friend or group to start chatting</div>
         </div>
     );
 
     return (
-        <>
+        <div className="flex flex-col h-full w-full">
             <CallComponent
                 users={users}
                 isVideoCall={callType}
@@ -136,15 +133,16 @@ const ChatScreen = ({
                 callEnded={handleCallEnded}
             />
 
-            <div className="flex justify-between border-b border-slate-700 pb-6">
-                <div className="flex space-x-2 items-center">
+            {/* Header */}
+            <div className="flex justify-between items-center border-b border-gray-700/50 pb-4 px-4 bg-gray-900/90 shadow-md">
+                <div className="flex items-center space-x-4">
                     {(mediaType.isMobile || mediaType.isTablet) && (
                         <FaArrowLeft
-                            className="text-white"
+                            className="text-gray-200 w-6 h-6 hover:text-blue-400 cursor-pointer transition-colors duration-200"
                             onClick={() => navigate('/chat/')}
                         />
                     )}
-                    <div className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full">
+                    <div className="relative group w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full">
                         <ProfilePicturePreview
                             profilePicture={component?.image}
                             serverUrl={serverUrl}
@@ -152,38 +150,42 @@ const ChatScreen = ({
                             photos={photos}
                             username={sessionType === 'chat' ? component.username || 'U' : component.groupName || ''}
                             textSize="text-3xl"
+                            className="rounded-full border-2 border-gray-700 transition-transform duration-300 group-hover:scale-105 group-hover:border-blue-500"
                         />
+                        <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
-
                     <div className="flex flex-col">
-                        <div className="text-white font-semibold text-xl">
+                        <span className="text-gray-100 font-semibold text-xl tracking-tight">
                             {sessionType === 'chat' ? component.username : component.groupName}
-                        </div>
+                        </span>
                         {isUserTyping ? (
-                            <div className="text-green-500">typing...</div>
-                        ) : (onlineUsers.includes(component?._id) && (
-                            <div className="text-gray-400">Online</div>
-                        ))}
+                            <span className="text-green-400 text-sm animate-pulse">Typing...</span>
+                        ) : onlineUsers.includes(component?._id) ? (
+                            <span className="text-gray-400 text-sm">Online</span>
+                        ) : (
+                            <span className="text-gray-500 text-sm">Offline</span>
+                        )}
                     </div>
                 </div>
-                <div className="flex space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 items-center">
+                <div className="flex space-x-4 items-center">
                     <FaPhone
                         onClick={handleAudioCall}
-                        className="rotate-90 text-blue-500 w-6 h-6"
+                        className="text-blue-500 w-6 h-6 rotate-90 hover:text-blue-400 cursor-pointer transition-colors duration-200"
                     />
                     <FaVideo
                         onClick={handleVideoCall}
-                        className="text-blue-500 w-6 h-6"
+                        className="text-blue-500 w-6 h-6 hover:text-blue-400 cursor-pointer transition-colors duration-200"
                     />
                     <FaEllipsisV
-                        className="text-blue-500 w-6 h-6"
+                        className="text-blue-500 w-6 h-6 hover:text-blue-400 cursor-pointer transition-colors duration-200"
                         onClick={() => navigate('setting')}
                     />
                 </div>
             </div>
 
-            <div className="h-full flex flex-col space-y-4 overflow-hidden">
-                <div className="h-[40rem] w-full lg:mt-6 xl:mt-10 overflow-hidden">
+            {/* Chat Area */}
+            <div className="flex flex-col flex-1 space-y-6 overflow-hidden py-6 px-4 bg-gray-950/95 rounded-b-2xl shadow-inner">
+                <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                     <Messages
                         component={component}
                         serverUrl={serverUrl}
@@ -197,7 +199,7 @@ const ChatScreen = ({
                         onEditMessage={handleEditMessage}
                     />
                 </div>
-                <div className="h-1/6 flex items-center">
+                <div className="flex-shrink-0">
                     <Sender
                         socket={socket}
                         sentMessage={handleSentMessage}
@@ -207,7 +209,7 @@ const ChatScreen = ({
                     />
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

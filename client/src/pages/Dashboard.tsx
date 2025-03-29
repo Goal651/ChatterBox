@@ -114,7 +114,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         };
     }, [socket]);
 
-    // Helper functions
+    // Helper functions (unchanged for brevity)
     const sortUsersByLatestMessage = (users: User[]) => {
         return users.sort((a, b) => {
             const aTime = a.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
@@ -240,10 +240,10 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     function chattingScreen() {
         return (
             <>
-                <PusherManager serverUrl={serverUrl} />
+                corsa<PusherManager serverUrl={serverUrl} />
                 <NotificationRequest />
                 {!hideUsers() && (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-transparent rounded-2xl flex flex-col space-y-4 h-full`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gray-900/90 rounded-2xl flex flex-col space-y-6 h-full shadow-lg transition-all duration-300`}>
                         <SearchInput
                             searchTerm={searchTerm}
                             onSearchChange={handleSearchChange}
@@ -265,7 +265,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-slate-950 py-2 px-2 sm:px-8  flex flex-col `}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-gray-950/95 py-4 px-4 sm:px-10 flex flex-col shadow-xl transition-all duration-300`}>
                         {setting === 'setting' ? (
                             <GroupSetting
                                 groups={groups}
@@ -284,10 +284,12 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                                 loadedImage={storePhotos}
                                 photos={photos}
                                 sentGroupMessage={updateGroups}
-                            />)}
+                            />
+                        )}
                     </div>
                 )}
-            </>)
+            </>
+        );
     }
 
     const renderScreen = () => {
@@ -318,7 +320,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     };
 
     return (
-        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-4 p-2' : 'space-x-4 p-3'} bg-slate-700 h-screen  overflow-hidden`}>
+        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-6 p-3' : 'space-x-6 p-6'} bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 h-screen overflow-hidden`}>
             <CallComponent
                 users={users}
                 isVideoCall={isVideoCall}
@@ -329,16 +331,17 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 onCancel={handleCallCancellation}
                 callEnded={handleCallCancellation}
             />
-            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit'}  xl:w-64 bg-slate-950 p-4 sm:p-8 rounded md:rounded-2xl overflow-y-auto`}>
+            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit xl:w-72'} bg-gray-950/95 p-6 sm:p-10 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl`}>
                 <Navigator
                     socket={socket}
                     initialCurrentUser={currentUser}
                     mediaType={mediaType}
                     serverUrl={serverUrl}
                     loadedImage={storePhotos}
-                    photos={photos} />
+                    photos={photos}
+                />
             </div>
-            <div className={`overflow-hidden w-full flex  space-x-2 h-full ${mediaType.isMobile && ''}`}>
+            <div className={`overflow-hidden w-full flex space-x-6 h-full ${mediaType.isMobile && 'space-x-0'}`}>
                 {renderScreen()}
             </div>
         </div>
@@ -346,45 +349,44 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 }
 
 const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string, onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
-    <div className="w-full input input-xl bg-slate-950 rounded-xl">
-        <svg
-            className="h-[1em] opacity-50"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24">
-            <g strokeLinejoin="round"
-                strokeLinecap="round"
-                strokeWidth="2.5"
-                fill="none"
-                stroke="currentColor">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.3-4.3"></path>
-            </g>
-        </svg>
+    <div className="relative w-full">
         <input
             type="search"
-            placeholder="Search"
+            placeholder="Search friends or groups..."
             value={searchTerm}
             onChange={onSearchChange}
-            className="grow"
+            className="w-full px-5 py-3 pl-12 bg-gray-800/80 text-gray-200 rounded-xl border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-md"
         />
-        <kbd className="kbd kbd-sm">⌘</kbd>
-        <kbd className="kbd kbd-sm">K</kbd>
+        <svg
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+        >
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.3-4.3" />
+        </svg>
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-1">
+            <kbd className="kbd kbd-sm bg-gray-700 text-gray-300">⌘</kbd>
+            <kbd className="kbd kbd-sm bg-gray-700 text-gray-300">K</kbd>
+        </div>
     </div>
 );
 
 const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos, groups }: UserGroupListProps) => (
-    <div className="w-full space-y-4 overflow-hidden h-full">
-        <div className="bg-transparent  h-full overflow-y-auto">
-            <div className="flex flex-col justify-center h-full w-full gap-y-12 z-10 ">
-                <div className="rounded-2xl bg-slate-950 h-1/2 w-full overflow-y-auto ">
-                    <div className="mt-4 flex w-full justify-between  items-center px-10">
-                        <div className="text-2xl font-bold text-slate-300">
-                            Groups
-                        </div>
+    <div className="w-full space-y-6 overflow-hidden h-full">
+        <div className="bg-transparent h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+            <div className="flex flex-col justify-center h-full w-full gap-y-8">
+                <div className="rounded-2xl bg-gray-950/95 p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <div className="flex w-full justify-between items-center mb-4">
+                        <h2 className="text-2xl font-bold text-gray-200 tracking-tight">Groups</h2>
                         <button
                             onClick={() => navigate('/create-group')}
-                            className="rounded-lg btn text-white ">
-                            ➕ New
+                            className="btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+                        >
+                            <span>➕</span> New
                         </button>
                     </div>
                     <GroupContent
@@ -396,10 +398,8 @@ const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, 
                         loading={loading}
                     />
                 </div>
-                <div className="rounded-3xl bg-slate-950 h-1/2 w-full overflow-y-auto shadow-lg shadow-blue-500">
-                    <div className="mt-4 px-10 text-2xl font-bold text-slate-300 ">
-                        Friends
-                    </div>
+                <div className="rounded-2xl bg-gray-950/95 p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
+                    <h2 className="text-2xl font-bold text-gray-200 tracking-tight mb-4">Friends</h2>
                     <FriendContent
                         unreads={currentUser?.unreads}
                         initialFriends={filteredUsers}

@@ -45,6 +45,20 @@ export interface Group {
     latestMessage: GroupMessage | null;
 }
 
+export interface UserGroupListProps {
+    filteredUsers: User[];
+    groups: Group[];
+    currentUser: User | null;
+    onlineUsers: string[];
+    typingUsers: string[];
+    socket: Socket;
+    handleSetUnreads: (newUnreads: Message[]) => void;
+    loading: boolean;
+    navigate: (path: string) => void;
+    serverUrl: string;
+    imageLoaded: (data: Photos) => void;
+    photos: Photos[];
+}
 
 export interface GroupMessage {
     _id: string | number,
