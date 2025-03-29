@@ -5,10 +5,10 @@ import { getGroupMessagesApi, getMessagesApi } from "../api/MessageApi";
 import UserMessages from "../components/UserMessages";
 import GroupMessages from "../components/GroupMessages";
 
-
 export default function Messages({
     serverUrl,
     sentMessages,
+    onEditMessage,
     sentGroupMessage,
     socketMessage,
     socket,
@@ -24,8 +24,6 @@ export default function Messages({
     const [isLoading, setIsLoading] = useState(true);
     const messagesRef = useRef<Message[]>([]);
 
-
-
     const fetchMessages = useCallback(async () => {
         if (!componentId) return;
         try {
@@ -39,9 +37,9 @@ export default function Messages({
                     setLastMessage(resultMessages[resultMessages.length - 1] || null);
                 }
             } else {
-                const result2 = await getGroupMessagesApi(serverUrl, componentId)
+                const result2 = await getGroupMessagesApi(serverUrl, componentId);
                 if (result2) {
-                    setGroupMessages(result2.messages)
+                    setGroupMessages(result2.messages);
                 }
             }
         } catch (error) {
@@ -71,9 +69,7 @@ export default function Messages({
             });
             setLastMessage(sentMessages);
         }
-
-    }, [sentMessages,sentGroupMessage])
-
+    }, [sentMessages, sentGroupMessage]);
 
     useEffect(() => {
         const handleReceiveMessage = ({ message }: { message: Message }) => {
@@ -83,7 +79,7 @@ export default function Messages({
             }
         };
 
-        const handleSocketMessage = (data: { sentMessage: Message; messageId: string }) => {
+        const handleSocketMessage = (data: { sentMessage: Message, messageId: string }) => {
             setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? data.sentMessage : msg)
             );
@@ -91,55 +87,51 @@ export default function Messages({
 
         const handleSentMessage = (data: Message) => {
             setUserMessages((prev): Message[] => {
-                const isMessageThere = prev.filter(x => x._id == data._id)
-                if (isMessageThere.length > 0) return prev
-                return [...prev, data]
-            }
-            );
+                const isMessageThere = prev.filter(x => x._id === data._id);
+                if (isMessageThere.length > 0) return prev;
+                return [...prev, data];
+            });
         };
 
         const handleReceivedMessage = (data: { messageId: string }) => {
             setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true } : msg)
             );
-        }
+        };
 
         const handleSeenMessage = (data: { messageId: string }) => {
             setUserMessages((prev): Message[] =>
                 prev.map((msg) => msg._id === data.messageId ? { ...msg, isMessageReceived: true, isMessageSeen: true } : msg)
             );
-        }
+        };
 
         const handleReceiveGroupMessage = ({ message }: { message: GroupMessage }) => {
-            console.log(message)
             if (message.group === componentId) {
                 setGroupMessages((prev) => [...prev, message]);
                 socket.emit("groupMessageSeen", { messageId: message._id, receiverId: message.sender });
             }
-        }
+        };
 
         if (socket) {
             socket.on("receiveMessage", handleReceiveMessage);
             socket.on("messageSent", handleSocketMessage);
-            socket.on("receiveSentMessage", handleSentMessage)
+            socket.on("receiveSentMessage", handleSentMessage);
             socket.on("messageReceived", handleReceivedMessage);
             socket.on("messageSeen", handleSeenMessage);
-            socket.on("receiveGroupMessage", handleReceiveGroupMessage)
+            socket.on("receiveGroupMessage", handleReceiveGroupMessage);
         }
 
         return () => {
             if (socket) {
                 socket.off("receiveMessage", handleReceiveMessage);
                 socket.off("messageSent", handleSocketMessage);
-                socket.off("receiveSentMessage", handleSentMessage)
+                socket.off("receiveSentMessage", handleSentMessage);
                 socket.off("messageReceived", handleReceivedMessage);
                 socket.off("messageSeen", handleSeenMessage);
-                socket.off("receiveGroupMessage", handleReceiveGroupMessage)
-
+                socket.off("receiveGroupMessage", handleReceiveGroupMessage);
             }
         };
     }, [component._id, componentId, socket, socketMessage]);
-
 
     useEffect(() => {
         fetchMessages();
@@ -151,26 +143,37 @@ export default function Messages({
         }
     }, [componentId, lastMessage, socket, component]);
 
+    const handleDeleteMessage = (message: Message) => {
+        const updatedMessages = userMessages.filter((msg) => msg._id !== message._id);
+        setUserMessages(updatedMessages);
+    };
+
     if (isLoading) {
         return (
-            <div className="h-full flex flex-col space-y-4 items-center justify-center">
-                <div className="loading loading-lg loading-spinner"></div>
+            <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+                <svg className="animate-spin h-12 w-12 text-blue-500" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                </svg>
+                <span className="mt-4 text-gray-300 text-lg font-medium">Loading messages...</span>
             </div>
         );
     }
 
     if (!componentId) {
         return (
-            <div className="h-full flex flex-col space-y-4 items-center justify-center">
-                <div className="text-gray-400 text-center">Select a component to continue</div>
+            <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+                <span className="text-gray-300 text-lg font-medium">Select a friend or group to view messages</span>
             </div>
         );
     }
 
     return (
-        <>
+        <div className="h-full w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 bg-gray-950/95 rounded-2xl shadow-inner">
             {sessionType === 'chat' ? (
                 <UserMessages
+                    onDeleteMessage={handleDeleteMessage}
+                    onEditMessage={onEditMessage}
                     mediaType={mediaType}
                     messages={userMessages}
                     serverUrl={serverUrl}
@@ -184,6 +187,6 @@ export default function Messages({
                     images={images}
                 />
             )}
-        </>
+        </div>
     );
 }

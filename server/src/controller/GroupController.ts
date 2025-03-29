@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import validator from '../validator/validator';
 import model from '../model/model';
-import { User, Group, GroupMember } from '../interface/interface'
+import { User, Group, GroupMember } from '../interfaces/interface'
 import keyController from '../security/KeysController'
 
 

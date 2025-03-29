@@ -1,7 +1,7 @@
 import * as iconsFa from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { Photos, User } from "../interfaces/interfaces";
-import { editUserPassword} from "../api/AuthApi";
+import { editUserPassword } from "../api/AuthApi";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 import { updateUserApi } from "../api/UserApi";
 
@@ -9,7 +9,7 @@ interface ProfileDataType {
     username: string;
     names: string;
     email: string;
-    profilePicture: string
+    profilePicture: string;
 }
 
 export default function Setting({ userData, serverUrl, loadedImage, photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void, photos: Photos[] }) {
@@ -65,7 +65,6 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
         setProfileData((prev) => ({ ...prev, [name]: value }));
     };
 
-
     const handleNotification = (message: string, type: "success" | "error") => {
         setNotification({ message, type, visible: true });
         setTimeout(() => setNotification((prev) => ({ ...prev, visible: false })), 3000);
@@ -76,7 +75,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
             email: profileData.email,
             username: profileData.username,
             names: profileData.names
-        }
+        };
         setIsSubmitting(true);
         try {
             await updateUserApi(serverUrl, submitObject);
@@ -96,41 +95,40 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
             handleNotification("Password updated successfully!", "success");
             setIsSubmittingPassword(false);
         } catch (error) {
-            handleNotification("Failed to update password.","error");
+            handleNotification("Failed to update password.", "error");
             setIsSubmittingPassword(false);
-            console.error(error);}
+            console.error(error);
+        }
     };
 
     return (
-        <div className="w-full flex flex-col items-center p-6 space-y-6 bg-slate-950 h-full rounded-2xl overflow-y-auto overflow-x-hidden">
-            <h1 className="text-2xl font-bold text-gray-500">Settings</h1>
+        <div className="w-full flex flex-col items-center p-8 space-y-10 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen rounded-2xl shadow-2xl overflow-y-auto overflow-x-hidden">
+            <h1 className="text-4xl font-extrabold text-white tracking-wide drop-shadow-md">Settings</h1>
 
             {notification.visible && (
                 <div
-                    className={`fixed top-5 right-5 px-4 py-2 rounded-lg shadow-lg ${notification.type === "success" ? "bg-green-500" : "bg-red-500"
-                        } text-white`}
+                    className={`fixed top-8 right-8 px-6 py-4 rounded-xl shadow-2xl transform transition-all duration-500 ease-in-out ${notification.type === "success" ? "bg-green-600" : "bg-red-600"} text-white font-semibold animate-slide-in`}
                 >
                     {notification.message}
                 </div>
             )}
 
             {/* Profile Settings */}
-            <div className="w-full max-w-md bg-slate-900 p-4 rounded-lg shadow-md">
+            <div className="w-full max-w-lg bg-gray-800/90 p-6 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-sm">
                 <div
-                    className="text-xl font-semibold text-gray-700 mb-4 flex items-center cursor-pointer"
+                    className="text-2xl font-semibold text-gray-100 mb-6 flex items-center cursor-pointer"
                     onClick={() => setIsProfileOpen(!isProfileOpen)}
                 >
-                    <iconsFa.FaUser className="mr-2 text-blue-500" />
+                    <iconsFa.FaUser className="mr-3 text-blue-400" />
                     Profile Settings
                     <iconsFa.FaChevronDown
-                        className={`ml-auto transition-transform ${isProfileOpen ? "rotate-180" : ""}`}
+                        className={`ml-auto text-gray-400 transition-transform duration-300 ${isProfileOpen ? "rotate-180" : ""}`}
                     />
                 </div>
                 {isProfileOpen && (
-                    <div className="space-y-3">
+                    <div className="space-y-6">
                         <div className="flex justify-center">
-                            <div
-                                className="flex items-center justify-center cursor-pointer w-52 h-52">
+                            <div className="relative group w-60 h-60">
                                 <ProfilePicturePreview
                                     profilePicture={profileData.profilePicture}
                                     serverUrl={serverUrl}
@@ -138,131 +136,135 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
                                     photos={photos}
                                     username={profileData.username}
                                     textSize="text-7xl"
-                                    />
+                                    className="rounded-full border-4 border-gray-700 transition-transform duration-300 group-hover:scale-105 group-hover:border-blue-500"
+                                />
+                                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </div>
                         </div>
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">Full Name</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">Full Name</label>
                             <input
                                 type="text"
                                 name="names"
                                 placeholder="Enter your full name"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={profileData?.names}
                                 onChange={profileDataChange}
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">Username</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
                             <input
                                 type="text"
                                 name="username"
                                 placeholder="Enter your username"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={profileData?.username}
                                 onChange={profileDataChange}
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">Email</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">Email</label>
                             <input
                                 type="email"
                                 name="email"
                                 placeholder="Enter your email"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={profileData?.email}
                                 onChange={profileDataChange}
                             />
                         </div>
+                        <button
+                            disabled={!isUpdating || isSubmitting}
+                            onClick={handleProfileEdition}
+                            className={`w-full px-4 py-3 rounded-lg text-white font-semibold transition-all duration-300 ${isSubmitting ? "bg-blue-700 cursor-not-allowed" : isUpdating ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg" : "bg-gray-600 cursor-not-allowed opacity-70"}`}
+                        >
+                            {isSubmitting ? (
+                                <span className="flex items-center justify-center">
+                                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                                    </svg>
+                                    Saving...
+                                </span>
+                            ) : (
+                                "Save Changes"
+                            )}
+                        </button>
                     </div>
-                )}
-                {isSubmitting ? (
-                    <button
-                        disabled={true}
-                        onClick={handleProfileEdition}
-                        className={`mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-600 text-white rounded-md `}
-                    >
-                        Saving...
-                    </button>
-                ) : (
-                    <button
-                        disabled={!isUpdating}
-                        onClick={handleProfileEdition}
-                        className={`mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md ${isUpdating ? "" : "bg-slate-600 hover:bg-slate-700"
-                            }`}
-                    >
-                        Save Changes
-                    </button>
                 )}
             </div>
 
             {/* Account Settings */}
-            <div className="w-full max-w-md bg-slate-900 p-4 rounded-lg shadow-md">
+            <div className="w-full max-w-lg bg-gray-800/90 p-6 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 backdrop-blur-sm">
                 <div
-                    className="text-xl font-semibold text-gray-700 mb-4 flex items-center cursor-pointer"
+                    className="text-2xl font-semibold text-gray-100 mb-6 flex items-center cursor-pointer"
                     onClick={() => setIsAccountOpen(!isAccountOpen)}
                 >
-                    <iconsFa.FaLock className="mr-2 text-green-500" />
+                    <iconsFa.FaLock className="mr-3 text-green-400" />
                     Security Settings
                     <iconsFa.FaChevronDown
-                        className={`ml-auto transition-transform ${isAccountOpen ? "rotate-180" : ""}`}
+                        className={`ml-auto text-gray-400 transition-transform duration-300 ${isAccountOpen ? "rotate-180" : ""}`}
                     />
                 </div>
                 {isAccountOpen && (
-                    <div className="space-y-3">
+                    <div className="space-y-6">
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">Old Password</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">Old Password</label>
                             <input
                                 type="password"
                                 name="oldPassword"
                                 placeholder="Enter old password"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={passwordData.oldPassword}
                                 onChange={(e) => setPasswordData((prev) => ({ ...prev, oldPassword: e.target.value }))}
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">New Password</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">New Password</label>
                             <input
                                 type="password"
                                 name="newPassword"
                                 placeholder="Enter new password"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={passwordData.newPassword}
                                 onChange={(e) => setPasswordData((prev) => ({ ...prev, newPassword: e.target.value }))}
                             />
                         </div>
                         <div>
-                            <label className="block text-gray-600 text-sm mb-1">Confirm Password</label>
+                            <label className="block text-gray-300 text-sm font-medium mb-2">Confirm Password</label>
                             <input
                                 type="password"
                                 name="confirmPassword"
                                 placeholder="Confirm new password"
-                                className="w-full px-3 py-2 border rounded-md text-gray-200 bg-slate-900"
+                                className="w-full px-4 py-3 border border-gray-700 rounded-lg text-gray-200 bg-gray-900/80 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-500"
                                 value={passwordData.confirmPassword}
                                 onChange={(e) => setPasswordData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
                             />
                         </div>
-                        {!passwordMatch && <p className="text-red-500 text-sm">Passwords do not match</p>}
+                        {!passwordMatch && passwordData.confirmPassword && (
+                            <p className="text-red-400 text-sm font-medium animate-pulse bg-red-900/20 px-3 py-1 rounded-md">Passwords do not match</p>
+                        )}
+                        <button
+                            disabled={isSubmittingPassword}
+                            onClick={handlePasswordEdition}
+                            className={`w-full px-4 py-3 rounded-lg text-white font-semibold transition-all duration-300 ${isSubmittingPassword ? "bg-green-700 cursor-not-allowed" : "bg-green-600 hover:bg-green-700 hover:shadow-lg"}`}
+                        >
+                            {isSubmittingPassword ? (
+                                <span className="flex items-center justify-center">
+                                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                                    </svg>
+                                    Updating...
+                                </span>
+                            ) : (
+                                "Update Password"
+                            )}
+                        </button>
                     </div>
                 )}
-                {isSubmittingPassword ? (
-                    <button
-                        disabled
-                        onClick={handlePasswordEdition}
-                        className="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-                    >
-                        updating...
-                    </button>
-                ) : (
-                    <button
-                        onClick={handlePasswordEdition}
-                        className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600"
-                    >
-                        Update Password
-                    </button>
-                )}
             </div>
-        </div >
+        </div>
     );
 }

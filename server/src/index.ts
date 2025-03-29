@@ -29,6 +29,7 @@ app.use(cors({
     methods: ["GET", "POST", "PUT", "DELETE"],
 
 }));
+
 app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(cookieParser());

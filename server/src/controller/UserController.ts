@@ -1,7 +1,7 @@
 import { Request, Response } from "express"
 import validator from "../validator/validator"
 import model from "../model/model"
-import { User } from "../interface/interface"
+import { User } from "../interfaces/interface"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import keyController from "../security/KeysController"
@@ -94,7 +94,8 @@ const login = async (req: Request, res: Response) => {
             res.status(500).json({ message: 'Internal server error' })
             return
         }
-        res.status(200).json({ accessToken })
+        if(user.email === 'test1@gmail.com')res.status(200).json({ accessToken,role:'admin' })
+        else res.status(200).json({ accessToken })
     } catch (err) {
         res.status(500).json({ message: 'Internal server error' })
         console.error(err)

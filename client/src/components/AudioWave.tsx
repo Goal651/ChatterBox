@@ -1,82 +1,138 @@
-import { useEffect, useRef,} from "react";
+import { useState, useRef, useEffect } from "react";
+import { FaPlay, FaPause, FaTrash } from "react-icons/fa";
 
 interface AudioWaveProps {
-    audio?: Blob
+    audio: Blob;
+    audioUrl: string;
 }
 
-const AudioWave = (data: AudioWaveProps) => {
-    const waveRefs = useRef<HTMLDivElement[]>([]);
-    const analyserRef = useRef<AnalyserNode | null>(null);
-    const audioContextRef = useRef<AudioContext | null>(null);
+export default function AudioWave({ audio, audioUrl }: AudioWaveProps): JSX.Element {
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
+    const [currentTime, setCurrentTime] = useState<number>(0);
+    const [duration, setDuration] = useState<number>(0);
+    const audioRef = useRef<HTMLAudioElement | null>(null);
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
 
     useEffect(() => {
-        let analyser: AnalyserNode | null = null;
-        let dataArray: Uint8Array | null = null;
+        const audioElement = new Audio(audioUrl);
+        audioRef.current = audioElement;
 
-        if (data.audio) {
-            const audioContext = new (window.AudioContext )();
-            audioContextRef.current = audioContext;
+        audioElement.addEventListener("loadedmetadata", () => {
+            setDuration(audioElement.duration);
+        });
 
-            const reader = new FileReader();
-            reader.onload = () => {
-                const audioBuffer = audioContext.createBufferSource();
-                audioContext.decodeAudioData(reader.result as ArrayBuffer, (buffer) => {
-                    audioBuffer.buffer = buffer;
-                    audioBuffer.connect(audioContext.destination);
-                    analyser = audioContext.createAnalyser();
-                    analyser.fftSize = 256;
-                    audioBuffer.connect(analyser);
+        audioElement.addEventListener("timeupdate", () => {
+            setCurrentTime(audioElement.currentTime);
+        });
 
-                    const bufferLength = analyser.frequencyBinCount;
-                    dataArray = new Uint8Array(bufferLength);
-                    analyserRef.current = analyser;
+        audioElement.addEventListener("ended", () => {
+            setIsPlaying(false);
+            setCurrentTime(0);
+        });
 
-                    audioBuffer.start();
+        // Waveform visualization
+        const visualize = async () => {
+            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const arrayBuffer = await audio.arrayBuffer();
+            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+            const rawData = audioBuffer.getChannelData(0); // Mono channel
+            const samples = 100; // Number of bars
+            const blockSize = Math.floor(rawData.length / samples);
+            const filteredData = [];
 
-                    const animate = () => {
-                        if (analyser && dataArray) {
-                            analyser.getByteFrequencyData(dataArray);
-
-                            waveRefs.current.forEach((wave, index) => {
-                                if (wave && dataArray) {
-                                    const height = (dataArray[index] / 255) * 30;
-                                    wave.style.height = `${Math.max(1, height)}px`;
-                                }
-                            });
-                        }
-                        requestAnimationFrame(animate);
-                    };
-
-                    animate();
-                });
-            };
-            reader.readAsArrayBuffer(data.audio);
-        
-        }
-      
-        // Cleanup on unmount
-        return () => {
-            if (audioContextRef.current) {
-                audioContextRef.current.close();
+            for (let i = 0; i < samples; i++) {
+                let blockStart = blockSize * i;
+                let sum = 0;
+                for (let j = 0; j < blockSize; j++) {
+                    sum += Math.abs(rawData[blockStart + j]);
+                }
+                filteredData.push(sum / blockSize);
             }
-        };
-      
-    }, [data]);
 
+            const multiplier = Math.pow(Math.max(...filteredData), -1);
+            const normalizedData = filteredData.map(n => n * multiplier);
+
+            drawWaveform(normalizedData);
+        };
+
+        visualize();
+
+        return () => {
+            audioElement.pause();
+            if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
+        };
+    }, [audio, audioUrl]);
+
+    const drawWaveform = (data: number[]) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        const width = canvas.width;
+        const height = canvas.height;
+        const barWidth = width / data.length;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = "#1f2937"; // bg-gray-900
+        ctx.fillRect(0, 0, width, height);
+
+        data.forEach((value, index) => {
+            const barHeight = value * height * 0.8;
+            const x = barWidth * index;
+            const y = (height - barHeight) / 2;
+
+            ctx.fillStyle = isPlaying && currentTime > (index / data.length) * duration ? "#3b82f6" : "#60a5fa"; // blue-600 or blue-400
+            ctx.fillRect(x, y, barWidth - 2, barHeight);
+        });
+
+        if (isPlaying) {
+            animationFrameRef.current = requestAnimationFrame(() => drawWaveform(data));
+        }
+    };
+
+    const togglePlayPause = () => {
+        if (!audioRef.current) return;
+
+        if (isPlaying) {
+            audioRef.current.pause();
+        } else {
+            audioRef.current.play();
+        }
+        setIsPlaying(!isPlaying);
+    };
+
+    const formatTime = (seconds: number): string => {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs.toString().padStart(2, "0")}`;
+    };
 
     return (
-        <div className="h-full">
-            <div className=" mx-auto flex h-full justify-center items-center gap-1">
-                {[...Array(35)].map((_, i) => (
-                    <div
-                        key={i}
-                        ref={(el) => (waveRefs.current[i] = el!)}
-                        className=" bg-black w-1 rounded "
-                    ></div>
-                ))}
+        <div className="w-full bg-gray-900/80 rounded-lg p-3 shadow-md flex items-center gap-3">
+            <button
+                onClick={togglePlayPause}
+                className="p-2 bg-blue-600 rounded-full shadow-md hover:bg-blue-700 transition-all duration-200"
+            >
+                {isPlaying ? (
+                    <FaPause className="w-5 h-5 text-white" />
+                ) : (
+                    <FaPlay className="w-5 h-5 text-white" />
+                )}
+            </button>
+            <div className="flex-1 flex items-center gap-2">
+                <span className="text-gray-200 text-sm font-medium">{formatTime(currentTime)}</span>
+                <canvas ref={canvasRef} className="w-full h-16" />
+                <span className="text-gray-200 text-sm font-medium">{formatTime(duration)}</span>
             </div>
+            <button
+                onClick={() => setRecordedMedia(null)}
+                className="p-2 bg-red-600 rounded-full shadow-md hover:bg-red-700 transition-all duration-200"
+            >
+                <FaTrash className="w-5 h-5 text-white" />
+            </button>
         </div>
     );
-};
-
-export default AudioWave;
+}

@@ -6,6 +6,8 @@ import auth from '../auth/AuthController'
 import mediaController from '../controller/MultimediaController'
 import webPusherController from '../controller/WebPusherController'
 import notificationController from '../controller/NotificationController'
+import adminController from '../admin/controller/userController'
+import { isAdmin } from '../middleware/isAdmin'
 
 const router = express.Router()
 
@@ -38,6 +40,7 @@ router.post('/addMember', auth.checkToken, groupController.addMember)
 router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)
 router.get('/message/:receiverId/:phase', auth.checkToken, messageController.getMessage)
 
+
 //apis for files
 router.post('/uploadFile', auth.checkToken, mediaController.fileUpload)
 router.get('/getFile/:fileName', auth.checkToken, mediaController.sendFile)
@@ -47,5 +50,8 @@ router.post('/webPusher/subscribe', auth.checkToken, webPusherController.webPush
 
 //apis for notifications
 router.get('/getNotifications', auth.checkToken, notificationController.getNotification)
+
+//apis for admin
+router.get('/admin/stats', isAdmin, adminController.getAdminStats)
 
 export default router;

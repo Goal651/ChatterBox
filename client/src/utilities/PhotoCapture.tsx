@@ -1,11 +1,12 @@
-import { useRef, useState } from "react";
-import { FaCamera, FaRedoAlt, FaCheck } from "react-icons/fa";
+import { useState, useRef } from "react";
+import { FaCamera, FaRedoAlt, FaCheck, FaTimes } from "react-icons/fa";
 
 interface PhotoCaptureProps {
     onPhotoCapture: (photoFile: File) => void;
+    onClose?: () => void; // Optional prop to close the component
 }
 
-export default function PhotoCapture({ onPhotoCapture }: PhotoCaptureProps): JSX.Element {
+export default function PhotoCapture({ onPhotoCapture, onClose }: PhotoCaptureProps): JSX.Element {
     const videoRef = useRef<HTMLVideoElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
     const [isCapturing, setIsCapturing] = useState<boolean>(false);
@@ -36,16 +37,20 @@ export default function PhotoCapture({ onPhotoCapture }: PhotoCaptureProps): JSX
 
     const capturePhoto = (): void => {
         if (videoRef.current && canvasRef.current) {
+            const video = videoRef.current;
             const canvas = canvasRef.current;
             const context = canvas.getContext("2d");
             if (context) {
-                context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+                // Set canvas size to match video feed
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
                 const dataUrl = canvas.toDataURL("image/png");
                 setPhotoDataUrl(dataUrl);
                 setPhotoTaken(true);
+                stopCamera();
             }
         }
-        stopCamera();
     };
 
     const retakePhoto = (): void => {
@@ -58,12 +63,13 @@ export default function PhotoCapture({ onPhotoCapture }: PhotoCaptureProps): JSX
         if (photoDataUrl) {
             const file = dataURLToFile(photoDataUrl, "photo.png");
             onPhotoCapture(file);
+            if (onClose) onClose(); // Close the component after saving
         }
     };
 
     const dataURLToFile = (dataUrl: string, filename: string): File => {
         const arr = dataUrl.split(",");
-        const mime = arr[0].match(/:(.*?);/)?.[1] || "";
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
         const bstr = atob(arr[1]);
         let n = bstr.length;
         const u8arr = new Uint8Array(n);
@@ -73,49 +79,66 @@ export default function PhotoCapture({ onPhotoCapture }: PhotoCaptureProps): JSX
         return new File([u8arr], filename, { type: mime });
     };
 
+    const handleClose = () => {
+        stopCamera();
+        setPhotoTaken(false);
+        setPhotoDataUrl(null);
+        if (onClose) onClose();
+    };
+
     return (
-        <div className="fixed top-0 left-0 flex flex-col items-center space-y-4 bg-gray-800 p-4 rounded-lg h-screen w-screen bg-opacity-80">
-            <div className="relative w-full max-w-5xl h-auto bg-black rounded-lg overflow-hidden">
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black/90 p-6 z-50">
+            {/* Close Button */}
+            <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 p-2 bg-gray-900/80 rounded-full text-gray-200 hover:bg-gray-800 hover:text-white transition-all duration-200 shadow-md"
+            >
+                <FaTimes className="w-5 h-5" />
+            </button>
+
+            {/* Video/Photo Display */}
+            <div className="relative w-full max-w-3xl h-[70vh] bg-gray-950 rounded-xl overflow-hidden shadow-xl">
                 {!photoTaken ? (
                     <video
                         ref={videoRef}
                         className="w-full h-full object-cover"
                         autoPlay
                         muted
-                    ></video>
+                    />
                 ) : (
                     <img
                         src={photoDataUrl || ""}
                         alt="Captured"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                     />
                 )}
-                <canvas ref={canvasRef} className="hidden" width={640} height={480}></canvas>
+                <canvas ref={canvasRef} className="hidden" />
             </div>
 
-            <div className="flex space-x-4">
+            {/* Controls */}
+            <div className="flex items-center gap-4 mt-6">
                 {!photoTaken ? (
                     <button
                         onClick={isCapturing ? capturePhoto : startCamera}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-blue-700"
+                        className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200"
                     >
-                        <FaCamera />
+                        <FaCamera className="w-5 h-5" />
                         <span>{isCapturing ? "Capture" : "Start Camera"}</span>
                     </button>
                 ) : (
                     <>
                         <button
                             onClick={retakePhoto}
-                            className="bg-yellow-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-yellow-600"
+                            className="flex items-center gap-2 px-6 py-3 bg-yellow-600 text-white rounded-lg shadow-md hover:bg-yellow-700 transition-all duration-200"
                         >
-                            <FaRedoAlt />
+                            <FaRedoAlt className="w-5 h-5" />
                             <span>Retake</span>
                         </button>
                         <button
                             onClick={savePhoto}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center space-x-2 hover:bg-green-700"
+                            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg shadow-md hover:bg-green-700 transition-all duration-200"
                         >
-                            <FaCheck />
+                            <FaCheck className="w-5 h-5" />
                             <span>Save</span>
                         </button>
                     </>

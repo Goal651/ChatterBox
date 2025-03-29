@@ -5,19 +5,21 @@ import FileUploader from "./FileUploader";
 import { Photos } from "../interfaces/interfaces";
 import { getFile } from "../api/FileApi";
 import { editUserProfilePicture } from "../api/UserApi";
+import { FaTimes } from "react-icons/fa";
 
 Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
     profilePicture?: string;
     serverUrl: string;
-    loadedImage: (data: Photos) => void
-    photos: Photos[]
-    username: string
-    textSize: string
+    loadedImage: (data: Photos) => void;
+    photos: Photos[];
+    username: string;
+    textSize: string;
+    className?: string; // Added for external styling (e.g., from parent components)
 }
 
-export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos, username, textSize }: ProfilePicturePreviewProps) {
+export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos, username, textSize, className }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -31,33 +33,30 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         const fetchProfilePicture = async () => {
             try {
                 if (profilePicture) {
-                    const isPhotoAvailable = photos.filter((photo) => photo.key === profilePicture)[0];
+                    const isPhotoAvailable = photos.find((photo) => photo.key === profilePicture);
                     if (isPhotoAvailable) {
                         setImageSrc(isPhotoAvailable.photo);
-                        return
+                        return;
                     }
                     const response = await getFile(serverUrl, profilePicture);
                     setImageSrc(response.file);
                     const newProfilePic: Photos = {
                         key: profilePicture,
                         photo: response.file
-                    }
-                    loadedImage(newProfilePic)
+                    };
+                    loadedImage(newProfilePic);
                 }
-
             } catch (err) {
-                console.error("Error", err);
+                console.error("Error fetching profile picture:", err);
             }
         };
 
         fetchProfilePicture();
-    }, [profilePicture, serverUrl, photos]);
+    }, [profilePicture, serverUrl, photos, loadedImage]);
 
     useEffect(() => {
         setAllowedToEdit(sessionType === "setting");
     }, [sessionType]);
-
-
 
     const resetEditingState = () => {
         setIsEditing(false);
@@ -76,7 +75,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         const file = event.target.files?.[0];
         if (file) {
             setNewProfilePicture(file);
-            setPreviewSrc(URL.createObjectURL(file)); // Generate preview URL
+            setPreviewSrc(URL.createObjectURL(file));
         }
     };
 
@@ -99,86 +98,96 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
     };
 
     return (
-        <div className="w-full h-full ">
-            {!imageSrc ? (<div onClick={openModal}
-                className={`w-full h-full  rounded-full cursor-pointer flex justify-center items-center bg-slate-800 `}>
-                <div className={`font-extrabold  text-slate-200 ${textSize}`}>
-                    {username.slice(0, 1).toUpperCase()}
+        <div className={`w-full h-full relative group ${className}`}>
+            {/* Profile Picture or Initial */}
+            {!imageSrc ? (
+                <div
+                    onClick={openModal}
+                    className="w-full h-full rounded-full cursor-pointer flex items-center justify-center bg-gray-800/90 shadow-md transition-all duration-200 hover:bg-gray-700/90"
+                >
+                    <span className={`font-extrabold text-gray-200 ${textSize}`}>
+                        {username.slice(0, 1).toUpperCase()}
+                    </span>
                 </div>
-            </div>
             ) : (
                 <img
                     src={imageSrc}
                     alt="Profile"
-                    className="w-full h-full object-cover rounded-full cursor-pointer"
+                    className="w-full h-full object-cover rounded-full cursor-pointer shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
                     onClick={openModal}
                 />
             )}
+            {allowedToEdit && (
+                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            )}
 
+            {/* Modal */}
             <Modal
                 isOpen={isModalOpen}
                 onRequestClose={closeModal}
                 contentLabel="Profile Picture Preview"
-                className="fixed top-0 left-0 h-full w-full bg-opacity-90 bg-black flex items-center justify-center"
-                overlayClassName="modal-overlay"
+                className="fixed inset-0 flex items-center justify-center p-6 bg-black/90"
+                overlayClassName="fixed inset-0 bg-black/50"
             >
                 <button
                     onClick={closeModal}
-                    className="absolute top-4 right-4 text-white bg-gray-700 hover:bg-gray-900 rounded-full px-3 py-1"
+                    className="absolute top-4 right-4 p-2 bg-gray-900/80 rounded-full text-gray-200 hover:bg-gray-800 hover:text-white transition-all duration-200 shadow-md"
                 >
-                    Close
+                    <FaTimes className="w-5 h-5" />
                 </button>
-                <div className="flex flex-col items-center justify-center">
-
-                    {!imageSrc ? (<div onClick={openModal}
-                        className={`w-96 h-96 rounded-lg mb-4 bg-slate-800 flex items-center justify-center`}>
-                        <div className="font-extrabold text-blue-800 text-9xl">
-                            {username.slice(0, 1).toUpperCase()}
+                <div className="flex flex-col items-center justify-center gap-6 bg-gray-900/95 rounded-xl p-6 shadow-xl max-w-md w-full">
+                    {/* Modal Content */}
+                    {!imageSrc && !previewSrc ? (
+                        <div
+                            className="w-64 h-64 rounded-lg bg-gray-800/90 flex items-center justify-center shadow-md"
+                        >
+                            <span className="font-extrabold text-gray-200 text-7xl">
+                                {username.slice(0, 1).toUpperCase()}
+                            </span>
                         </div>
-                    </div>
                     ) : (
                         <img
                             src={previewSrc || imageSrc}
                             alt="Profile Large"
-                            className="w-auto max-w-96 max-h-96 rounded-lg mb-4"
+                            className="w-64 h-64 object-cover rounded-lg shadow-md"
                         />
                     )}
 
+                    {/* Edit Controls */}
                     {allowedToEdit && (
                         !isEditing ? (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                className="btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md"
                             >
                                 Edit
                             </button>
                         ) : (
-                            <div className="flex flex-col items-center space-y-4">
+                            <div className="flex flex-col items-center gap-4 w-full">
                                 <input
                                     type="file"
                                     accept="image/*"
                                     onChange={handleFileChange}
-                                    className="border border-gray-300 rounded px-2 py-1"
+                                    className="file-input w-full bg-gray-800/80 text-gray-200 border-gray-700 rounded-lg shadow-md focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
-                                <div className="flex space-x-4">
-                                    {isSubmitting ? (
-                                        <button
-                                            onClick={handleSaveClick}
-                                            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                                        >
-                                            saving...
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={handleSaveClick}
-                                            className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-                                        >
-                                            Save
-                                        </button>
-                                    )}
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={handleSaveClick}
+                                        disabled={isSubmitting}
+                                        className={`btn px-4 py-2 bg-green-600 text-white rounded-lg shadow-md transition-all duration-200 ${isSubmitting ? "cursor-not-allowed opacity-50" : "hover:bg-green-700"}`}
+                                    >
+                                        {isSubmitting ? (
+                                            <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                                            </svg>
+                                        ) : (
+                                            "Save"
+                                        )}
+                                    </button>
                                     <button
                                         onClick={resetEditingState}
-                                        className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                                        className="btn px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200 shadow-md"
                                     >
                                         Cancel
                                     </button>
@@ -187,7 +196,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                         )
                     )}
                 </div>
-            </Modal >
-        </div >
+            </Modal>
+        </div>
     );
 }

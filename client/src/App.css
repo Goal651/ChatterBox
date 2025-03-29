@@ -7,3 +7,33 @@ body {
 .custom-box-shadow {
     box-shadow: 0 4px 6px rgba(5, 188, 255, 0.608);
 }
+
+@keyframes slide-in {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+.animate-slide-in {
+    animation: slide-in 0.5s ease-out;
+}
+
+.scrollbar-thin {
+    scrollbar-width: thin;
+}
+.scrollbar-thumb-gray-700 {
+    scrollbar-color: #4B5563 #1F2937;
+}
+.scrollbar-track-gray-900 {
+    /* Works in Firefox */
+}
+@supports (-webkit-overflow-scrolling: touch) {
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+    }
+    .scrollbar-thumb-gray-700::-webkit-scrollbar-thumb {
+        background-color: #4B5563;
+        border-radius: 4px;
+    }
+    .scrollbar-track-gray-900::-webkit-scrollbar-track {
+        background-color: #1F2937;
+    }
+}
