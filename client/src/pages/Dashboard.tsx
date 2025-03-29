@@ -1,9 +1,7 @@
 import Navigator from "../screens/Navigator";
-import GroupContent from "../screens/GroupContent";
-import FriendContent from "../screens/FriendContent";
 import { getProfileApi, getUsersApi } from "../api/UserApi";
 import { useEffect, useState } from "react";
-import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User, UserGroupListProps } from "../interfaces/interfaces";
+import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User } from "../interfaces/interfaces";
 import ChatScreen from "../screens/ChatScreen";
 import Notifier from "../utilities/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
@@ -16,6 +14,7 @@ import CallComponent from "../components/CallComponent";
 import { getGroupsApi } from "../api/GroupApi";
 import { getNotification } from "../api/NotificationApi";
 import GroupSetting from "../components/GroupSetting";
+import UserGroupList from "../screens/UserGroupList";
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
     const navigate = useNavigate();
@@ -240,7 +239,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     function chattingScreen() {
         return (
             <>
-                corsa<PusherManager serverUrl={serverUrl} />
+                <PusherManager serverUrl={serverUrl} />
                 <NotificationRequest />
                 {!hideUsers() && (
                     <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gray-900/90 rounded-2xl flex flex-col space-y-6 h-full shadow-lg transition-all duration-300`}>
@@ -248,7 +247,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             searchTerm={searchTerm}
                             onSearchChange={handleSearchChange}
                         />
-                        <UserGroupLists
+                        <UserGroupList
                             filteredUsers={filteredUsers}
                             currentUser={currentUser}
                             onlineUsers={onlineUsers}
@@ -371,49 +370,6 @@ const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string, onSea
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex gap-1">
             <kbd className="kbd kbd-sm bg-gray-700 text-gray-300">⌘</kbd>
             <kbd className="kbd kbd-sm bg-gray-700 text-gray-300">K</kbd>
-        </div>
-    </div>
-);
-
-const UserGroupLists = ({ filteredUsers, currentUser, onlineUsers, typingUsers, socket, handleSetUnreads, loading, navigate, serverUrl, imageLoaded, photos, groups }: UserGroupListProps) => (
-    <div className="w-full space-y-6 overflow-hidden h-full">
-        <div className="bg-transparent h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-            <div className="flex flex-col justify-center h-full w-full gap-y-8">
-                <div className="rounded-2xl bg-gray-950/95 p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
-                    <div className="flex w-full justify-between items-center mb-4">
-                        <h2 className="text-2xl font-bold text-gray-200 tracking-tight">Groups</h2>
-                        <button
-                            onClick={() => navigate('/create-group')}
-                            className="btn px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
-                        >
-                            <span>➕</span> New
-                        </button>
-                    </div>
-                    <GroupContent
-                        groups={groups}
-                        socket={socket}
-                        images={imageLoaded}
-                        photos={photos}
-                        serverUrl={serverUrl}
-                        loading={loading}
-                    />
-                </div>
-                <div className="rounded-2xl bg-gray-950/95 p-6 shadow-lg transition-all duration-300 hover:shadow-xl">
-                    <h2 className="text-2xl font-bold text-gray-200 tracking-tight mb-4">Friends</h2>
-                    <FriendContent
-                        unreads={currentUser?.unreads}
-                        initialFriends={filteredUsers}
-                        onlineUsers={onlineUsers}
-                        typingUsers={typingUsers}
-                        socket={socket}
-                        setUnreads={handleSetUnreads}
-                        serverUrl={serverUrl}
-                        images={imageLoaded}
-                        photos={photos}
-                        loading={loading}
-                    />
-                </div>
-            </div>
         </div>
     </div>
 );
