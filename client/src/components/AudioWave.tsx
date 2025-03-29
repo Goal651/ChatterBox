@@ -33,13 +33,13 @@ export default function AudioWave({ audio, audioUrl }: AudioWaveProps): JSX.Elem
 
         // Waveform visualization
         const visualize = async () => {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
             const arrayBuffer = await audio.arrayBuffer();
             const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
             const rawData = audioBuffer.getChannelData(0); // Mono channel
             const samples = 100; // Number of bars
             const blockSize = Math.floor(rawData.length / samples);
-            const filteredData = [];
+            const filteredData: number[] = [];
 
             for (let i = 0; i < samples; i++) {
                 const blockStart = blockSize * i;
