@@ -33,7 +33,6 @@ export default function UserMessages({ messages, mediaType, serverUrl, onDeleteM
         <div className="h-full w-full flex flex-col overflow-x-hidden overflow-y-auto space-y-6 p-4 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
             {messages.length > 0 ? (
                 messages.map((message) => {
-                    const isReceiver = message.sender === componentId;
                     const isSender = message.sender === currentUser._id;
                     const bubbleClass = isSender ? "bg-blue-600/90" : "bg-gray-800/90";
 

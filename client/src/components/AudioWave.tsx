@@ -42,7 +42,7 @@ export default function AudioWave({ audio, audioUrl }: AudioWaveProps): JSX.Elem
             const filteredData = [];
 
             for (let i = 0; i < samples; i++) {
-                let blockStart = blockSize * i;
+                const blockStart = blockSize * i;
                 let sum = 0;
                 for (let j = 0; j < blockSize; j++) {
                     sum += Math.abs(rawData[blockStart + j]);
@@ -128,7 +128,6 @@ export default function AudioWave({ audio, audioUrl }: AudioWaveProps): JSX.Elem
                 <span className="text-gray-200 text-sm font-medium">{formatTime(duration)}</span>
             </div>
             <button
-                onClick={() => setRecordedMedia(null)}
                 className="p-2 bg-red-600 rounded-full shadow-md hover:bg-red-700 transition-all duration-200"
             >
                 <FaTrash className="w-5 h-5 text-white" />
