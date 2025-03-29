@@ -214,6 +214,7 @@ export interface MessageProps {
     }
     photos: Photos[]
     images: (data: Photos) => void
+    onEditMessage: (message: Message) => void
 }
 
 
@@ -253,6 +254,7 @@ export interface Notification {
 
 export interface SenderProps {
     socket: Socket,
+    messageInEdition: Message | null
     sentMessage: ({ message }: { message: Message }) => void
     sentGroupMessage: ({ message }: { message: GroupMessage }) => void
     serverUrl: string

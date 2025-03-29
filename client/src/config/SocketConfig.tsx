@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-
-//https://chatterbox-production-bb1f.up.railway.app/
 export default function useSocketConfig({ serverUrl, status }: { serverUrl: string, status: boolean }): Socket {
     const socketRef = useRef<Socket | null>(null);
 
@@ -14,8 +12,7 @@ export default function useSocketConfig({ serverUrl, status }: { serverUrl: stri
         });
     }
 
-    const [socket, setSocket] = useState(socketRef.current)
-
+    const [socket, setSocket] = useState(socketRef.current);
 
     const connectToServer = () => {
         if (socketRef.current) {
@@ -24,12 +21,13 @@ export default function useSocketConfig({ serverUrl, status }: { serverUrl: stri
                     token: localStorage.getItem('token'),
                 },
             });
-            setSocket(temp)
+            setSocket(temp);
         }
-    }
+    };
 
     useEffect(() => {
         const handleConnectError = (error: { message: string }) => {
+            console.error("Socket connection error:", error.message);
 
             if (error.message.includes('Authentication error')) {
                 if (!localStorage.getItem('redirected')) {
@@ -37,15 +35,17 @@ export default function useSocketConfig({ serverUrl, status }: { serverUrl: stri
                     window.location.href = '/login';
                 }
             } else if (error.message.includes('xhr poll error')) {
-                if(localStorage.getItem('noInternet') === 'true') return
+                if (localStorage.getItem('noInternet') === 'true') return;
                 localStorage.setItem('noInternet', 'true');
                 window.location.href = '/no-internet';
             }
-            //  else connectToServer()
-
         };
 
-        const handleConnect = () => localStorage.removeItem('redirected');
+        const handleConnect = () => {
+            console.log("Socket connected");
+            localStorage.removeItem('redirected');
+            localStorage.removeItem('noInternet');
+        };
 
         // Attach event listeners
         socket.on('connect_error', handleConnectError);
@@ -58,8 +58,9 @@ export default function useSocketConfig({ serverUrl, status }: { serverUrl: stri
         };
     }, [socket]);
 
-
-    useEffect(() => { if (status === true) connectToServer() }, [status])
+    useEffect(() => {
+        if (status === true) connectToServer();
+    }, [status]);
 
     return socket;
 }

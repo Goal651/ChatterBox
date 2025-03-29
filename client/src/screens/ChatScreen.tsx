@@ -1,7 +1,7 @@
 import { FaArrowLeft, FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
 import Messages from "./Messages";
 import Sender from "./Sender";
-import { ChatScreenProps, GroupMessage, GroupUser, Message, SocketMessageProps, } from "../interfaces/interfaces";
+import { ChatScreenProps, GroupMessage, GroupUser, Message, SocketMessageProps } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
@@ -17,22 +17,27 @@ const ChatScreen = ({
     mediaType,
     loadedImage,
     photos,
-    groups }: ChatScreenProps) => {
+    groups
+}: ChatScreenProps) => {
 
-    const [component, setComponent] = useState<GroupUser | null>(null)
-    const [message, setMessage] = useState<Message | null>(null)
-    const [groupMessage, setGroupMessage] = useState<GroupMessage | null>(null)
-    const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null)
-    const [isUserTyping, setIsUserTyping] = useState(false)
+    const [component, setComponent] = useState<GroupUser | null>(null);
+    const [message, setMessage] = useState<Message | null>(null);
+    const [messageInEdition, setMessageInEdition] = useState<Message | null>(null);
+    const [groupMessage, setGroupMessage] = useState<GroupMessage | null>(null);
+    const [socketMessage, setSocketMessage] = useState<SocketMessageProps | null>(null);
+    const [isUserTyping, setIsUserTyping] = useState(false);
     const { componentId, sessionType } = useParams();
-    const navigate = useNavigate()
-    const [callType, setCallType] = useState(false)
-    const [isUserCalling, setIsUserCalling] = useState(false)
+    const navigate = useNavigate();
+    const [callType, setCallType] = useState(false);
+    const [isUserCalling, setIsUserCalling] = useState(false);
 
     useEffect(() => {
         let result;
-        if (sessionType == 'chat') result = users.find((user) => user._id === componentId) as GroupUser;
-        else if (sessionType == 'group') result = groups.find((group) => group._id === componentId) as unknown as GroupUser
+        if (sessionType === 'chat') {
+            result = users.find((user) => user._id === componentId) as GroupUser;
+        } else if (sessionType === 'group') {
+            result = groups.find((group) => group._id === componentId) as unknown as GroupUser;
+        }
         if (result) {
             setComponent(result);
             sessionStorage.setItem("selectedUser", JSON.stringify(result));
@@ -40,10 +45,8 @@ const ChatScreen = ({
     }, [users, componentId, groups, sessionType]);
 
     const handleSentMessage = ({ message }: { message: Message }) => {
-
         setMessage(message);
         sentMessage(message);
-
     };
 
     const handleSentGroupMessage = ({ message }: { message: GroupMessage }) => {
@@ -51,8 +54,7 @@ const ChatScreen = ({
             setGroupMessage(message);
             sentGroupMessage(message);
         }
-    }
-
+    };
 
     useEffect(() => {
         if (!socket) return;
@@ -63,49 +65,55 @@ const ChatScreen = ({
         };
 
         const handleTypingUser = (data: { typingUserId: string }) => {
-            if (componentId == data.typingUserId) {
-                setIsUserTyping(true)
-            } else setIsUserTyping(false)
-        }
+            if (componentId === data.typingUserId) {
+                setIsUserTyping(true);
+            } else {
+                setIsUserTyping(false);
+            }
+        };
 
         const handleNotTypingUser = (data: { typingUserId: string }) => {
-            if (componentId == data.typingUserId) {
-                setIsUserTyping(false)
+            if (componentId === data.typingUserId) {
+                setIsUserTyping(false);
             }
-        }
+        };
 
         socket.on("receiveMessage", handleSentMessage);
         socket.on("messageSent", handleSocketMessage);
-        socket.on("userTyping", handleTypingUser)
-        socket.on("userNotTyping", handleNotTypingUser)
+        socket.on("userTyping", handleTypingUser);
+        socket.on("userNotTyping", handleNotTypingUser);
 
         return () => {
             socket.off("receiveMessage", handleSentMessage);
             socket.off("messageSent", handleSocketMessage);
-            socket.off("userTyping", handleTypingUser)
-            socket.off("userNotTyping", handleNotTypingUser)
+            socket.off("userTyping", handleTypingUser);
+            socket.off("userNotTyping", handleNotTypingUser);
         };
-    }, [socket]);
+    }, [socket, componentId, sentMessage]);
 
     const handleAudioCall = () => {
-        setCallType(false)
-        setIsUserCalling(true)
-    }
+        setCallType(false);
+        setIsUserCalling(true);
+    };
 
     const handleVideoCall = () => {
-        setCallType(true)
-        setIsUserCalling(true)
-    }
+        setCallType(true);
+        setIsUserCalling(true);
+    };
 
     const handleCallCancellation = () => {
-        setCallType(false)
-        setIsUserCalling(false)
-    }
-    const handleCallEnded = () => {
-        setCallType(false)
-        setIsUserCalling(false)
-    }
+        setCallType(false);
+        setIsUserCalling(false);
+    };
 
+    const handleCallEnded = () => {
+        setCallType(false);
+        setIsUserCalling(false);
+    };
+
+    const handleEditMessage = (message: Message) => {
+        setMessageInEdition(message);
+    };
 
     if (!component) return (
         <div className="flex items-center justify-center w-full h-full">
@@ -113,7 +121,7 @@ const ChatScreen = ({
                 Select friend or group to start chatting
             </div>
         </div>
-    )
+    );
 
     return (
         <>
@@ -128,7 +136,7 @@ const ChatScreen = ({
                 callEnded={handleCallEnded}
             />
 
-            <div className=" flex justify-between border-b border-slate-700 pb-6 ">
+            <div className="flex justify-between border-b border-slate-700 pb-6">
                 <div className="flex space-x-2 items-center">
                     {(mediaType.isMobile || mediaType.isTablet) && (
                         <FaArrowLeft
@@ -136,24 +144,20 @@ const ChatScreen = ({
                             onClick={() => navigate('/chat/')}
                         />
                     )}
-                    <div
-                        className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full"
-
-                    >
+                    <div className="w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 object-cover rounded-full">
                         <ProfilePicturePreview
                             profilePicture={component?.image}
                             serverUrl={serverUrl}
                             loadedImage={loadedImage}
                             photos={photos}
-                            username={sessionType == 'chat' ? component.username || 'U' : component.groupName || ''}
+                            username={sessionType === 'chat' ? component.username || 'U' : component.groupName || ''}
                             textSize="text-3xl"
                         />
                     </div>
 
                     <div className="flex flex-col">
                         <div className="text-white font-semibold text-xl">
-                            {sessionType == 'chat' ? component.username : component.groupName
-                            }
+                            {sessionType === 'chat' ? component.username : component.groupName}
                         </div>
                         {isUserTyping ? (
                             <div className="text-green-500">typing...</div>
@@ -165,11 +169,14 @@ const ChatScreen = ({
                 <div className="flex space-x-2 sm:space-x-4 md:space-x-6 lg:space-x-8 items-center">
                     <FaPhone
                         onClick={handleAudioCall}
-                        className="rotate-90 text-blue-500 w-6 h-6" />
+                        className="rotate-90 text-blue-500 w-6 h-6"
+                    />
                     <FaVideo
                         onClick={handleVideoCall}
-                        className="text-blue-500 w-6 h-6" />
-                    <FaEllipsisV className="text-blue-500 w-6 h-6"
+                        className="text-blue-500 w-6 h-6"
+                    />
+                    <FaEllipsisV
+                        className="text-blue-500 w-6 h-6"
                         onClick={() => navigate('setting')}
                     />
                 </div>
@@ -187,6 +194,7 @@ const ChatScreen = ({
                         mediaType={mediaType}
                         photos={photos}
                         images={loadedImage}
+                        onEditMessage={handleEditMessage}
                     />
                 </div>
                 <div className="h-1/6 flex items-center">
@@ -194,7 +202,9 @@ const ChatScreen = ({
                         socket={socket}
                         sentMessage={handleSentMessage}
                         sentGroupMessage={handleSentGroupMessage}
-                        serverUrl={serverUrl} />
+                        serverUrl={serverUrl}
+                        messageInEdition={messageInEdition}
+                    />
                 </div>
             </div>
         </>

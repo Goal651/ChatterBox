@@ -1,57 +1,57 @@
-import * as iconsFa from "react-icons/fa"
-import { CreateGroupProps, User } from "../interfaces/interfaces"
-import { useNavigate } from "react-router-dom"
-import { useState } from "react"
-import { createGroup } from "../api/GroupApi"
-import axios from "axios"
-
+import * as iconsFa from "react-icons/fa";
+import { CreateGroupProps, User } from "../interfaces/interfaces";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { createGroup } from "../api/GroupApi";
+import axios from "axios";
 
 export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
-    const navigate = useNavigate()
-    const [loading, setLoading] = useState(false)
-    const [groupName, setGroupName] = useState("")
-    const [groupDescription, setGroupDescription] = useState("")
-    const [searchTerm, setSearchTerm] = useState("")
-    const [selectedMembers, setSelectedMembers] = useState<User[]>([])
-    const [groupNameError, setGroupNameError] = useState(false)
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [groupName, setGroupName] = useState("");
+    const [groupDescription, setGroupDescription] = useState("");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedMembers, setSelectedMembers] = useState<User[]>([]);
+    const [groupNameError, setGroupNameError] = useState(false);
 
     const checkInputs = () => {
-        let hasError = false
+        let hasError = false;
         if (!groupName) {
-            setGroupNameError(true)
-            hasError = true
+            setGroupNameError(true);
+            hasError = true;
         } else {
-            setGroupNameError(false)
+            setGroupNameError(false);
         }
-        return !hasError // Return false if there's an error
-    }
-
+        return !hasError; // Return false if there's an error
+    };
 
     const handleGroupNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setGroupName(e.target.value)
-        if (e.target.value.trim()) setGroupNameError(false)
-    }
+        setGroupName(e.target.value);
+        if (e.target.value.trim()) setGroupNameError(false);
+    };
 
     const handleGroupDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setGroupDescription(e.target.value)
-    }
+        setGroupDescription(e.target.value);
+    };
 
     const toggleMemberSelection = (member: User) => {
-        if (selectedMembers.find((m) => m._id === member._id)) setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id))
-        else setSelectedMembers([...selectedMembers, member])
-
-    }
+        if (selectedMembers.find((m) => m._id === member._id)) {
+            setSelectedMembers(selectedMembers.filter((m) => m._id !== member._id));
+        } else {
+            setSelectedMembers([...selectedMembers, member]);
+        }
+    };
 
     const filteredUserList = userList.filter(
         (user) =>
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    );
 
     const handleCreateGroup = async () => {
         if (!checkInputs()) {
-            console.error("error")
-            return
+            console.error("Group name is required");
+            return;
         }
 
         try {
@@ -59,28 +59,30 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 groupName,
                 description: groupDescription,
                 members: selectedMembers ? selectedMembers.map((member) => member._id) : [],
-            }
+            };
             if (groupName) {
-                setLoading(true)
-                const response = await createGroup(serverUrl, groupData)
+                setLoading(true);
+                const response = await createGroup(serverUrl, groupData);
                 if (response.status === 200) {
-                    setLoading(false)
-                    navigate("/group/" + response.data.groupId)
+                    setLoading(false);
+                    navigate("/group/" + response.data.groupId);
                 }
             }
         } catch (error) {
-            setLoading(false)
+            setLoading(false);
             if (axios.isAxiosError(error)) {
                 if (!error.response) {
-                    navigate("/no-internet")
-                    return
+                    navigate("/no-internet");
+                    return;
                 }
                 if (error.response.status === 500) {
-                    console.error(error.response.data.message)
+                    console.error(error.response.data.message);
                 }
+            } else {
+                console.error("Unexpected error:", error);
             }
         }
-    }
+    };
 
     return (
         <div className="w-full flex flex-col items-center p-6 space-y-6 bg-black h-full rounded-2xl overflow-y-auto overflow-x-hidden">
@@ -175,5 +177,5 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 </button>
             </div>
         </div>
-    )
+    );
 }

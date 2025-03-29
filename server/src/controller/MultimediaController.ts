@@ -14,6 +14,11 @@ const fileUpload = async (req: Request, res: Response) => {
             typefolder: string
         };
 
+        if (!name || !totalchunks || !currentchunk || !typefolder) {
+            res.status(400).json({ message: 'Missing required headers' });
+            return;
+        }
+
         const filename = decodeURIComponent(name);
         const firstChunk = parseInt(currentchunk) === 0;
         const lastChunk = parseInt(currentchunk) === (parseInt(totalchunks) - 1);
@@ -66,10 +71,15 @@ const sendFileStream = async (req: Request, res: Response) => {
         const fileName = req.params.fileName;
         if (!fileName) {
             res.status(404).json({ message: 'File not found' });
-            return
+            return;
         }
 
         const filePath = path.join(__dirname, `../uploads/messages/${fileName}`);
+        if (!fs.existsSync(filePath)) {
+            res.status(404).json({ message: 'File not found' });
+            return;
+        }
+
         const stat = fs.statSync(filePath);
         const fileSize = stat.size;
         const range = req.headers.range;
@@ -96,38 +106,37 @@ const sendFileStream = async (req: Request, res: Response) => {
     }
 };
 
-
 const sendFile = async (req: Request, res: Response) => {
     try {
         const { fileName } = req.params as { fileName: string };
 
         if (!fileName) {
             res.status(400).json({ message: 'Filename is required' });
-            return
+            return;
         }
 
         const filePath = path.join(__dirname, '../uploads/messages/', fileName);
 
         if (!fs.existsSync(filePath)) {
-            res.status(404).json({ message: 'File not found' })
-            return
+            res.status(404).json({ message: 'File not found' });
+            return;
         }
 
         const fileBuffer = await fs.promises.readFile(filePath);
-        const mimeType = mime.lookup(fileName) || 'application/octet-stream'
+        const mimeType = mime.lookup(fileName) || 'application/octet-stream';
 
         const fileBase64 = fileBuffer.toString('base64');
-        const finalFile = `data:${mimeType};base64,${fileBase64}`
+        const finalFile = `data:${mimeType};base64,${fileBase64}`;
 
         res.status(200).json({ file: finalFile, fileType: mimeType });
-
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal Server Error' });
     }
 };
+
 export default {
     fileUpload,
     sendFileStream,
     sendFile
-}
+};

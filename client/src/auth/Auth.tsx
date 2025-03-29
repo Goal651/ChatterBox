@@ -68,7 +68,7 @@ export default function Auth({ serverUrl }: { serverUrl: string }) {
         };
 
         checkAuth();
-    }, [token, navigate]);
+    }, [token, navigate, serverUrl]);
 
     return (
         <div>

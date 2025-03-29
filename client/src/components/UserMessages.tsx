@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef } from "react";
 
 interface UserMessagesProps {
     messages: Message[],
+    onEditMessage: (message: Message) => void
+    onDeleteMessage: (message: Message) => void
     mediaType: {
         isDesktop: boolean
         isTablet: boolean
@@ -14,7 +16,7 @@ interface UserMessagesProps {
 }
 
 
-export default function UserMessages({ messages, mediaType, serverUrl }: UserMessagesProps) {
+export default function UserMessages({ messages, mediaType, serverUrl, onDeleteMessage, onEditMessage }: UserMessagesProps) {
     const { componentId } = useParams()
     const endMessageRef = useRef<HTMLDivElement | null>(null);
     const currentUserData = sessionStorage.getItem('currentUser')
@@ -53,10 +55,10 @@ export default function UserMessages({ messages, mediaType, serverUrl }: UserMes
                                     </div>
                                     <div className="rounded-full shadow-md opacity-80 hover:opacity-100 transition-opacity duration-200">
                                         <div className={`dropdown  ${isReceiver ? 'dropdown-right' : 'dropdown-left'}`}>
-                                            <div tabIndex={0} role="button" className="btn btn-sm p-1">⬆️</div>
+                                            <div tabIndex={0} role="button" className="btn btn-sm p-1 mr-3">edit</div>
                                             <ul tabIndex={0} className="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-                                                <li><a>Reply</a></li>
-                                                <li><a>Forward</a></li>
+                                                <li onClick={() => isSender && onEditMessage(message)}><a>Reply</a></li>
+                                                <li onClick={() => isSender && onDeleteMessage(message)}><a>Delete</a></li>
                                             </ul>
                                         </div>
                                     </div>

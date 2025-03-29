@@ -49,14 +49,13 @@ const NetworkChecker = ({ serverUrl }: { serverUrl: string }) => {
             window.removeEventListener("offline", checkInternetStatus);
         };
     }, []);
-    // Empty dependency array ensures this effect runs only once when the component is mounted
 
     useEffect(() => {
         if (isOnline && serverStatus === "up") {
             // Both internet and server are online, navigate to '/'
             navigate("/");
         }
-    }, [isOnline, serverStatus, navigate]); // React to changes in internet and server status
+    }, [isOnline, serverStatus, navigate]);
 
     return (
         <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 text-white text-center">

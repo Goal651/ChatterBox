@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { Request, Response } from 'express'
 import crypto from 'crypto'
-import { Message, GroupMessage, User, Group } from '../interface/interface'
+import { Message, GroupMessage, User, Group } from '../interfaces/interface'
 import model from '../model/model'
 import decryptController from '../security/Decryption'
 
