@@ -48,9 +48,9 @@ const signup = async (req: Request, res: Response) => {
         }
         emailService.sendEmail(emailObject)
         await newUser.save()
-        res.status(200).json({ message: 'Account created successfully' })
+        res.json({ message: 'Account created successfully' })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -92,10 +92,12 @@ const login = async (req: Request, res: Response) => {
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' })
 
         const header = new Headers({ accesstoken: accessToken })
-        if (user.email === 'test1@gmail.com') res.setHeaders(header).redirect('/admin/dash')
-        else res.setHeaders(header)
+
+        if (user.email === 'test1@gmail.com') res.setHeaders(header).redirect(200, '/api/')
+        else res.setHeaders(header).redirect('/')
+
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -134,7 +136,7 @@ const getUsers = async (req: Request, res: Response) => {
 
         res.json({ users: usersWithMessages })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -171,9 +173,9 @@ const getUserProfile = async (req: Request, res: Response) => {
             latestMessage: latestMessage
         } as unknown as User
 
-        res.status(200).json({ user: userObject })
+        res.json({ user: userObject })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -196,8 +198,8 @@ const getUser = async (req: Request, res: Response) => {
             lastActiveTime: user.lastActiveTime
         }
         res.status(200).json({ user: userObject })
-    } catch (err) { 
-        res.redirect('/error')
+    } catch (err) {
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -215,7 +217,7 @@ const updateUser = async (req: Request, res: Response) => {
         await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email })
         res.status(200).json({ message: 'user updated' })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -239,7 +241,7 @@ const editUserPassword = async (req: Request, res: Response) => {
         await model.User.findByIdAndUpdate(userId, { password: hash })
         res.status(200).json({ message: 'user updated' })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -252,7 +254,7 @@ const editUserProfilePicture = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'profile picture updated successfull' })
     } catch (error) {
         console.error(error)
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
     }
 }
 

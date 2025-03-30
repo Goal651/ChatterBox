@@ -14,7 +14,7 @@ const router = express.Router()
 //Authentication
 router.get('/auth', auth.checkToken, auth.checkUser)
 router.post('/login', userController.login)
-router.get('/verifyEmail/:token',auth.verifyUser)
+router.get('/verifyEmail/:token', auth.verifyUser)
 
 //pinging server
 router.get('/ping', groupController.ping)
@@ -52,5 +52,10 @@ router.get('/getNotifications', auth.checkToken, notificationController.getNotif
 
 //apis for admin
 router.get('/admin/stats', isAdmin, adminController.getAdminStats)
+
+//
+router.get('*', (req, res) => {
+    res.send("Hello there what are you looking for?")
+})
 
 export default router;

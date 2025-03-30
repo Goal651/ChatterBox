@@ -47,25 +47,10 @@ export default function Login({ serverUrl, status }: LoginProps) {
     e.preventDefault();
 
     setLoading(true);
-    try {
-      const { data } = await axios.post(`${serverUrl}/login`, formData);
-      status(true);
-      localStorage.setItem("token", data.accessToken);
-      if (data.role === 'admin') navigate("/admin/dashboard");
-      else navigate("/chat/");
-    } catch (error) {
-      setLoading(false);
-      if (axios.isAxiosError(error)) {
-        if (!error.response) {
-          navigate("/no-internet");
-          return;
-        }
-        setErrorMessage(error.response.data.message);
-      } else {
-        console.error("Unexpected error:", error);
-        setErrorMessage("An unexpected error occurred. Please try again.");
-      }
-    }
+    const { data } = await axios.post(`${serverUrl}/login`, formData);
+    console.log(data)
+    status(true);
+
   };
 
   return (

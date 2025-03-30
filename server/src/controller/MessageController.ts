@@ -133,7 +133,8 @@ const getMessage = async (req: Request, res: Response) => {
         res.status(200).json({ messages: result.reverse() })
     } catch (error) {
         console.error(error)
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
+
     }
 }
 
@@ -163,7 +164,8 @@ const getGMessage = async (req: Request, res: Response) => {
         res.status(200).json({ messages: messages })
     } catch (error) {
         console.error(error)
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
+
     }
 }
 

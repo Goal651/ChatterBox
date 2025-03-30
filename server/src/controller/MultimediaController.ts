@@ -131,7 +131,7 @@ const sendFile = async (req: Request, res: Response) => {
         res.status(200).json({ file: finalFile, fileType: mimeType });
     } catch (error) {
         console.error(error);
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
     }
 };
 

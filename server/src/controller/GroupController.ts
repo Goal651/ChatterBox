@@ -91,7 +91,7 @@ const createGroup = async (req: Request, res: Response) => {
         res.redirect('/')
     } catch (err) {
         console.error('Error creating group:', err);
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
     }
 };
 
@@ -137,7 +137,7 @@ const getGroups = async (req: Request, res: Response) => {
         res.status(200).json({ groups: groupsWithDetails });
     } catch (err) {
         console.error(err)
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
     }
 }
 
@@ -170,7 +170,7 @@ const getGroup = async (req: Request, res: Response) => {
         res.status(200).json({ group: groupObject });
     } catch (err) {
         console.error(err)
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
     }
 };
 
@@ -186,7 +186,7 @@ const updateGroupPhoto = async (req: Request, res: Response) => {
         await model.Group.updateOne({ name: group }, { image: filePath })
         res.status(200).json({ message: 'group updated' })
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
 }
@@ -241,10 +241,10 @@ const updateGroup = async (req: Request, res: Response) => {
         })
         res.status(200).json({ message: 'Group updated successfully' });
     } catch (err) {
-        res.redirect('/error')
+        res.status(500).json({ message: 'Internal server error' })
         console.error(err)
     }
-};      
+};
 
 
 const ping = async (req: Request, res: Response) => {

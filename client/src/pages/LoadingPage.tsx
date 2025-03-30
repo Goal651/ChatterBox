@@ -7,7 +7,7 @@ const LoadingPage: React.FC = () => {
                 <div
                     className="animate-spin rounded-full h-24 w-24 border-t-4 border-blue-500 border-opacity-75"
                     aria-label="Loading spinner"
-                ></div>
+                />
                 <p className="text-gray-300 mt-6 text-lg font-semibold">Loading, please wait...</p>
             </div>
         </div>
