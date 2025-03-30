@@ -93,8 +93,8 @@ const login = async (req: Request, res: Response) => {
 
         const header = new Headers({ accesstoken: accessToken })
 
-        if (user.email === 'test1@gmail.com') res.setHeaders(header).redirect(200, '/api/')
-        else res.setHeaders(header).redirect('/')
+        res.json({ accessToken })
+
 
     } catch (err) {
         res.status(500).json({ message: 'Internal server error' })
