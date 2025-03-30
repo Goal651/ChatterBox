@@ -1,5 +1,5 @@
 import Navigator from "../screens/Navigator";
-import { getProfileApi, getUsersApi } from "../api/UserApi";
+import { getProfileApi, getUsersApi } from "../apis/UserApi";
 import { useEffect, useState } from "react";
 import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User } from "../interfaces/interfaces";
 import ChatScreen from "../screens/ChatScreen";
@@ -11,8 +11,8 @@ import Notifications from "../screens/Notifications";
 import PusherManager from '../config/PusherManager';
 import NotificationRequest from "../utilities/Permissions";
 import CallComponent from "../components/CallComponent";
-import { getGroupsApi } from "../api/GroupApi";
-import { getNotification } from "../api/NotificationApi";
+import { getGroupsApi } from "../apis/GroupApi";
+import { getNotification } from "../apis/NotificationApi";
 import GroupSetting from "../components/GroupSetting";
 import UserGroupList from "../screens/UserGroupList";
 

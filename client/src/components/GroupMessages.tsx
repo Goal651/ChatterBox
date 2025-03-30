@@ -27,7 +27,7 @@ export default function GroupMessages({ messages, mediaType, serverUrl, photos, 
 
                     return (
                         <div key={message._id} className={`flex w-full ${isSender ? "justify-end" : "justify-start"}`}>
-                            <div className={`chat flex flex-col gap-1 max-w-[75%] ${isSender ? "items-end" : "items-start"}`}>
+                            <div className={`chat flex  gap-1 max-w-[75%] ${isSender ? "items-end" : "items-start"}`}>
                                 {!isSender && (
                                     <div className="chat-image mb-2">
                                         <div className="w-10 h-10 relative group">

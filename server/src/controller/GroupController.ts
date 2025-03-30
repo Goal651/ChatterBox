@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import validator from '../validator/validator';
 import model from '../model/model';
-import { User, Group, GroupMember } from '../interfaces/interface'
+import { Group, GroupMember } from '../interfaces/interface'
 import keyController from '../security/KeysController'
 
 
@@ -32,8 +32,6 @@ const createGroup = async (req: Request, res: Response) => {
             return
         }
 
-        console.log("test coming data",value)
-
         const { groupName, description, members } = value as {
             groupName: string;
             image: string;
@@ -41,17 +39,15 @@ const createGroup = async (req: Request, res: Response) => {
             members: string[];
         };
 
-
-
         // Check if group name is already taken
         const existingGroup = await model.Group.findOne({ groupName }).select('_id');
         if (existingGroup) {
-            res.status(400).json({ message: 'Group name is already taken' });
+            res.json({ message: 'Group name is already taken' });
             return
         }
 
         // Ensure the creator is in the group and remove duplicates
-        const uniqueMembers = Array.from(new Set([...members, userId]));
+        const uniqueMembers: string[] = Array.from(new Set([...members, userId]));
 
         // Assign roles (admin for creator, member for others)
         const membersToBeSaved = uniqueMembers.map((member) => ({
@@ -62,7 +58,7 @@ const createGroup = async (req: Request, res: Response) => {
         // Generate cryptographic keys
         const keys = keyController.generateGroupKeys();
         if (!keys || !keys.aesKey || !keys.iv || !keys.encryptedPrivateKey) {
-            res.status(500).json({ message: 'Failed to generate group encryption keys' });
+            res.status(400).json({ message: 'Group creation failed. Please try again later' });
             return
         }
 
@@ -76,9 +72,6 @@ const createGroup = async (req: Request, res: Response) => {
             encryptedPrivateKey: keys.encryptedPrivateKey,
         });
 
-        console.log("test processed data",newGroup)
-
-
         await Promise.all([
             newGroup.save(),
             model.User.updateMany(
@@ -86,12 +79,19 @@ const createGroup = async (req: Request, res: Response) => {
                 { $addToSet: { groups: newGroup._id } }
             ),
         ]);
+        uniqueMembers.forEach(async (member) => {
+            const newNotification = new model.Notification({
+                title: groupName,
+                userId: member,
+                details: 'Welcome to group ' + groupName
+            })
+            await newNotification.save()
+        });
 
-        res.status(200).json({ message: 'Group created successfully', groupId: newGroup._id });
-
+        res.redirect('/')
     } catch (err) {
         console.error('Error creating group:', err);
-        res.status(500).json({ message: 'An internal server error occurred' });
+        res.redirect('/error')
     }
 };
 
@@ -116,7 +116,7 @@ const getGroups = async (req: Request, res: Response) => {
         const groups = user?.toObject().groups as unknown as Group[]
 
         if (!groups) {
-            res.status(404).json({ groups: [] })
+            res.status(200).json({ groups: [] })
             return
         }
 
@@ -137,7 +137,7 @@ const getGroups = async (req: Request, res: Response) => {
         res.status(200).json({ groups: groupsWithDetails });
     } catch (err) {
         console.error(err)
-        res.status(500).json({ message: 'Server error' + err });
+        res.redirect('/error')
     }
 }
 
@@ -151,7 +151,7 @@ const getGroup = async (req: Request, res: Response) => {
         }) as unknown as Group;
 
         if (!group) {
-            res.status(404).json({ message: 'Group not found' })
+            res.status(400).json({ message: 'Group not found' })
             return
         }
         const groupMembers = group.members as unknown[] as GroupMember[]
@@ -169,7 +169,8 @@ const getGroup = async (req: Request, res: Response) => {
         }
         res.status(200).json({ group: groupObject });
     } catch (err) {
-        res.status(500).json({ message: 'Server error' + err });
+        console.error(err)
+        res.redirect('/error')
     }
 };
 
@@ -179,54 +180,17 @@ const updateGroupPhoto = async (req: Request, res: Response) => {
         const filePath = req.body as string
         const isGroupThere = await model.Group.findOne({ name: group })
         if (!isGroupThere) {
-            res.status(404).json({ message: 'Group not found' })
+            res.status(400).json({ message: 'Group not found' })
             return
         }
         await model.Group.updateOne({ name: group }, { image: filePath })
         res.status(200).json({ message: 'group updated' })
     } catch (err) {
-        res.status(500).json({ message: 'server error', err })
+        res.redirect('/error')
+        console.error(err)
     }
 }
 
-const addMember = async (req: Request, res: Response) => {
-    try {
-        const { error, value } = validator.addMemberSchema.validate(req.body);
-        if (error) {
-            res.status(400).json({ message: error.details[0].message });
-            return;
-        }
-
-        const { groupName, members } = value as { groupName: string; members: string[] };
-        const group = await model.Group.findOne({ name: groupName });
-
-        if (!group) {
-            res.status(404).json({ message: 'Group not found' });
-            return;
-        }
-
-        let newMembers: string[] = []
-
-        for (const member of members) {
-            const memberExists = group.members.some((m) => m.member.toString() === member)
-            if (!memberExists) {
-                newMembers.push(member)
-            }
-        }
-
-        const resultMembers = newMembers.map((memberId) => ({
-            member: memberId,
-        }))
-
-        await model.Group.findByIdAndUpdate(group._id, {
-            $push: { members: { $each: resultMembers } }
-        });
-
-        res.status(200).json({ message: 'Members updated successfully' });
-    } catch (err) {
-        res.status(500).json({ message: 'Server error: ' + err });
-    }
-};
 
 const updateGroup = async (req: Request, res: Response) => {
     try {
@@ -237,10 +201,11 @@ const updateGroup = async (req: Request, res: Response) => {
         const group = await model.Group.findById(groupId);
 
         if (!group) {
-
-            res.status(404).json({ message: 'Group not found' });
+            res.status(400).json({ message: 'Group not found' });
             return
         }
+
+        const existingGroupMembers = group.members.map(member => member.member)
 
         // Merge new members with existing members if not already present
         const newMembers = members.map((member) => ({
@@ -266,11 +231,20 @@ const updateGroup = async (req: Request, res: Response) => {
             { $addToSet: { groups: groupId } }
         );
 
+        existingGroupMembers.forEach(async member => {
+            const newNotification = new model.Notification({
+                title: group.groupName,
+                userId: member,
+                details: 'New user added ' + group.groupName
+            })
+            await newNotification.save()
+        })
         res.status(200).json({ message: 'Group updated successfully' });
     } catch (err) {
-        res.status(500).json({ message: 'Server error', err });
+        res.redirect('/error')
+        console.error(err)
     }
-};
+};      
 
 
 const ping = async (req: Request, res: Response) => {
@@ -279,12 +253,10 @@ const ping = async (req: Request, res: Response) => {
 
 
 export default {
-
     getGroups,
     getGroup,
     createGroup,
     updateGroupPhoto,
-    addMember,
     updateGroup,
     ping
 };

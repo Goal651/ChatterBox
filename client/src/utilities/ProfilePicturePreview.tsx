@@ -3,8 +3,8 @@ import Modal from "react-modal";
 import { useParams } from "react-router-dom";
 import FileUploader from "./FileUploader";
 import { Photos } from "../interfaces/interfaces";
-import { getFile } from "../api/FileApi";
-import { editUserProfilePicture } from "../api/UserApi";
+import { getFile } from "../apis/FileApi";
+import { editUserProfilePicture } from "../apis/UserApi";
 import { FaTimes } from "react-icons/fa";
 
 Modal.setAppElement("#root");

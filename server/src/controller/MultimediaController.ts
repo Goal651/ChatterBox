@@ -118,7 +118,7 @@ const sendFile = async (req: Request, res: Response) => {
         const filePath = path.join(__dirname, '../uploads/messages/', fileName);
 
         if (!fs.existsSync(filePath)) {
-            res.status(404).json({ message: 'File not found' });
+            res.status(400).json({ message: 'File not found' });
             return;
         }
 
@@ -131,7 +131,7 @@ const sendFile = async (req: Request, res: Response) => {
         res.status(200).json({ file: finalFile, fileType: mimeType });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: 'Internal Server Error' });
+        res.redirect('/error')
     }
 };
 

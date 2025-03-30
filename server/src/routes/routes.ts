@@ -34,7 +34,6 @@ router.get('/getGroup/:name', auth.checkToken, groupController.getGroup);
 router.post('/createGroup', auth.checkToken, groupController.createGroup)
 router.put('/editGroupProfile/:group', auth.checkToken, groupController.updateGroupPhoto)
 router.put('/updateGroup/:groupId', auth.checkToken, groupController.updateGroup)
-router.post('/addMember', auth.checkToken, groupController.addMember)
 
 //apis for messages
 router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)

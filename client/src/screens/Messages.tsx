@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GroupMessage, Message, MessageProps } from "../interfaces/interfaces";
 import { useParams } from "react-router-dom";
-import { getGroupMessagesApi, getMessagesApi } from "../api/MessageApi";
+import { getGroupMessagesApi, getMessagesApi } from "../apis/MessageApi";
 import UserMessages from "../components/UserMessages";
 import GroupMessages from "../components/GroupMessages";
 

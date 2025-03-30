@@ -27,7 +27,7 @@ const checkToken = async (req: Request, res: Response, next: NextFunction) => {
                     res.status(401).json({ message: 'Token expired', newToken });
                     return
                 }
-                res.status(403).json({ message: 'Forbidden: Invalid token' });
+                res.status(400).json({ message: 'Forbidden: Invalid token' });
                 return
             }
             res.locals.user = { userId: decodedToken?.id };
@@ -44,7 +44,7 @@ const checkUser = async (req: Request, res: Response) => {
         const { userId } = res.locals.user
         const user = await model.User.findById(userId).select('_id')
         if (!user) {
-            res.status(404).json({ message: 'User not found' })
+            res.status(400).json({ message: 'User not found' })
             return
         }
         res.status(200).json({ message: 'User found' })
@@ -61,7 +61,7 @@ const verifyUser = async (req: Request, res: Response) => {
         await model.User.updateOne({ _id: decoded.userId }, { isVerified: true });
         res.json({ message: "Email verified successfully!" });
     } catch (error) {
-        res.status(404).json({ message: 'Invalid token' });
+        res.status(400).json({ message: 'Invalid token' });
     }
 }
 

@@ -19,6 +19,7 @@ const webPusherController = async (req: Request, res: Response) => {
         await newSubscription.save();
         res.status(200).json({ message: 'user subscribed' })
     } catch (error) {
+        res.redirect('/error')
         console.error(error)
     }
 };

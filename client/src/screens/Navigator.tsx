@@ -55,6 +55,12 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
                     </div>
                     <span className="hidden xl:block text-gray-300 font-semibold text-xl group-hover:text-blue-400 transition-colors duration-200">Settings</span>
                 </div>
+                <div onClick={() => navigate("/create-group")} className="flex items-center space-x-4 cursor-pointer group transition-all duration-200 hover:bg-gray-800/50 p-2 rounded-lg">
+                    <div className="w-8 h-8 flex-shrink-0">
+                        <iconsFa.FaPlus size="100%" className="text-gray-300 group-hover:text-blue-400 transition-colors duration-200" />
+                    </div>
+                    <span className="hidden xl:block text-gray-300 font-semibold text-xl group-hover:text-blue-400 transition-colors duration-200">New GRoup</span>
+                </div>
             </div>
 
             {/* Logout */}

@@ -1,4 +1,4 @@
-import { Socket, Server } from 'socket.io'
+import {  Server } from 'socket.io'
 import jwt, { JwtPayload } from 'jsonwebtoken'
 import mainAuth from './AuthController'
 

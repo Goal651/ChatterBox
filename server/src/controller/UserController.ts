@@ -50,7 +50,7 @@ const signup = async (req: Request, res: Response) => {
         await newUser.save()
         res.status(200).json({ message: 'Account created successfully' })
     } catch (err) {
-        res.sendStatus(500)
+        res.redirect('/error')
         console.error(err)
     }
 }
@@ -90,14 +90,12 @@ const login = async (req: Request, res: Response) => {
         }
 
         const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, { expiresIn: '1h' })
-        if (!accessToken) {
-            res.status(500).json({ message: 'Internal server error' })
-            return
-        }
-        if(user.email === 'test1@gmail.com')res.status(200).json({ accessToken,role:'admin' })
-        else res.status(200).json({ accessToken })
+
+        const header = new Headers({ accesstoken: accessToken })
+        if (user.email === 'test1@gmail.com') res.setHeaders(header).redirect('/admin/dash')
+        else res.setHeaders(header)
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        res.redirect('/error')
         console.error(err)
     }
 }
@@ -134,9 +132,10 @@ const getUsers = async (req: Request, res: Response) => {
             })
         )
 
-        res.status(200).json({ users: usersWithMessages })
+        res.json({ users: usersWithMessages })
     } catch (err) {
-        res.status(500).json({ message: 'Server error ' + err })
+        res.redirect('/error')
+        console.error(err)
     }
 }
 
@@ -146,7 +145,7 @@ const getUserProfile = async (req: Request, res: Response) => {
         const { userId } = res.locals.user
         const user = await model.User.findById(userId).populate('unreads')
         if (!user) {
-            res.status(404).json({ message: 'user not found' })
+            res.status(400).json({ message: 'user not found' })
             return
         }
 
@@ -173,7 +172,10 @@ const getUserProfile = async (req: Request, res: Response) => {
         } as unknown as User
 
         res.status(200).json({ user: userObject })
-    } catch (err) { res.status(500).json({ message: 'Server error ' + err }) }
+    } catch (err) {
+        res.redirect('/error')
+        console.error(err)
+    }
 }
 
 const getUser = async (req: Request, res: Response) => {
@@ -181,7 +183,7 @@ const getUser = async (req: Request, res: Response) => {
         const { userId } = req.params
         const user = await model.User.findById(userId).select('_id username names email image lastActiveTime groups ')
         if (!user) {
-            res.status(404).json({ message: 'user not found' })
+            res.status(400).json({ message: 'user not found' })
             return
         }
         const userObject = {
@@ -194,7 +196,10 @@ const getUser = async (req: Request, res: Response) => {
             lastActiveTime: user.lastActiveTime
         }
         res.status(200).json({ user: userObject })
-    } catch (err) { res.status(500).json({ message: 'Server error' + err }) }
+    } catch (err) { 
+        res.redirect('/error')
+        console.error(err)
+    }
 }
 
 
@@ -209,7 +214,10 @@ const updateUser = async (req: Request, res: Response) => {
         }
         await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email })
         res.status(200).json({ message: 'user updated' })
-    } catch (err) { res.status(500).json({ message: 'server error ', err }) }
+    } catch (err) {
+        res.redirect('/error')
+        console.error(err)
+    }
 }
 
 const editUserPassword = async (req: Request, res: Response) => {
@@ -218,7 +226,7 @@ const editUserPassword = async (req: Request, res: Response) => {
         const { oldPassword, newPassword } = req.body
         const user = await model.User.findById(userId).select('password')
         if (!user) {
-            res.status(404).json({ message: 'user not found' })
+            res.status(400).json({ message: 'user not found' })
             return
         }
         const validated = bcrypt.compareSync(oldPassword, user.password)
@@ -231,9 +239,8 @@ const editUserPassword = async (req: Request, res: Response) => {
         await model.User.findByIdAndUpdate(userId, { password: hash })
         res.status(200).json({ message: 'user updated' })
     } catch (err) {
-        if (err instanceof Error) {
-            res.status(500).json({ message: 'server error ', err })
-        }
+        res.redirect('/error')
+        console.error(err)
     }
 }
 
@@ -245,7 +252,7 @@ const editUserProfilePicture = async (req: Request, res: Response) => {
         res.status(200).json({ message: 'profile picture updated successfull' })
     } catch (error) {
         console.error(error)
-        res.status(500).json({ message: 'Server error' })
+        res.redirect('/error')
     }
 }
 

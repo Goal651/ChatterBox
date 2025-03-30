@@ -133,7 +133,7 @@ const getMessage = async (req: Request, res: Response) => {
         res.status(200).json({ messages: result.reverse() })
     } catch (error) {
         console.error(error)
-        res.sendStatus(500)
+        res.redirect('/error')
     }
 }
 
@@ -143,7 +143,7 @@ const getGMessage = async (req: Request, res: Response) => {
         const groupData = await model.Group.findById(group)
 
         if (!groupData) {
-            res.status(404).json({ message: 'Group not found' })
+            res.status(400).json({ message: 'Group not found' })
             return
         }
 
@@ -163,7 +163,7 @@ const getGMessage = async (req: Request, res: Response) => {
         res.status(200).json({ messages: messages })
     } catch (error) {
         console.error(error)
-        res.sendStatus(500)
+        res.redirect('/error')
     }
 }
 
