@@ -77,11 +77,11 @@ export default function UserGroupList({
     ].sort((a, b) => {
         const aTime = a.latestMessage ? new Date(a.latestMessage.createdAt).getTime() : 0;
         const bTime = b.latestMessage ? new Date(b.latestMessage.createdAt).getTime() : 0;
-        return bTime - aTime; // Sort by latest message time, descending
+        return bTime - aTime; 
     });
 
     if (loading) return (
-        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 shadow-inner">
             <svg className="animate-spin h-12 w-12 text-blue-500" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
@@ -91,13 +91,13 @@ export default function UserGroupList({
     );
 
     if (combinedList.length === 0) return (
-        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95  shadow-inner">
             <span className="text-gray-300 text-lg font-medium">No friends or groups available</span>
         </div>
     );
 
     return (
-        <div className="bg-gray-950/95 p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-2xl shadow-inner">
+        <div className="bg-transparent p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 shadow-inner ">
             {combinedList.map((item) => {
                 const isGroup = item.isGroup;
                 const id = item._id;

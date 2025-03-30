@@ -14,7 +14,7 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
     };
 
     return (
-        <div className={`flex ${isMobile ? "justify-between w-full" : "flex-col space-y-6 justify-between"} lg:space-y-10 h-full items-center py-4`}>
+        <div className={`flex ${isMobile ? "justify-between w-full" : "flex-col space-y-6 justify-between"} lg:space-y-10 h-full overflow-hidden items-center py-4 `}>
             {/* Profile Picture */}
             <div className="flex justify-center w-12 h-12 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-40 xl:h-40 rounded-full group relative">
                 <ProfilePicturePreview

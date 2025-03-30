@@ -242,7 +242,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 <PusherManager serverUrl={serverUrl} />
                 <NotificationRequest />
                 {!hideUsers() && (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gray-900/90 rounded-2xl flex flex-col space-y-6 h-full shadow-lg transition-all duration-300`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex p-4 flex-col space-y-6 h-screen shadow-lg transition-all duration-300 overflow-hidden`}>
                         <SearchInput
                             searchTerm={searchTerm}
                             onSearchChange={handleSearchChange}
@@ -264,7 +264,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3 rounded-2xl'} bg-gray-950/95 py-4 px-4 sm:px-10 flex flex-col shadow-xl transition-all duration-300`}>
+                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3'} bg-gray-950/95  flex flex-col shadow-xl transition-all duration-300 overflow-hidden`}>
                         {setting === 'setting' ? (
                             <GroupSetting
                                 groups={groups}
@@ -319,7 +319,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     };
 
     return (
-        <div className={`flex ${mediaType.isMobile ? 'flex-col-reverse gap-6 p-3' : 'space-x-6 p-6'} bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 h-screen overflow-hidden`}>
+        <div className={`flex ${mediaType.isMobile && 'flex-col-reverse'} h-screen overflow-hidden`}>
             <CallComponent
                 users={users}
                 isVideoCall={isVideoCall}
@@ -330,7 +330,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 onCancel={handleCallCancellation}
                 callEnded={handleCallCancellation}
             />
-            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit xl:w-72'} bg-gray-950/95 p-6 sm:p-10 rounded-2xl shadow-lg transition-all duration-300 hover:shadow-xl`}>
+            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit xl:w-72'} bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-6 sm:p-10 shadow-lg transition-all duration-300 hover:shadow-xl`}>
                 <Navigator
                     socket={socket}
                     initialCurrentUser={currentUser}
@@ -340,7 +340,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     photos={photos}
                 />
             </div>
-            <div className={`overflow-hidden w-full flex space-x-6 h-full ${mediaType.isMobile && 'space-x-0'}`}>
+            <div className={`overflow-hidden w-full flex  h-full ${mediaType.isMobile && 'space-x-0'}`}>
                 {renderScreen()}
             </div>
         </div>
@@ -348,7 +348,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 }
 
 const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string, onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
-    <div className="relative w-full">
+    <div className="relative w-full ">
         <input
             type="search"
             placeholder="Search friends or groups..."
