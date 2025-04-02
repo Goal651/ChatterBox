@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { subscribeToPush } from '../apis/error';
+import { subscribeToPush } from '../apis/MainApi';
 
 const PushNotifications = ({ serverUrl }: { serverUrl: string }) => {
     useEffect(() => {

@@ -1,290 +1,292 @@
-import { Socket, Server } from 'socket.io';
-import SocketAuthController from '../auth/SocketAuthController';
-import model from '../model/model';
-import WebPusherController from './WebPusherController';
-import encryptionController from '../security/Encryption';
+import { Socket, Server } from 'socket.io'
+import SocketAuthController from '../auth/SocketAuthController'
+import model from '../model/model'
+import WebPusherController from './WebPusherController'
+import encryptionController from '../security/Encryption'
 import {
     GroupMessageData,
     MessageSeenData,
     DeleteMessageData,
     EditMessageData,
     ReactToMessageData
-} from '../interfaces/SocketEventInterfaces';
+} from '../interfaces/SocketEventInterfaces'
 
 interface SentMessages {
-    receiverId: string;
-    message: string;
-    messageType: string;
-    messageId: string | number;
+    receiverId: string
+    message: string
+    messageType: string
+
+    messageId: string | number
+}
+
+const handleSocketError = (socket: Socket, event: string, error: any, message: string) => {
+    console.error(`${event} error:`, error)
+    socket.emit(`${event}Error`, message)
 }
 
 const SocketController = (io: Server) => {
     try {
-        const userSockets: Record<string, string[]> = {};
+        const userSockets: Record<string, string[]> = {}
 
         // Handle authorization
-        SocketAuthController(io);
+        SocketAuthController(io)
 
         io.on('connection', async (socket: Socket) => {
             if (!socket.data?.user?.userId) {
-                socket.disconnect();
-                return;
+                socket.disconnect()
+                return
             }
 
-            const userId: string = socket.data.user.userId;
+            const userId: string = socket.data.user.userId
             if (!userId) {
-                socket.disconnect();
-                return;
+                socket.disconnect()
+                return
             }
 
-            const user = await model.User.findById(userId).select('groups');
+            const user = await model.User.findById(userId).select('groups')
             if (!user) {
-                socket.disconnect();
-                return;
+                socket.disconnect()
+                return
             }
 
-            const userGroups: string[] = user.groups.map(x => x.toString()) || [];
+            const userGroups: string[] = user.groups.map(x => x.toString()) || []
 
-            userGroups.forEach(element => socket.join(element));
-            await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() });
+            userGroups.forEach(element => socket.join(element))
+            await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() })
 
-            userSockets[userId] = userSockets[userId] || [];
-            userSockets[userId].push(socket.id);
+            userSockets[userId] = userSockets[userId] || []
+            userSockets[userId].push(socket.id)
 
-            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0);
-            socket.broadcast.emit('onlineUsers', onlineUsers);
-            io.to(socket.id).emit('onlineUsers', onlineUsers);
-            socket.broadcast.emit('onlineUsers', onlineUsers);
+            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0)
+            socket.broadcast.emit('onlineUsers', onlineUsers)
+            io.to(socket.id).emit('onlineUsers', onlineUsers)
+            socket.broadcast.emit('onlineUsers', onlineUsers)
 
             const emitToUserSockets = (userId: string, event: string, data: any) => {
                 if (userSockets[userId]) {
-                    userSockets[userId].forEach((id) => socket.to(id).emit(event, data));
+                    userSockets[userId].forEach((id) => socket.to(id).emit(event, data))
                 }
-            };
+            }
 
             // Handle initiating a video call
             socket.on('startCall', (data: { receiverId: string, offer: RTCSessionDescriptionInit, isVideoCall: boolean }) => {
                 try {
-                    const { receiverId, offer, isVideoCall } = data;
+                    const { receiverId, offer, isVideoCall } = data
 
                     if (userSockets[receiverId]) {
-                        emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer, isVideoCall: isVideoCall });
+                        emitToUserSockets(receiverId, 'incomingCall', { callerId: userId, offer, isVideoCall: isVideoCall })
                     }
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('callError', 'Failed to start call');
+                    handleSocketError(socket, 'startCall', error, 'Failed to initiate call')
                 }
-            });
+            })
 
             // Handle call acceptance
             socket.on('acceptCall', (data: { callerId: string, answer: RTCSessionDescriptionInit }) => {
                 try {
-                    const { callerId, answer } = data;
+                    const { callerId, answer } = data
 
                     if (userSockets[callerId]) {
-                        emitToUserSockets(callerId, 'callAccepted', { callerId: userId, answer });
+                        emitToUserSockets(callerId, 'callAccepted', { callerId: userId, answer })
                     }
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('callError', 'Failed to accept call');
+                    handleSocketError(socket, 'acceptCall', error, 'Failed to accept call')
                 }
-            });
+            })
 
             socket.on('cancelCall', (data: { receiverId: string }) => {
                 try {
-                    const { receiverId } = data;
+                    const { receiverId } = data
 
                     if (userSockets[receiverId]) {
-                        emitToUserSockets(receiverId, 'callCancelled', { callerId: receiverId });
+                        emitToUserSockets(receiverId, 'callCancelled', { callerId: receiverId })
                     }
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('callError', 'Failed to cancel call');
+                    handleSocketError(socket, 'cancelCall', error, 'Failed to cancel call')
                 }
-            });
+            })
 
             socket.on('rejectCall', (data: { callerId: string }) => {
                 try {
-                    const { callerId } = data;
+                    const { callerId } = data
 
                     if (userSockets[callerId]) {
-                        emitToUserSockets(callerId, 'callRejected', { peerId: userId });
+                        emitToUserSockets(callerId, 'callRejected', { peerId: userId })
                     }
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('callError', 'Failed to reject call');
+                    handleSocketError(socket, 'rejectCall', error, 'Failed to reject call')
                 }
-            });
+            })
 
             socket.on('message', async (data: SentMessages) => {
                 try {
-                    const { receiverId, message, messageType, messageId } = data;
-                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string };
-                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message);
+                    const { receiverId, message, messageType, messageId } = data
+                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
+                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
 
                     const newMessage = new model.Message({
                         sender: userId,
                         receiver: receiverId,
                         message: encryptedMessage,
                         type: messageType,
-                    });
+                    })
 
-                    await newMessage.save();
+                    await newMessage.save()
 
                     const sentMessage = {
                         ...newMessage.toObject(),
                         message,
                         sender: userId,
                         receiver: receiverId,
-                    };
-                    io.to(socket.id).emit('messageSent', { messageId, sentMessage });
-                    emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
+                    }
+                    io.to(socket.id).emit('messageSent', { messageId, sentMessage })
+                    emitToUserSockets(userId, 'receiveSentMessage', sentMessage)
 
                     if (userSockets[receiverId]) {
-                        emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username });
-                        await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true });
-                        io.to(socket.id).emit('messageReceived', { messageId: newMessage._id });
-                        emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
+                        emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username })
+                        await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true })
+                        io.to(socket.id).emit('messageReceived', { messageId: newMessage._id })
+                        emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id })
                     } else {
-                        await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
-                        await WebPusherController.sendDataToWebPush(senderUserName.username, data);
+                        await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } })
+                        await WebPusherController.sendDataToWebPush(senderUserName.username, data)
                     }
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to send message');
+                    handleSocketError(socket, 'message', error, 'Failed to send message')
                 }
-            });
+            })
 
             socket.on("groupMessage", async (data: GroupMessageData) => {
                 try {
-                    const { group, message, messageType, messageId, sender } = data;
-                    const senderName = await model.User.findById(userId);
-                    const groupName = await model.Group.findById(group).select('groupName');
+                    const { group, message, messageType, messageId, sender } = data
+                    const senderName = await model.User.findById(userId)
+                    const groupName = await model.Group.findById(group).select('groupName')
 
                     const newMessage = new model.GMessage({
                         sender: userId,
                         group: group,
                         message: message,
                         type: messageType,
-                    });
+                    })
 
-                    await newMessage.save();
+                    await newMessage.save()
 
                     const sentMessage = {
                         ...newMessage.toObject(),
                         message,
                         sender: sender,
                         group: group,
-                    };
+                    }
 
-                    socket.to(group).emit("receiveGroupMessage", { message: sentMessage, groupName: groupName?.groupName, senderName: senderName?.username });
+                    socket.to(group).emit("receiveGroupMessage", { message: sentMessage, groupName: groupName?.groupName, senderName: senderName?.username })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to send message');
+                    handleSocketError(socket, 'groupMessage', error, 'Failed to send group message')
                 }
-            });
+            })
 
             socket.on('messageSeen', async (data: MessageSeenData) => {
                 try {
-                    const { messageId, receiverId } = data;
-                    await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true, isMessageReceived: true });
-                    emitToUserSockets(receiverId, 'messageSeen', { messageId });
+                    const { messageId, receiverId } = data
+                    await model.Message.findByIdAndUpdate(messageId, { isMessageSeen: true, isMessageReceived: true })
+                    emitToUserSockets(receiverId, 'messageSeen', { messageId })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to mark message as seen');
+                    handleSocketError(socket, 'messageSeen', error, 'Failed to mark message as seen')
+                }
+            })
+
+            socket.on('groupMessageSeen', async (data: { messageId: string; receiverId: string, group: string }) => {
+                try {
+                    await model.GMessage.findByIdAndUpdate(data.messageId, { $push: { seen: { member: data.receiverId, seenAt: new Date() } } });
+                    socket.to(data.group).emit('groupMessageSeen', { messageId: data.messageId });
+                } catch (error) {
+                    handleSocketError(socket, 'groupMessageSeen', error, 'Failed to mark group message as seen');
                 }
             });
 
             socket.on('deleteMessage', async (data: DeleteMessageData) => {
                 try {
-                    const { messageId, receiverId } = data;
-                    await model.Message.findByIdAndDelete(messageId);
-                    emitToUserSockets(receiverId, 'messageDeleted', messageId);
+                    const { messageId, receiverId } = data
+                    await model.Message.findByIdAndDelete(messageId)
+                    emitToUserSockets(receiverId, 'messageDeleted', messageId)
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to delete message');
+                    handleSocketError(socket, 'deleteMessage', error, 'Failed to delete message')
                 }
-            });
+            })
 
             socket.on('editMessage', async (data: EditMessageData) => {
                 try {
-                    const { messageId, message, receiverId } = data;
-                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string };
-                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message);
-                    await model.Message.findByIdAndUpdate(messageId, { message: encryptedMessage, edited: true });
-                    emitToUserSockets(receiverId, 'messageEdited', { messageId, message });
+                    const { messageId, message, receiverId } = data
+                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
+                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
+                    await model.Message.findByIdAndUpdate(messageId, { message: encryptedMessage, edited: true })
+                    emitToUserSockets(receiverId, 'messageEdited', { messageId, message })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to edit message');
+                    handleSocketError(socket, 'editMessage', error, 'Failed to edit message')
                 }
-            });
+            })
 
             socket.on('reactToMessage', async (data: ReactToMessageData) => {
                 try {
-                    const { messageId, receiverId, reaction } = data;
-                    await model.Message.findByIdAndUpdate(messageId, { reaction });
-                    emitToUserSockets(receiverId, 'messageReacted', { messageId, reaction });
+                    const { messageId, receiverId, reaction } = data
+                    await model.Message.findByIdAndUpdate(messageId, { reaction })
+                    emitToUserSockets(receiverId, 'messageReacted', { messageId, reaction })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('messageError', 'Failed to react to message');
+                    handleSocketError(socket, 'reactToMessage', error, 'Failed to react to message')
                 }
-            });
+            })
 
             socket.on("markMessageAsRead", async (data: string[]) => {
                 try {
-                    await model.User.findByIdAndUpdate(userId, { $pull: { unreads: { $in: data } } });
+                    await model.User.findByIdAndUpdate(userId, { $pull: { unreads: { $in: data } } })
                 } catch (error) {
-                    socket.emit("markMessageAsReadError", "Failed to mark messages as read");
+                    handleSocketError(socket, 'markMessageAsRead', error, 'Failed to mark message as read')
                 }
-            });
+            })
 
             // Typing notifications
             socket.on('userTyping', ({ receiverId }: { receiverId: string }) => {
                 try {
-                    emitToUserSockets(receiverId, 'userTyping', { typingUserId: userId });
+                    emitToUserSockets(receiverId, 'userTyping', { typingUserId: userId })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('typingError', 'Failed to send typing notification');
+                    handleSocketError(socket, 'userTyping', error, 'Failed to send typing notification')
                 }
-            });
+            })
 
             socket.on('userNotTyping', ({ receiverId }: { receiverId: string }) => {
                 try {
-                    emitToUserSockets(receiverId, 'userNotTyping', { typingUserId: userId });
+                    emitToUserSockets(receiverId, 'userNotTyping', { typingUserId: userId })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('typingError', 'Failed to send not typing notification');
+                    handleSocketError(socket, 'userNotTyping', error, 'Failed to send typing notification')
                 }
-            });
+            })
 
             socket.on("iceCandidate", (data: { candidate: RTCIceCandidate, receiverId: string }) => {
                 try {
-                    emitToUserSockets(data.receiverId, "iceCandidate", { candidate: data.candidate, receiverId: userId });
+                    emitToUserSockets(data.receiverId, "iceCandidate", { candidate: data.candidate, receiverId: userId })
                 } catch (error) {
-                    console.error(error);
-                    socket.emit('iceCandidateError', 'Failed to send ICE candidate');
+                    handleSocketError(socket, 'iceCandidate', error, 'Failed to send ice candidate')
                 }
-            });
+            })
 
             // Disconnect handling
             socket.on('disconnect', () => {
                 try {
                     if (userSockets[userId]) {
-                        userSockets[userId] = userSockets[userId].filter((id) => id !== socket.id);
+                        userSockets[userId] = userSockets[userId].filter((id) => id !== socket.id)
                         if (userSockets[userId].length === 0) {
-                            delete userSockets[userId];
+                            delete userSockets[userId]
                         }
                     }
-                    const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0);
-                    io.emit('onlineUsers', onlineUsers);
+                    const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0)
+                    io.emit('onlineUsers', onlineUsers)
                 } catch (error) {
-                    console.error(error);
+                    handleSocketError(socket, 'disconnect', error, 'Failed to disconnect')
                 }
-            });
-        });
+            })
+        })
     } catch (error) {
-        console.error(error);
+        console.error(error)
     }
-};
+}
 
-export default SocketController;
+export default SocketController

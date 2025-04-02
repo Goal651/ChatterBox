@@ -4,6 +4,7 @@ import { Photos, User } from "../interfaces/interfaces";
 import { editUserPassword } from "../apis/AuthApi";
 import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
 import { updateUserApi } from "../apis/UserApi";
+import { useNavigate } from "react-router-dom";
 
 interface ProfileDataType {
     username: string;
@@ -13,6 +14,7 @@ interface ProfileDataType {
 }
 
 export default function Setting({ userData, serverUrl, loadedImage, photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void, photos: Photos[] }) {
+    const navigate=useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
@@ -78,7 +80,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
         };
         setIsSubmitting(true);
         try {
-            await updateUserApi(serverUrl, submitObject);
+            await updateUserApi(serverUrl, submitObject, navigate);
             handleNotification("Profile updated successfully!", "success");
             setIsSubmitting(false);
         } catch (error) {

@@ -1,11 +1,11 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as iconsFa from "react-icons/fa";
 import { CreateGroupProps, User } from "../interfaces/interfaces";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { createGroup } from "../apis/GroupApi";
+import { createGroupApi } from "../apis/GroupApi";
 import axios from "axios";
 
-export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
+export default function CreateGroup({ userList, serverUrl}: CreateGroupProps) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -61,7 +61,7 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 members: selectedMembers.map((member) => member._id),
             };
             setLoading(true);
-            const response = await createGroup(serverUrl, groupData);
+            const response = await createGroupApi(serverUrl, groupData, navigate);
             if (response.status === 200) {
                 navigate("/group/" + response.data.groupId);
             }
@@ -83,10 +83,8 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
     };
 
     return (
-        <div className="w-full flex flex-col items-center p-6 space-y-8 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 h-full  overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 shadow-inner">
+        <div className="w-full flex flex-col items-center p-6 space-y-8 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 h-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 shadow-inner">
             <h1 className="text-3xl font-bold text-gray-200">Create a New Group</h1>
-
-            {/* Group Details */}
             <div className="w-full max-w-lg bg-gray-950/50 p-6 rounded-xl shadow-md">
                 <div className="text-xl font-semibold text-gray-200 mb-4 flex items-center gap-2">
                     <iconsFa.FaUsers className="text-blue-500 w-6 h-6" />
@@ -116,8 +114,6 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Add Members */}
             <div className="w-full max-w-lg bg-gray-950/50 p-6 rounded-xl shadow-md">
                 <h2 className="text-xl font-semibold text-gray-200 mb-4 flex items-center gap-2">
                     <iconsFa.FaUserPlus className="text-green-500 w-6 h-6" />
@@ -155,8 +151,6 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                     </div>
                 </div>
             </div>
-
-            {/* Create Group Button */}
             <div className="w-full max-w-lg">
                 <button
                     onClick={handleCreateGroup}

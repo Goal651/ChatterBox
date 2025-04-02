@@ -7,16 +7,8 @@ const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     names: { type: String, required: true },
     lastActiveTime: { type: Date, default: Date.now },
-    groups: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Group',
-        default: ['67c6e55934bb5d3f0b0b40fe']
-    }],
-    unreads: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Message',
-        default: []
-    }],
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }],
+    unreads: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }], 
     isVerified: { type: Boolean, default: false },
     publicKey: { type: String, required: true },
     privateKey: { type: String, required: true },
@@ -66,16 +58,12 @@ const messageSchema = new mongoose.Schema({
         required: true
     },
     isMessageSeen: { type: Boolean, default: false },
-    edited: { type: Boolean, default: false },
     isMessageSent: { type: Boolean, default: true },
     isMessageReceived: { type: Boolean, default: false },
+    edited: { type: Boolean, default: false },
     reactions: [{
         reaction: { type: String, required: true },
-        reactor: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
+        reactor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         default: []
     }],
     replying: {

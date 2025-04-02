@@ -121,7 +121,7 @@ const ChatScreen = ({
     );
 
     return (
-        <div className="flex flex-col h-screen w-full overflow-hidden ">
+        <div className="flex flex-col h-screen w-full overflow-hidden">
             <CallComponent
                 users={users}
                 isVideoCall={callType}
@@ -132,9 +132,7 @@ const ChatScreen = ({
                 isIngoingCall={false}
                 callEnded={handleCallEnded}
             />
-
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-gray-700/50 p-4 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950shadow-md">
+            <div className="flex justify-between items-center border-b border-gray-700/50 p-4 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 shadow-md">
                 <div className="flex items-center space-x-4">
                     {(mediaType.isMobile || mediaType.isTablet) && (
                         <FaArrowLeft
@@ -182,9 +180,7 @@ const ChatScreen = ({
                     />
                 </div>
             </div>
-
-            {/* Chat Area */}
-            <div className="flex flex-col flex-1 space-y-6 overflow-hidden  p-6 bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-950  shadow-inner">
+            <div className="flex flex-col flex-1 space-y-6 overflow-hidden p-6 bg-gradient-to-tr from-gray-950 via-gray-900 to-gray-950 shadow-inner">
                 <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                     <Messages
                         component={component}

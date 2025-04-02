@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { GroupMessage, Message, MessageProps } from "../interfaces/interfaces";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { getGroupMessagesApi, getMessagesApi } from "../apis/MessageApi";
 import UserMessages from "../components/UserMessages";
 import GroupMessages from "../components/GroupMessages";
@@ -24,12 +24,14 @@ export default function Messages({
     const [isLoading, setIsLoading] = useState(true);
     const messagesRef = useRef<Message[]>([]);
 
+    const navigate = useNavigate();
+
     const fetchMessages = useCallback(async () => {
         if (!componentId) return;
         try {
             setIsLoading(true);
             if (sessionType === 'chat') {
-                const result = await getMessagesApi(serverUrl, componentId, 0);
+                const result = await getMessagesApi(serverUrl, componentId, 0,navigate);
                 const resultMessages: Message[] | null = result.messages;
                 if (resultMessages) {
                     setUserMessages(resultMessages);
@@ -37,7 +39,7 @@ export default function Messages({
                     setLastMessage(resultMessages[resultMessages.length - 1] || null);
                 }
             } else {
-                const result2 = await getGroupMessagesApi(serverUrl, componentId);
+                const result2 = await getGroupMessagesApi(serverUrl, componentId,navigate);
                 if (result2) {
                     setGroupMessages(result2.messages);
                 }
@@ -67,7 +69,7 @@ export default function Messages({
                 }
                 return prev;
             });
-            setLastMessage(sentMessages);
+            setLastMessage(sentMessages); // Note: This might need adjustment for group messages
         }
     }, [sentMessages, sentGroupMessage]);
 
@@ -108,7 +110,7 @@ export default function Messages({
         const handleReceiveGroupMessage = ({ message }: { message: GroupMessage }) => {
             if (message.group === componentId) {
                 setGroupMessages((prev) => [...prev, message]);
-                socket.emit("groupMessageSeen", { messageId: message._id, receiverId: message.sender });
+                socket.emit("groupMessageSeen", { messageId: message._id, receiverId: message.sender._id });
             }
         };
 

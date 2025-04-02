@@ -108,14 +108,13 @@ export interface UserGroupListProps {
     photos: Photos[]
 }
 
-
-export interface FormData {
+export interface SignupFormData {
     names: string;
     username: string;
     email: string;
     password: string;
     confirmPassword: string;
-    image?: string;
+    image?: File | string; // Optional, can be File for uploads or string for other contexts
 }
 
 export interface RefMap {
@@ -217,8 +216,8 @@ export interface GroupContentProps {
 export interface MessageProps {
     component: GroupUser
     serverUrl: string;
-    sentMessages: Message | null;
-    sentGroupMessage: GroupMessage | null;
+    sentMessages: Message[] | null;
+    sentGroupMessage: GroupMessage[] | null;
     socketMessage: { sentMessage: Message; messageId: string | number } | null;
     socket: Socket;
     mediaType: {

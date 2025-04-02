@@ -7,6 +7,10 @@ import jwt from "jsonwebtoken"
 import keyController from "../security/KeysController"
 import decryptionController from "../security/Decryption"
 import emailService from "../services/emailService"
+import multer from 'multer'
+import path from 'path'
+import fs from 'fs'
+import crypto from 'crypto'
 
 const generateVerificationToken = (userId: string) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: "1h" })
@@ -50,7 +54,9 @@ const signup = async (req: Request, res: Response) => {
         await newUser.save()
         res.json({ message: 'Account created successfully' })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -97,7 +103,9 @@ const login = async (req: Request, res: Response) => {
 
 
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -136,7 +144,9 @@ const getUsers = async (req: Request, res: Response) => {
 
         res.json({ users: usersWithMessages })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -175,7 +185,9 @@ const getUserProfile = async (req: Request, res: Response) => {
 
         res.json({ user: userObject })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -199,7 +211,9 @@ const getUser = async (req: Request, res: Response) => {
         }
         res.status(200).json({ user: userObject })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -217,7 +231,9 @@ const updateUser = async (req: Request, res: Response) => {
         await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email })
         res.status(200).json({ message: 'user updated' })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
@@ -241,22 +257,37 @@ const editUserPassword = async (req: Request, res: Response) => {
         await model.User.findByIdAndUpdate(userId, { password: hash })
         res.status(200).json({ message: 'user updated' })
     } catch (err) {
-        res.status(500).json({ message: 'Internal server error' })
+        if (err instanceof Error) {
+            res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
         console.error(err)
     }
 }
-
 const editUserProfilePicture = async (req: Request, res: Response) => {
     try {
-        const userId = res.locals.user.userId
-        const { finalFileName } = req.body as { finalFileName: string }
-        await model.User.findByIdAndUpdate(userId, { image: finalFileName })
-        res.status(200).json({ message: 'profile picture updated successfull' })
+        const userId = res.locals.user.userId;
+        const file = req.file;
+        if (!file) {
+
+            res.status(400).json({ message: "No file uploaded" });
+            return
+        }
+        
+        const finalFileName = `${Date.now()}_${crypto.randomBytes(4).toString("hex")}_${file.originalname}`;
+        const finalPath = path.join(__dirname, "../uploads/messages/", finalFileName);
+
+        // Ensure directory exists
+        await fs.promises.mkdir(path.dirname(finalPath), { recursive: true });
+        await fs.promises.rename(file.path, finalPath);
+
+        await model.User.findByIdAndUpdate(userId, { image: finalFileName });
+
+        res.status(200).json({ imageUrl: finalFileName, message: "Profile picture updated successfully" });
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error' })
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
     }
-}
+};
 
 export default {
     signup,

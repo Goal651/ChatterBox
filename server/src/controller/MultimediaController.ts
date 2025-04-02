@@ -6,63 +6,23 @@ import mime from 'mime-types';
 
 // Chunked File Upload
 const fileUpload = async (req: Request, res: Response) => {
-    try {
-        const { name, totalchunks, currentchunk, typefolder } = req.headers as {
-            name: string,
-            totalchunks: string,
-            currentchunk: string,
-            typefolder: string
-        };
-
-        if (!name || !totalchunks || !currentchunk || !typefolder) {
-            res.status(400).json({ message: 'Missing required headers' });
-            return;
-        }
-
-        const filename = decodeURIComponent(name);
-        const firstChunk = parseInt(currentchunk) === 0;
-        const lastChunk = parseInt(currentchunk) === (parseInt(totalchunks) - 1);
-        const ext = filename.split('.').pop();
-
-        // Upload directory
-        const uploadDir = path.join(__dirname, `../uploads/${typefolder}/`);
-        await fs.promises.mkdir(uploadDir, { recursive: true });
-
-        // Generate temporary file name
-        const tmpFileNameHash = crypto.createHash('sha256').update(filename).digest('hex');
-        const tmpFilename = `tmp_${tmpFileNameHash}.${ext}`;
-        const tmpFilepath = path.join(uploadDir, tmpFilename);
-
-        // Handle first chunk: remove any existing temp file
-        if (firstChunk && fs.existsSync(tmpFilepath)) fs.unlinkSync(tmpFilepath);
-
-        // Append received chunk to the temporary file
-        const writeStream = fs.createWriteStream(tmpFilepath, { flags: 'a' });
-
-        req.on('data', (chunk) => writeStream.write(chunk));
-        req.on('end', () => writeStream.end());
-
-        writeStream.on('finish', async () => {
-            if (lastChunk) {
-                // Rename temp file to final file
-                const randomString = crypto.randomBytes(4).toString('hex');
-                const finalFileName = `${Date.now()}_${randomString}_${filename}`;
-                const finalFilePath = path.join(uploadDir, finalFileName);
-
-                await fs.promises.rename(tmpFilepath, finalFilePath);
-                return res.status(200).json({ finalFileName, uploadComplete: true });
-            }
-            res.status(200).json({ message: `Chunk ${currentchunk} received` });
-        });
-
-        writeStream.on('error', (err) => {
-            console.error(err);
-            res.status(500).json({ message: 'Error writing chunk to file', error: err });
-        });
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: 'Server error', error: err });
+    const { name, typefolder } = req.headers;
+    if (!name || !typefolder) {
+        res.status(400).json({ message: 'Missing headers' });
+        return
     }
+    const filename = decodeURIComponent(name.toString());
+    const uploadDir = path.join(__dirname, `../uploads/${typefolder}/`);
+    await fs.promises.mkdir(uploadDir, { recursive: true });
+    const finalFileName = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${filename}`;
+    const finalPath = path.join(uploadDir, finalFileName);
+    const writeStream = fs.createWriteStream(finalPath);
+    req.pipe(writeStream);
+    writeStream.on('finish', () => res.status(200).json({ finalFileName, uploadComplete: true }));
+    writeStream.on('error', (err) => {
+        console.error(err);
+        res.status(500).json({ message: 'Upload failed', error: err });
+    });
 };
 
 // File Streaming for Download or Playback

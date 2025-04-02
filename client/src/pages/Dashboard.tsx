@@ -1,23 +1,25 @@
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Navigator from "../screens/Navigator";
 import { getProfileApi, getUsersApi } from "../apis/UserApi";
-import { useEffect, useState } from "react";
+import { getGroupsApi } from "../apis/GroupApi";
+import { getNotification } from "../apis/NotificationApi";
 import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User } from "../interfaces/interfaces";
 import ChatScreen from "../screens/ChatScreen";
 import Notifier from "../utilities/Notifier";
-import { useNavigate, useParams } from "react-router-dom";
 import Setting from "../screens/Settings";
 import CreateGroup from "../screens/CreateGroup";
 import Notifications from "../screens/Notifications";
-import PusherManager from '../config/PusherManager';
+import PusherManager from "../config/PusherManager";
 import NotificationRequest from "../utilities/Permissions";
 import CallComponent from "../components/CallComponent";
-import { getGroupsApi } from "../apis/GroupApi";
-import { getNotification } from "../apis/NotificationApi";
 import GroupSetting from "../components/GroupSetting";
 import UserGroupList from "../screens/UserGroupList";
+import Popup from "../components/Popup"; // Reusable Popup component
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
     const navigate = useNavigate();
+    const { componentId, sessionType, setting } = useParams();
     const [users, setUsers] = useState<User[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -25,46 +27,63 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
-    const { componentId, sessionType, setting } = useParams();
     const [loading, setLoading] = useState(true);
     const [photos, setPhotos] = useState<Photos[]>([]);
     const [isOutgoingCall, setIsOutgoingCall] = useState(false);
     const [isIncomingCall, setIsIncomingCall] = useState(false);
     const [isVideoCall, setIsVideoCall] = useState(false);
+    const [formStatus, setFormStatus] = useState<{
+        type: "success" | "error" | "loading" | null;
+        message?: string;
+    }>({ type: "loading", message: "Loading your dashboard..." });
 
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
                 setLoading(true);
-                const usersData = await getUsersApi(serverUrl);
-                const currentUserData = await getProfileApi(serverUrl);
-                const initialGroups = await getGroupsApi(serverUrl);
-                const initialNotifications = await getNotification(serverUrl);
+                setFormStatus({ type: "loading", message: "Fetching your data..." });
+
+                const [usersData, currentUserData, groupsData, notificationsData] = await Promise.all([
+                    getUsersApi(serverUrl, navigate),
+                    getProfileApi(serverUrl, navigate),
+                    getGroupsApi(serverUrl, navigate),
+                    getNotification(serverUrl, navigate),
+                ]);
+
+                if (!usersData || !currentUserData || !groupsData || !notificationsData) {
+                    throw new Error("Failed to fetch some data.");
+                }
+
                 const sortedUsers = sortUsersByLatestMessage(usersData);
-                const sortedGroups = sortGroupsByLatestMessage(initialGroups.groups);
+                const sortedGroups = sortGroupsByLatestMessage(groupsData.groups);
                 setUsers(sortedUsers);
                 setCurrentUser(currentUserData);
                 setGroups(sortedGroups);
-                setNotifications(initialNotifications.notifications);
-                sessionStorage.setItem('users', JSON.stringify(sortedUsers));
-                sessionStorage.setItem('currentUser', JSON.stringify(currentUserData));
-                sessionStorage.setItem('groups', JSON.stringify(sortedGroups));
-                sessionStorage.setItem('notifications', JSON.stringify(initialNotifications.notifications));
-                setLoading(false);
+                setNotifications(notificationsData.notifications);
+                sessionStorage.setItem("users", JSON.stringify(sortedUsers));
+                sessionStorage.setItem("currentUser", JSON.stringify(currentUserData));
+                sessionStorage.setItem("groups", JSON.stringify(sortedGroups));
+                sessionStorage.setItem("notifications", JSON.stringify(notificationsData.notifications));
+                setFormStatus({ type: "success", message: "Dashboard loaded successfully!" });
             } catch (err) {
                 console.error("Error fetching initial data:", err);
+                setFormStatus({
+                    type: "error",
+                    message: "Failed to load dashboard. Please try refreshing.",
+                });
+            } finally {
                 setLoading(false);
             }
         };
         fetchInitialData();
-    }, [serverUrl]);
+    }, [serverUrl, navigate]);
 
     useEffect(() => {
         if (!socket) return;
 
-        const handleSocketMessage = ({ message, senderUserName }: { message: Message, senderUserName: string }) => {
+        const handleSocketMessage = ({ message, senderUserName }: { message: Message; senderUserName: string }) => {
             if (!message) return;
-            Notifier({ from: senderUserName, message: message.message, users, title: 'New message' });
+            Notifier({ from: senderUserName, message: message.message, users, title: "New message" });
             updateUserMessage(message);
         };
 
@@ -75,19 +94,28 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         const handleReceiveSentMessage = (data: Message) => updateUsers(data);
 
         const handleTypingUsers = (data: { typingUserId: string }) => {
-            setTypingUsers(prev => {
+            setTypingUsers((prev) => {
                 if (prev.includes(data.typingUserId)) return prev;
                 return [...prev, data.typingUserId];
             });
         };
 
         const handleStoppedTypingUsers = (data: { typingUserId: string }) => {
-            setTypingUsers(prev => prev.filter(id => id !== data.typingUserId));
+            setTypingUsers((prev) => prev.filter((id) => id !== data.typingUserId));
         };
 
-        const handleReceiveGroupMessage = ({ message, groupName, senderName }: { message: GroupMessage, groupName: string, senderName: string }) => {
+        const handleReceiveGroupMessage = ({
+            message,
+            groupName,
+            senderName,
+        }: {
+            message: GroupMessage;
+            groupName: string;
+            senderName: string;
+        }) => {
             if (!message) return;
             Notifier({ from: senderName, message: message.message, users, title: groupName });
+            updateGroups(message);
         };
 
         socket.on("messageSent", handleSentMessage);
@@ -111,10 +139,10 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             socket.off("userNotTyping", handleStoppedTypingUsers);
             socket.off("receiveGroupMessage", handleReceiveGroupMessage);
         };
-    }, [socket]);
+    }, [socket, users]);
 
-    // Helper functions (unchanged for brevity)
-    const sortUsersByLatestMessage = (users: User[]) => {
+    // Helper functions (unchanged for brevity, but typed)
+    const sortUsersByLatestMessage = (users: User[]): User[] => {
         return users.sort((a, b) => {
             const aTime = a.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
             const bTime = b.latestMessage?.createdAt ? new Date(b.latestMessage.createdAt).getTime() : 0;
@@ -122,7 +150,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         });
     };
 
-    const sortGroupsByLatestMessage = (groups: Group[]) => {
+    const sortGroupsByLatestMessage = (groups: Group[]): Group[] => {
         return groups.sort((a, b) => {
             const aTime = a.latestMessage?.createdAt ? new Date(a.latestMessage.createdAt).getTime() : 0;
             const bTime = b.latestMessage?.createdAt ? new Date(b.latestMessage.createdAt).getTime() : 0;
@@ -132,27 +160,31 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
     const updateUserMessage = (message: Message) => {
         if (!message) return;
-        setUsers(prevUsers =>
-            sortUsersByLatestMessage(prevUsers.map(user =>
-                user._id === message.sender ? { ...user, latestMessage: message } : user
-            ))
+        setUsers((prevUsers) =>
+            sortUsersByLatestMessage(
+                prevUsers.map((user) =>
+                    user._id === message.sender ? { ...user, latestMessage: message } : user
+                )
+            )
         );
     };
 
     const updateUsers = (message: Message) => {
         if (!message) return;
-        setUsers(prevUsers =>
-            sortUsersByLatestMessage(prevUsers.map(user =>
-                user._id === message.receiver ? { ...user, latestMessage: message } : user
-            ))
+        setUsers((prevUsers) =>
+            sortUsersByLatestMessage(
+                prevUsers.map((user) =>
+                    user._id === message.receiver ? { ...user, latestMessage: message } : user
+                )
+            )
         );
     };
 
     const updateGroups = (message: GroupMessage) => {
         if (!message) return;
-        setGroups(prevUsers =>
+        setGroups((prevGroups) =>
             sortGroupsByLatestMessage(
-                prevUsers.map(group =>
+                prevGroups.map((group) =>
                     group._id === message.group ? { ...group, latestMessage: message } : group
                 )
             )
@@ -160,24 +192,28 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     };
 
     const markMessageAsReceived = (messageId: string) => {
-        setUsers(prevUsers =>
-            sortUsersByLatestMessage(prevUsers.map(user => {
-                if (user.latestMessage?._id === messageId) {
-                    return { ...user, latestMessage: { ...user.latestMessage, isMessageReceived: true } };
-                }
-                return user;
-            }))
+        setUsers((prevUsers) =>
+            sortUsersByLatestMessage(
+                prevUsers.map((user) => {
+                    if (user.latestMessage?._id === messageId) {
+                        return { ...user, latestMessage: { ...user.latestMessage, isMessageReceived: true } };
+                    }
+                    return user;
+                })
+            )
         );
     };
 
     const markMessageAsSeen = (messageId: string) => {
-        setUsers(prevUsers =>
-            sortUsersByLatestMessage(prevUsers.map(user => {
-                if (user.latestMessage?._id === messageId) {
-                    return { ...user, latestMessage: { ...user.latestMessage, isMessageSeen: true } };
-                }
-                return user;
-            }))
+        setUsers((prevUsers) =>
+            sortUsersByLatestMessage(
+                prevUsers.map((user) => {
+                    if (user.latestMessage?._id === messageId) {
+                        return { ...user, latestMessage: { ...user.latestMessage, isMessageSeen: true } };
+                    }
+                    return user;
+                })
+            )
         );
     };
 
@@ -185,41 +221,28 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         if (!data) return;
         setCurrentUser((prev): User | null => {
             if (!prev) return prev;
-            const newUser = { ...prev, unreads: data };
-            return newUser;
+            return { ...prev, unreads: data };
         });
     };
 
     const hideUsers = (): boolean => {
         if (mediaType.isDesktop) return false;
-        else if (mediaType.isTablet) {
-            if (componentId) return true;
-            else return false;
-        }
-        else if (mediaType.isMobile) {
-            if (componentId) return true;
-            else return false;
-        }
+        else if (mediaType.isTablet) return !!componentId;
+        else if (mediaType.isMobile) return !!componentId;
         else return false;
     };
 
     const hideChatScreen = (): boolean => {
         if (mediaType.isDesktop) return false;
-        else if (mediaType.isTablet) {
-            if (componentId) return false;
-            else return true;
-        }
-        else if (mediaType.isMobile) {
-            if (componentId) return false;
-            else return true;
-        }
+        else if (mediaType.isTablet) return !componentId;
+        else if (mediaType.isMobile) return !componentId;
         else return false;
     };
 
     const storePhotos = (data: Photos) => {
         setPhotos((prev): Photos[] => {
             if (prev.length <= 0) return [data];
-            const doesPhotoExists = prev.filter(photo => photo.key === data.key)[0];
+            const doesPhotoExists = prev.some((photo) => photo.key === data.key);
             if (doesPhotoExists) return prev;
             return [...prev, data];
         });
@@ -231,10 +254,17 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         setIsVideoCall(false);
     };
 
-    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value.toLowerCase());
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+        setSearchTerm(e.target.value.toLowerCase());
 
-    const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm));
-    const filteredGroups = groups.filter(group => group.groupName.toLowerCase().includes(searchTerm));
+    const filteredUsers = users.filter(
+        (user) =>
+            user.username.toLowerCase().includes(searchTerm) ||
+            user.email.toLowerCase().includes(searchTerm)
+    );
+    const filteredGroups = groups.filter((group) =>
+        group.groupName.toLowerCase().includes(searchTerm)
+    );
 
     function chattingScreen() {
         return (
@@ -242,11 +272,12 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 <PusherManager serverUrl={serverUrl} />
                 <NotificationRequest />
                 {!hideUsers() && (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex p-4 flex-col space-y-6 h-screen shadow-lg transition-all duration-300 overflow-hidden`}>
-                        <SearchInput
-                            searchTerm={searchTerm}
-                            onSearchChange={handleSearchChange}
-                        />
+                    <div
+                        className={`${
+                            mediaType.isMobile || mediaType.isTablet ? "w-full" : "w-1/3"
+                        } bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 flex p-4 flex-col space-y-6 h-screen shadow-lg transition-all duration-300 overflow-hidden`}
+                    >
+                        <SearchInput searchTerm={searchTerm} onSearchChange={handleSearchChange} />
                         <UserGroupList
                             filteredUsers={filteredUsers}
                             currentUser={currentUser}
@@ -264,13 +295,13 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     </div>
                 )}
                 {hideChatScreen() ? null : (
-                    <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full rounded-xl' : 'w-2/3'} bg-gray-950/95  flex flex-col shadow-xl transition-all duration-300 overflow-hidden`}>
-                        {setting === 'setting' ? (
-                            <GroupSetting
-                                groups={groups}
-                                users={users}
-                                serverUrl={serverUrl}
-                            />
+                    <div
+                        className={`${
+                            mediaType.isMobile || mediaType.isTablet ? "w-full rounded-xl" : "w-2/3"
+                        } bg-gray-950/95 flex flex-col shadow-xl transition-all duration-300 overflow-hidden`}
+                    >
+                        {setting === "setting" ? (
+                            <GroupSetting groups={groups} users={users} serverUrl={serverUrl} />
                         ) : (
                             <ChatScreen
                                 socket={socket}
@@ -293,33 +324,37 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
 
     const renderScreen = () => {
         switch (sessionType) {
-            case 'chat':
+            case "chat":
                 return chattingScreen();
-            case 'group':
+            case "group":
                 return chattingScreen();
-            case 'setting':
-                return <Setting
-                    serverUrl={serverUrl}
-                    userData={currentUser}
-                    loadedImage={storePhotos}
-                    photos={photos} />;
-            case 'create-group':
-                return <CreateGroup
-                    socket={socket}
-                    userList={filteredUsers}
-                    mediaType={mediaType}
-                    serverUrl={serverUrl}
-                />;
-            case 'notification':
-                return <Notifications
-                    notification={notifications} />;
+            case "setting":
+                return (
+                    <Setting
+                        serverUrl={serverUrl}
+                        userData={currentUser}
+                        loadedImage={storePhotos}
+                        photos={photos}
+                    />
+                );
+            case "create-group":
+                return (
+                    <CreateGroup
+                        socket={socket}
+                        userList={filteredUsers}
+                        mediaType={mediaType}
+                        serverUrl={serverUrl}
+                    />
+                );
+            case "notification":
+                return <Notifications notification={notifications} />;
             default:
                 return null;
         }
     };
 
     return (
-        <div className={`flex ${mediaType.isMobile && 'flex-col-reverse'} h-screen overflow-hidden`}>
+        <div className={`flex ${mediaType.isMobile && "flex-col-reverse"} h-screen overflow-hidden`}>
             <CallComponent
                 users={users}
                 isVideoCall={isVideoCall}
@@ -330,7 +365,11 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 onCancel={handleCallCancellation}
                 callEnded={handleCallCancellation}
             />
-            <div className={`${mediaType.isMobile ? 'w-full h-fit rounded-xl' : 'w-fit xl:w-72'} bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-6 sm:p-10 shadow-lg transition-all duration-300 hover:shadow-xl`}>
+            <div
+                className={`${
+                    mediaType.isMobile ? "w-full h-fit rounded-xl" : "w-fit xl:w-72"
+                } bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950 p-6 sm:p-10 shadow-lg transition-all duration-300 hover:shadow-xl`}
+            >
                 <Navigator
                     socket={socket}
                     initialCurrentUser={currentUser}
@@ -340,15 +379,53 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     photos={photos}
                 />
             </div>
-            <div className={`overflow-hidden w-full flex  h-full ${mediaType.isMobile && 'space-x-0'}`}>
-                {renderScreen()}
+            <div className={`overflow-hidden w-full flex h-full ${mediaType.isMobile && "space-x-0"}`}>
+                {loading ? (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <svg
+                            className="animate-spin h-10 w-10 text-blue-500"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="none"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z"
+                            />
+                        </svg>
+                    </div>
+                ) : (
+                    renderScreen()
+                )}
             </div>
+            {formStatus.type && formStatus.message && (
+                <Popup
+                    type={formStatus.type}
+                    message={formStatus.message}
+                    onClose={() => setFormStatus({ type: null })}
+                    duration={formStatus.type === "success" ? 2000 : undefined} // Auto-close success after 2s
+                />
+            )}
         </div>
     );
 }
 
-const SearchInput = ({ searchTerm, onSearchChange }: { searchTerm: string, onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void }) => (
-    <div className="relative w-full ">
+const SearchInput = ({
+    searchTerm,
+    onSearchChange,
+}: {
+    searchTerm: string;
+    onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+    <div className="relative w-full">
         <input
             type="search"
             placeholder="Search friends or groups..."

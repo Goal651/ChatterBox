@@ -1,61 +1,60 @@
-import express from 'express'
-import groupController from '../controller/GroupController'
-import userController from '../controller/UserController'
-import messageController from '../controller/MessageController'
-import auth from '../auth/AuthController'
-import mediaController from '../controller/MultimediaController'
-import webPusherController from '../controller/WebPusherController'
-import notificationController from '../controller/NotificationController'
-import adminController from '../admin/controller/userController'
-import { isAdmin } from '../middleware/isAdmin'
+import express from "express";
+import groupController from "../controller/GroupController";
+import userController from "../controller/UserController";
+import messageController from "../controller/MessageController";
+import auth from "../auth/AuthController";
+import mediaController from "../controller/MultimediaController";
+import webPusherController from "../controller/WebPusherController";
+import notificationController from "../controller/NotificationController";
+import adminController from "../admin/controller/userController";
+import { isAdmin } from "../middleware/isAdmin";
 
-const router = express.Router()
+const router = express.Router();
 
-//Authentication
-router.get('/auth', auth.checkToken, auth.checkUser)
-router.post('/login', userController.login)
-router.get('/verifyEmail/:token', auth.verifyUser)
+// Authentication
+router.get("/auth", auth.checkToken, auth.checkUser);
+router.post("/login", userController.login);
+router.get("/verifyEmail/:token", auth.verifyUser);
 
-//pinging server
-router.get('/ping', groupController.ping)
+// Pinging server
+router.get("/ping", groupController.ping);
 
-//apis for users
-router.get('/getUserProfile', auth.checkToken, userController.getUserProfile);
-router.get('/getUser/:email', auth.checkToken, userController.getUser)
-router.get('/getUsers', auth.checkToken, userController.getUsers)
-router.post('/signup', userController.signup)
-router.put('/editUser/', auth.checkToken, userController.updateUser)
-router.put('/editUserPassword', auth.checkToken, userController.editUserPassword)
-router.put('/editUserProfilePicture', auth.checkToken, userController.editUserProfilePicture)
+// APIs for users
+router.get("/getUserProfile", auth.checkToken, userController.getUserProfile);
+router.get("/getUser/:email", auth.checkToken, userController.getUser);
+router.get("/getUsers", auth.checkToken, userController.getUsers);
+router.post("/signup", userController.signup);
+router.put("/editUser/", auth.checkToken, userController.updateUser);
+router.put("/editUserPassword", auth.checkToken, userController.editUserPassword);
+router.put("/editUserProfilePicture", auth.checkToken, userController.editUserProfilePicture);
 
-//apis for groups
-router.get('/getGroups', auth.checkToken, groupController.getGroups);
-router.get('/getGroup/:name', auth.checkToken, groupController.getGroup);
-router.post('/createGroup', auth.checkToken, groupController.createGroup)
-router.put('/editGroupProfile/:group', auth.checkToken, groupController.updateGroupPhoto)
-router.put('/updateGroup/:groupId', auth.checkToken, groupController.updateGroup)
+// APIs for groups
+router.get("/getGroups", auth.checkToken, groupController.getGroups);
+router.get("/getGroup/:name", auth.checkToken, groupController.getGroup);
+router.post("/createGroup", auth.checkToken, groupController.createGroup);
+router.put("/editGroupProfile/:group", auth.checkToken, groupController.updateGroupPhoto);
+router.put("/updateGroup/:groupId", auth.checkToken, groupController.updateGroup);
 
-//apis for messages
-router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)
-router.get('/message/:receiverId/:phase', auth.checkToken, messageController.getMessage)
+// APIs for messages
+router.get("/gmessage/:group", auth.checkToken, messageController.getGMessage);
+router.get("/message/:receiverId/:phase", auth.checkToken, messageController.getMessage);
 
+// APIs for files
+router.post("/uploadFile", auth.checkToken, mediaController.fileUpload);
+router.get("/getFile/:fileName", auth.checkToken, mediaController.sendFile);
 
-//apis for files
-router.post('/uploadFile', auth.checkToken, mediaController.fileUpload)
-router.get('/getFile/:fileName', auth.checkToken, mediaController.sendFile)
+// APIs for pusher
+router.post("/webPusher/subscribe", auth.checkToken, webPusherController.webPusherController);
 
-//apis for pusher
-router.post('/webPusher/subscribe', auth.checkToken, webPusherController.webPusherController)
+// APIs for notifications
+router.get("/getNotifications", auth.checkToken, notificationController.getNotification);
 
-//apis for notifications
-router.get('/getNotifications', auth.checkToken, notificationController.getNotification)
+// APIs for admin
+router.get("/admin/stats", isAdmin, adminController.getAdminStats);
 
-//apis for admin
-router.get('/admin/stats', isAdmin, adminController.getAdminStats)
-
-//
-router.get('*', (req, res) => {
-    res.send("Hello there what are you looking for?")
-})
+// Catch-all route
+router.get("*", (req, res) => {
+    res.send("Hello there what are you looking for?");
+});
 
 export default router;

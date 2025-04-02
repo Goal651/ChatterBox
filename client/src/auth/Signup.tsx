@@ -1,209 +1,270 @@
-import { useNavigate, Link } from 'react-router-dom';
-import { useEffect, useState, useRef } from 'react';
-import { ClipLoader } from 'react-spinners';
-import axios from 'axios';
-import { FormData } from '../interfaces/interfaces';
+import { useNavigate, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { signupApi } from "../apis/UserApi"; // Import refactored API
+import { SignupFormData } from "../interfaces/interfaces";
+import Popup from "../components/Popup"; // Import reusable Popup component
+import axios from "axios";
 
 export default function SignUp({ serverUrl }: { serverUrl: string }) {
-    const [formData, setFormData] = useState<FormData>({
-        names: '',
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
     const navigate = useNavigate();
-    const [isPasswordMatch, setIsPasswordMatch] = useState<boolean>(false);
-    const [confirmPasswordError, setConfirmPasswordError] = useState<string>('');
-    const [emailError, setEmailError] = useState('')
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isFormReadyToSubmit, setIsFormReadyToSubmit] = useState<boolean>(false);
+    const [SignupFormData, setSignupFormData] = useState<SignupFormData>({
+        names: "",
+        username: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+    });
+    const [formStatus, setFormStatus] = useState<{
+        type: "success" | "error" | "loading" | null;
+        message?: string;
+    }>({ type: null });
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const nameRef = useRef<HTMLInputElement | null>(null);
+    const usernameRef = useRef<HTMLInputElement | null>(null);
+    const emailRef = useRef<HTMLInputElement | null>(null);
+    const passwordRef = useRef<HTMLInputElement | null>(null);
+    const confirmPasswordRef = useRef<HTMLInputElement | null>(null);
 
+    // Password match validation
     useEffect(() => {
-        const validatePasswordMatch = () => setIsPasswordMatch(formData.password === formData.confirmPassword);
+        const validatePasswordMatch = () => {
+            const match = SignupFormData.password === SignupFormData.confirmPassword && SignupFormData.password.length >= 4;
+            if (!match && SignupFormData.confirmPassword) {
+                setFormStatus({ type: "error", message: "Passwords do not match" });
+            } else {
+                setFormStatus((prev) => (prev.type === "error" && prev.message === "Passwords do not match" ? { type: null } : prev));
+            }
+        };
         validatePasswordMatch();
-    }, [formData]);
-
-    useEffect(() => {
-        setIsFormReadyToSubmit(
-            formData.names !== "" &&
-            formData.username !== "" &&
-            formData.email !== "" &&
-            formData.password !== "" &&
-            formData.confirmPassword !== ""
-        );
-    }, [formData, isPasswordMatch]);
+    }, [SignupFormData.password, SignupFormData.confirmPassword]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type, files } = e.target;
-        if (type === 'file' && files) {
-            setFormData((prevData) => ({ ...prevData, [name]: files[0] }));
+        if (type === "file" && files) {
+            setSignupFormData((prev) => ({ ...prev, image: files[0] } as SignupFormData));
             setImagePreview(URL.createObjectURL(files[0]));
         } else {
-            setFormData((prevData) => ({ ...prevData, [name]: value }));
+            setSignupFormData((prev) => ({ ...prev, [name]: value }));
         }
+        setFormStatus({ type: null }); // Clear status on input change
+        const ref = {
+            names: nameRef,
+            username: usernameRef,
+            email: emailRef,
+            password: passwordRef,
+            confirmPassword: confirmPasswordRef,
+        }[name];
+        ref?.current?.classList.remove("border-red-500", "focus:ring-red-500");
+    };
 
-
-
-        if (name === 'password' || name === 'confirmPassword') {
-            const passwordMatch = formData.password === value || name === 'password' && value === formData.confirmPassword;
-            setIsPasswordMatch(passwordMatch);
-            setConfirmPasswordError(passwordMatch ? '' : 'Passwords do not match');
+    const validateForm = () => {
+        let isValid = true;
+        if (!SignupFormData.names || SignupFormData.names.length < 5 || SignupFormData.names.length > 30) {
+            nameRef.current?.classList.add("border-red-500", "focus:ring-red-500");
+            isValid = false;
         }
+        if (!SignupFormData.username || SignupFormData.username.length < 3 || SignupFormData.username.length > 6) {
+            usernameRef.current?.classList.add("border-red-500", "focus:ring-red-500");
+            isValid = false;
+        }
+        if (!SignupFormData.email || !/\S+@\S+\.\S+/.test(SignupFormData.email)) {
+            emailRef.current?.classList.add("border-red-500", "focus:ring-red-500");
+            isValid = false;
+        }
+        if (!SignupFormData.password || SignupFormData.password.length < 4) {
+            passwordRef.current?.classList.add("border-red-500", "focus:ring-red-500");
+            isValid = false;
+        }
+        if (!SignupFormData.confirmPassword || SignupFormData.confirmPassword !== SignupFormData.password) {
+            confirmPasswordRef.current?.classList.add("border-red-500", "focus:ring-red-500");
+            isValid = false;
+        }
+        return isValid;
     };
 
     const handleImageUploadClick = () => fileInputRef.current?.click();
 
-
     const handleFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        try {
-            const response = await axios.post(`${serverUrl}/signUp`, formData);
-            if (response.status === 201) navigate('/email-sent');
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                if (!error.response) {
-                    // No internet or no response
-                    navigate('/no-internet');
-                    return;
-                }
-                if (error.response.status === 400) {
-                    const emailAlreadyExists = error.response.data.message === "User exist"
-                    if (emailAlreadyExists) {
-                        setEmailError(error.response.data.message as string)
-                    }
-                } else console.error(error);
-            }
-        } finally {
-            setIsLoading(false);
+
+        if (!validateForm()) {
+            setFormStatus({ type: "error", message: "Please fill out all fields correctly." });
+            return;
         }
 
+        setFormStatus({ type: "loading" });
+        try {
+            const data = new FormData();
+            Object.entries(SignupFormData).forEach(([key, value]) => {
+                console.log(key, value);
+                if (key === "image" && value instanceof File) {
+                    data.append(key, value);
+                } else if (value) {
+                    data.append(key, value as string);
+                }
+            });
+
+            const response = await signupApi(serverUrl, data, navigate);
+            if (response) {
+                setFormStatus({ type: "success", message: "Sign up successful! Check your email." });
+                setTimeout(() => navigate("/email-sent"), 2000); // Delay for user feedback
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error) && error.response) {
+                if (error.response.status === 400 && error.response.data.message === "User exist") {
+                    setFormStatus({ type: "error", message: "Email already exists." });
+                } else {
+                    setFormStatus({
+                        type: "error",
+                        message: error.response.data.message || "An error occurred. Please try again.",
+                    });
+                }
+            } else {
+                setFormStatus({ type: "error", message: "An unexpected error occurred." });
+            }
+        }
     };
 
     return (
-        <div className="flex items-center justify-center h-screen overflow-hidden bg-gradient-to-r from-slate-950 via-slate-700 to-slate-950  py-10">
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-gray-950 via-gray-800 to-gray-950 py-10">
             <form
-                className="h-full w-full max-w-lg px-10 bg-slate-900 sm:rounded-lg shadow-lg space-y-6 bg-linear-to-r overflow-auto py-4"
+                className="w-full max-w-md p-8 bg-gray-900/95 rounded-2xl shadow-xl space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 transform transition-all duration-300 hover:shadow-2xl"
                 onSubmit={handleFormSubmit}
             >
-                <div className="text-3xl font-bold text-center text-white">Sign Up</div>
+                <h1 className="text-3xl font-bold text-center text-gray-200 tracking-tight">Sign Up</h1>
 
-                {imagePreview ? (
+                {/* Image Upload */}
+                <div className="flex justify-center">
                     <div
                         onClick={handleImageUploadClick}
-                        className="flex justify-center mb-6">
-                        <img
-                            src={imagePreview}
-                            alt="Profile Preview"
-                            className="w-32 h-32 rounded-full object-cover"
-                        />
-                    </div>
-                ) : (
-                    <div className='flex items-center justify-center'>
-                        <div
-                            onClick={handleImageUploadClick}
-                            className="h-32 w-32 items-center  flex justify-center mb-6 rounded-full bg-black">
-                            <div
-                                className=" text-white font-extrabold text-5xl"
-                            >
-                                {formData.names.slice(0, 1).toUpperCase() || 'U'}
-                            </div>
+                        className="relative w-32 h-32 rounded-full bg-gray-800/80 flex items-center justify-center cursor-pointer hover:bg-gray-700/80 transition-all duration-200 shadow-md group"
+                    >
+                        {imagePreview ? (
+                            <img
+                                src={imagePreview}
+                                alt="Profile Preview"
+                                className="w-full h-full rounded-full object-cover"
+                            />
+                        ) : (
+                            <span className="text-5xl font-extrabold text-gray-200">
+                                {SignupFormData.names.slice(0, 1).toUpperCase() || "U"}
+                            </span>
+                        )}
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <span className="text-white text-sm font-medium">Upload</span>
                         </div>
                     </div>
-                )}
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    name="image"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleInputChange}
-                />
-                <div>
                     <input
-                        name='names'
-                        type="input"
-                        className="input validator w-full rounded-lg  input-lg bg-slate-800"
-                        required placeholder="John Doe"
+                        type="file"
+                        ref={fileInputRef}
+                        name="image"
+                        accept="image/*"
+                        className="hidden"
                         onChange={handleInputChange}
-                        minLength={5} maxLength={30}
-                        title="names" />
-                    <div className="validator-hint">
-                        Must be 5 to 30 characters
-                    </div>
+                    />
                 </div>
-                <div>
+
+                {/* Form Fields */}
+                <div className="space-y-1">
                     <input
-                        name='username'
-                        type="input"
+                        name="names"
+                        type="text"
+                        className="w-full px-4 py-3 bg-gray-800/80 text-gray-200 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-sm"
+                        required
+                        placeholder="Full Name"
                         onChange={handleInputChange}
-                        className="input validator w-full rounded-lg  input-lg bg-slate-800"
-                        required placeholder="username"
-                        minLength={3} maxLength={6}
-                        title="names" />
-                    <div className="validator-hint">
-                        Must be 3 to 6 characters
-                    </div>
+                        minLength={5}
+                        maxLength={30}
+                        ref={nameRef}
+                    />
+                    <p className="text-gray-400 text-xs ml-2">5-30 characters</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                     <input
-                        name='email'
+                        name="username"
+                        type="text"
+                        className="w-full px-4 py-3 bg-gray-800/80 text-gray-200 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-sm"
+                        required
+                        placeholder="Username"
+                        onChange={handleInputChange}
+                        minLength={3}
+                        maxLength={6}
+                        ref={usernameRef}
+                    />
+                    <p className="text-gray-400 text-xs ml-2">3-6 characters</p>
+                </div>
+                <div className="space-y-1">
+                    <input
+                        name="email"
                         type="email"
+                        className="w-full px-4 py-3 bg-gray-800/80 text-gray-200 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-sm"
+                        required
+                        placeholder="Email"
                         onChange={handleInputChange}
-                        className="input validator w-full rounded-lg  input-lg bg-slate-800"
-                        required placeholder="johndoe@example.com"
-                        title="names" />
-                    <div className="validator-hint">
-                        Enter valid email
-                    </div>
-                    {emailError && <div className=" text-red-500">{emailError}</div>}
+                        ref={emailRef}
+                    />
+                    <p className="text-gray-400 text-xs ml-2">Enter a valid email</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                     <input
-                        name='password'
+                        name="password"
                         type="password"
+                        className="w-full px-4 py-3 bg-gray-800/80 text-gray-200 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-sm"
+                        required
+                        placeholder="Password"
                         onChange={handleInputChange}
-                        className="input validator w-full rounded-lg  input-lg bg-slate-800"
-                        required placeholder="Password"
-                        title="names" />
-                    <div className="validator-hint">
-                        Minimum characters 4
-                    </div>
+                        minLength={4}
+                        ref={passwordRef}
+                    />
+                    <p className="text-gray-400 text-xs ml-2">Minimum 4 characters</p>
                 </div>
-                <div>
+                <div className="space-y-1">
                     <input
-                        name='confirmPassword'
-                        onChange={handleInputChange}
+                        name="confirmPassword"
                         type="password"
-                        className="input validator w-full rounded-lg  input-lg bg-slate-800"
-                        required placeholder="Password"
-                        title="names" />
-                    <div className="">
-                        {confirmPasswordError && <div className="text-red-500">{confirmPasswordError}</div>}
-
-                    </div>
+                        className="w-full px-4 py-3 bg-gray-800/80 text-gray-200 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-500 shadow-sm"
+                        required
+                        placeholder="Confirm Password"
+                        onChange={handleInputChange}
+                        ref={confirmPasswordRef}
+                    />
                 </div>
 
-                <div className='flex flex-col gap-y-4 items-center justify-center'>
+                {/* Submit Button and Link */}
+                <div className="flex flex-col items-center gap-y-4">
                     <button
                         type="submit"
-                        className={`btn btn-wide btn-xl btn-neutral text-white rounded-xl ${!isFormReadyToSubmit && 'cursor-not-allowed'
-                            }`}
+                        disabled={formStatus.type === "loading"}
+                        className={`w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md transition-all duration-200 flex items-center justify-center gap-2 ${formStatus.type === "loading" ? "opacity-70 cursor-not-allowed" : "hover:bg-blue-700 hover:shadow-lg"}`}
                     >
-                        {isLoading ? <ClipLoader color="white" size={24} /> : 'Sign Up'}
+                        {formStatus.type === "loading" ? (
+                            <>
+                                <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
+                                </svg>
+                                Signing Up...
+                            </>
+                        ) : (
+                            "Sign Up"
+                        )}
                     </button>
-                    <Link to={'/login'}
-                        className='link link-info text-xl'
+                    <Link
+                        to="/login"
+                        className="text-blue-400 text-sm font-medium hover:text-blue-300 transition-colors duration-200"
                     >
-                        Already have account?
+                        Already have an account? Login
                     </Link>
                 </div>
-
-
+                {formStatus.type && formStatus.message && (
+                    <Popup
+                        type={formStatus.type}
+                        message={formStatus.message}
+                        onClose={() => setFormStatus({ type: null })}
+                        duration={formStatus.type === "success" ? 2000 : undefined} // Auto-close success after 2s
+                    />
+                )}
             </form>
         </div>
     );
