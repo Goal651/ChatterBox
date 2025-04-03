@@ -263,32 +263,19 @@ const editUserPassword = async (req: Request, res: Response) => {
         console.error(err)
     }
 }
+
 const editUserProfilePicture = async (req: Request, res: Response) => {
     try {
         const userId = res.locals.user.userId;
-        const file = req.file;
-        if (!file) {
-
-            res.status(400).json({ message: "No file uploaded" });
-            return
-        }
-        
-        const finalFileName = `${Date.now()}_${crypto.randomBytes(4).toString("hex")}_${file.originalname}`;
-        const finalPath = path.join(__dirname, "../uploads/messages/", finalFileName);
-
-        // Ensure directory exists
-        await fs.promises.mkdir(path.dirname(finalPath), { recursive: true });
-        await fs.promises.rename(file.path, finalPath);
-
+        const { finalFileName } = req.body;
+        if (!finalFileName) return res.status(400).json({ message: "No file uploaded" });
         await model.User.findByIdAndUpdate(userId, { image: finalFileName });
-
         res.status(200).json({ imageUrl: finalFileName, message: "Profile picture updated successfully" });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
-
 export default {
     signup,
     login,

@@ -4,25 +4,36 @@ import path from 'path';
 import crypto from 'crypto';
 import mime from 'mime-types';
 
-// Chunked File Upload
 const fileUpload = async (req: Request, res: Response) => {
-    const { name, typefolder } = req.headers;
-    if (!name || !typefolder) {
-        res.status(400).json({ message: 'Missing headers' });
-        return
+    try {
+        const { name, typefolder } = req.headers as { name: string, typefolder: string };
+        if (!name || !typefolder) {
+            res.status(400).json({ message: 'Missing required headers' });
+            return;
+        }
+
+        const filename = decodeURIComponent(name);
+        const uploadDir = path.join(__dirname, `../uploads/${typefolder}/`);
+        await fs.promises.mkdir(uploadDir, { recursive: true });
+
+        const finalFileName = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${filename}`;
+        const finalPath = path.join(uploadDir, finalFileName);
+
+        const writeStream = fs.createWriteStream(finalPath);
+        req.pipe(writeStream);
+
+        writeStream.on('finish', () => {
+            res.status(200).json({ finalFileName, uploadComplete: true });
+        });
+
+        writeStream.on('error', (err) => {
+            console.error('Stream error:', err);
+            res.status(500).json({ message: 'Error streaming file', error: err.message });
+        });
+    } catch (err) {
+        console.error('Upload error:', err);
+        res.status(500).json({ message: 'Server error', error: err.message });
     }
-    const filename = decodeURIComponent(name.toString());
-    const uploadDir = path.join(__dirname, `../uploads/${typefolder}/`);
-    await fs.promises.mkdir(uploadDir, { recursive: true });
-    const finalFileName = `${Date.now()}_${crypto.randomBytes(4).toString('hex')}_${filename}`;
-    const finalPath = path.join(uploadDir, finalFileName);
-    const writeStream = fs.createWriteStream(finalPath);
-    req.pipe(writeStream);
-    writeStream.on('finish', () => res.status(200).json({ finalFileName, uploadComplete: true }));
-    writeStream.on('error', (err) => {
-        console.error(err);
-        res.status(500).json({ message: 'Upload failed', error: err });
-    });
 };
 
 // File Streaming for Download or Playback

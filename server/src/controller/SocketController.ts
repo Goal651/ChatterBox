@@ -120,69 +120,90 @@ const SocketController = (io: Server) => {
 
             socket.on('message', async (data: SentMessages) => {
                 try {
-                    const { receiverId, message, messageType, messageId } = data
-                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
-                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
+                    const { receiverId, message, messageType, messageId } = data;
+                    const senderData = await model.User.findById(userId).select('username publicKey') as { username: string, publicKey: string };
+                    const receiverData = await model.User.findById(receiverId).select('publicKey');
+                    if (!receiverData) throw new Error('Receiver not found');
+
+                    // Hybrid encryption: AES for message, RSA for AES key
+                    const encryptedData = await encryptionController.encryptMessage(receiverData.publicKey, message); // Now returns JSON string
 
                     const newMessage = new model.Message({
                         sender: userId,
                         receiver: receiverId,
-                        message: encryptedMessage,
+                        message: encryptedData, // Store encrypted JSON
                         type: messageType,
-                    })
+                    });
 
-                    await newMessage.save()
+                    await newMessage.save();
 
                     const sentMessage = {
                         ...newMessage.toObject(),
-                        message,
+                        message, // Plaintext for sender
                         sender: userId,
                         receiver: receiverId,
-                    }
-                    io.to(socket.id).emit('messageSent', { messageId, sentMessage })
-                    emitToUserSockets(userId, 'receiveSentMessage', sentMessage)
+                    };
+
+                    io.to(socket.id).emit('messageSent', { messageId, sentMessage });
+                    emitToUserSockets(userId, 'receiveSentMessage', sentMessage);
 
                     if (userSockets[receiverId]) {
-                        emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username })
-                        await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true })
-                        io.to(socket.id).emit('messageReceived', { messageId: newMessage._id })
-                        emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id })
+                        // Receiver gets encrypted message to decrypt client-side, or decrypt server-side if preferred
+                        emitToUserSockets(receiverId, 'receiveMessage', { 
+                            message: { ...newMessage.toObject(), message: encryptedData }, 
+                            senderUserName: senderData.username 
+                        });
+                        await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true });
+                        io.to(socket.id).emit('messageReceived', { messageId: newMessage._id });
+                        emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id });
                     } else {
-                        await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } })
-                        await WebPusherController.sendDataToWebPush(senderUserName.username, data)
+                        await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } });
+                        await WebPusherController.sendDataToWebPush(senderData.username, data);
                     }
                 } catch (error) {
-                    handleSocketError(socket, 'message', error, 'Failed to send message')
+                    handleSocketError(socket, 'message', error, 'Failed to send message');
                 }
-            })
+            });
 
             socket.on("groupMessage", async (data: GroupMessageData) => {
                 try {
-                    const { group, message, messageType, messageId, sender } = data
-                    const senderName = await model.User.findById(userId)
-                    const groupName = await model.Group.findById(group).select('groupName')
+                    const { group, message, messageType, messageId, sender } = data;
+                    const senderName = await model.User.findById(userId).select('username');
+                    const groupData = await model.Group.findById(group).select('groupName aesKey iv');
+                    if (!groupData) throw new Error('Group not found');
+
+                    // Encrypt group message with AES
+                    const encryptedMessage = encryptionController.encryptGroupMessage({
+                        iv: groupData.iv,
+                        privateKey: groupData.aesKey, // Using aesKey as the symmetric key
+                        message,
+                    });
 
                     const newMessage = new model.GMessage({
                         sender: userId,
                         group: group,
-                        message: message,
+                        message: encryptedMessage, // Store encrypted
                         type: messageType,
-                    })
+                    });
 
-                    await newMessage.save()
+                    await newMessage.save();
 
                     const sentMessage = {
                         ...newMessage.toObject(),
-                        message,
-                        sender: sender,
+                        message, // Plaintext for sender
+                        sender: sender || userId,
                         group: group,
-                    }
+                    };
 
-                    socket.to(group).emit("receiveGroupMessage", { message: sentMessage, groupName: groupName?.groupName, senderName: senderName?.username })
+                    socket.to(group).emit("receiveGroupMessage", { 
+                        message: { ...newMessage.toObject(), message: encryptedMessage }, // Encrypted for receivers
+                        groupName: groupData.groupName,
+                        senderName: senderName?.username 
+                    });
                 } catch (error) {
-                    handleSocketError(socket, 'groupMessage', error, 'Failed to send group message')
+                    handleSocketError(socket, 'groupMessage', error, 'Failed to send group message');
                 }
-            })
+            });
 
             socket.on('messageSeen', async (data: MessageSeenData) => {
                 try {

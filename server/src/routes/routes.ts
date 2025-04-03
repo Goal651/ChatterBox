@@ -52,6 +52,13 @@ router.get("/getNotifications", auth.checkToken, notificationController.getNotif
 // APIs for admin
 router.get("/admin/stats", isAdmin, adminController.getAdminStats);
 
+
+//apis for securit
+router.post("/refreshToken", auth.checkToken, (req, res) => {
+    const newToken = auth.refreshToken(res.locals.user.userId);
+    res.json({ accessToken: newToken });
+});
+
 // Catch-all route
 router.get("*", (req, res) => {
     res.send("Hello there what are you looking for?");

@@ -1,12 +1,10 @@
-import fs from 'fs'
-import path from 'path'
-import { Request, Response } from 'express'
-import crypto from 'crypto'
-import { Message, GroupMessage, User, Group } from '../interfaces/interface'
-import model from '../model/model'
-import decryptController from '../security/Decryption'
-
-
+import fs from 'fs';
+import path from 'path';
+import { Request, Response } from 'express';
+import crypto from 'crypto';
+import { Message, GroupMessage } from '../interfaces/interface';
+import model from '../model/model';
+import decryptController from '../security/Decryption';
 
 const decryptData = (data: string, aesKey: string, iv: string): string | null => {
     try {
@@ -18,95 +16,93 @@ const decryptData = (data: string, aesKey: string, iv: string): string | null =>
         console.error('Error decrypting data:', err);
         return null;
     }
-}
+};
 
 const decryptGroupMessage = (data: { iv: string, privateKey: string, message: string }): string | undefined => {
     try {
-        if (!data) return
-        const ivBuffer = Buffer.from(data.iv, 'hex')
-        const aesKeyBuffer = Buffer.from(data.privateKey, 'hex')
-        const encryptedMessage = Buffer.from(data.message, 'hex')
-        const decipher = crypto.createDecipheriv('aes-256-cbc', aesKeyBuffer, ivBuffer)
-        let decryptedMessage = decipher.update(encryptedMessage, undefined, 'utf-8')
-        decryptedMessage += decipher.final('utf-8')
-        return decryptedMessage
+        if (!data) return;
+        const ivBuffer = Buffer.from(data.iv, 'hex');
+        const aesKeyBuffer = Buffer.from(data.privateKey, 'hex');
+        const encryptedMessage = Buffer.from(data.message, 'hex');
+        const decipher = crypto.createDecipheriv('aes-256-cbc', aesKeyBuffer, ivBuffer);
+        let decryptedMessage = decipher.update(encryptedMessage, undefined, 'utf-8');
+        decryptedMessage += decipher.final('utf-8');
+        return decryptedMessage;
     } catch (err) {
-        console.error(err)
+        console.error(err);
     }
-}
+};
 
 const getFileData = async (filePath: string, mimeType: string): Promise<string | null> => {
     try {
-        const data = await fs.promises.readFile(filePath)
-        return `data:${mimeType};base64,${data.toString('base64')}`
+        const data = await fs.promises.readFile(filePath);
+        return `data:${mimeType};base64,${data.toString('base64')}`;
     } catch (err) {
-        console.error(`Error reading file ${filePath}:`, err)
-        return null
+        console.error(`Error reading file ${filePath}:`, err);
+        return null;
     }
-}
-
+};
 
 const decryptMessageContent = async (message: string, privateKey: string): Promise<string> => {
     try {
         return crypto.privateDecrypt(
             { key: privateKey, padding: crypto.constants.RSA_PKCS1_OAEP_PADDING },
             Buffer.from(message, 'base64')
-        ).toString('utf-8')
+        ).toString('utf-8');
     } catch (err) {
-        console.error('Error decrypting message content:', err)
-        return 'Error decrypting message'
+        console.error('Error decrypting message content:', err);
+        return 'Error decrypting message';
     }
-}
+};
 
 const formatMessageData = async (message: Message, privateKey: string) => {
-    let decryptedMessage = ''
-    let fileData = null
+    let decryptedMessage = '';
+    let fileData = null;
 
     if (message.type === 'text') {
-        decryptedMessage = await decryptMessageContent(message.message, privateKey)
+        decryptedMessage = await decryptMessageContent(message.message, privateKey);
     } else if (message.type.startsWith('image')) {
-        fileData = await getFileData(message.message, 'image/jpeg')
+        fileData = await getFileData(message.message, 'image/jpeg');
     } else if (message.type.startsWith('video')) {
-        fileData = await getFileData(message.message, 'video/mp4')
+        fileData = await getFileData(message.message, 'video/mp4');
     } else if (message.type.startsWith('audio')) {
-        fileData = await getFileData(message.message, 'audio/mp3')
+        fileData = await getFileData(message.message, 'audio/mp3');
     } else {
-        console.error('Unsupported message type:', message.type)
+        console.error('Unsupported message type:', message.type);
     }
 
-    return { message: decryptedMessage, file: fileData }
-}
+    return { message: decryptedMessage, file: fileData };
+};
 
-const formatGroupMessageData = async ({ message, privateKey, iv }: { message: GroupMessage, privateKey: string, iv: string, aesKey: string }): Promise<{ message: string, file: string | null }> => {
-    let decryptedMessage = ''
-    let fileData = null
+const formatGroupMessageData = async ({ message, privateKey, iv }: { message: GroupMessage, privateKey: string, iv: string }): Promise<{ message: string, file: string | null }> => {
+    let decryptedMessage = '';
+    let fileData = null;
 
     if (message.type === 'text') {
-        decryptedMessage = decryptGroupMessage({ message: message.message, privateKey, iv }) as string
+        decryptedMessage = decryptGroupMessage({ message: message.message, privateKey, iv }) as string;
     } else if (message.type.startsWith('image')) {
-        fileData = await getFileData(message.message, 'image/jpeg')
+        fileData = await getFileData(message.message, 'image/jpeg');
     } else if (message.type.startsWith('video')) {
-        fileData = await getFileData(message.message, 'video/mp4')
+        fileData = await getFileData(message.message, 'video/mp4');
     } else if (message.type.startsWith('audio')) {
-        fileData = await getFileData(message.message, 'audio/mp3')
+        fileData = await getFileData(message.message, 'audio/mp3');
     } else {
-        console.error('Unsupported message type:', message.type)
+        console.error('Unsupported message type:', message.type);
     }
 
-    return { message: decryptedMessage, file: fileData }
-}
+    return { message: decryptedMessage, file: fileData };
+};
 
 const getMessage = async (req: Request, res: Response) => {
     try {
-        const { receiverId, phase } = req.params as unknown as { receiverId: string, phase: number }
-        const { userId } = res.locals.user
-        const numberOfMessagesToSkip = phase * 10
+        const { receiverId, phase } = req.params as unknown as { receiverId: string, phase: number };
+        const { userId } = res.locals.user;
+        const numberOfMessagesToSkip = phase * 10;
 
-        if (!userId && !receiverId) {
-            res.status(400).json({ message: 'Sender and receiver are required' })
-            return
+        if (!userId || !receiverId) {
+            res.status(400).json({ message: 'Sender and receiver are required' });
+            return;
         }
-
 
         const messages = await model.Message
             .find({
@@ -117,61 +113,71 @@ const getMessage = async (req: Request, res: Response) => {
             })
             .sort({ createdAt: -1 })
             .skip(numberOfMessagesToSkip)
-            .limit(10) as unknown[] as Message[]
+            .limit(10) as unknown as Message[];
 
         if (messages.length <= 0) {
-            res.status(200).json({ messages: [] })
-            return
+            res.status(200).json({ messages: [] });
+            return;
         }
 
         const result = await Promise.all(messages.map(async m => {
-            const decryptedMessage = await decryptController.decryptMessage(m.sender.toString(), m.message)
-            m.message = decryptedMessage
-            return m
-        }))
+            // Handle hybrid encryption JSON
+            const decryptedMessage = await decryptController.decryptMessage(m.sender.toString(), m.message);
+            m.message = decryptedMessage;
+            return m;
+        }));
 
-        res.status(200).json({ messages: result.reverse() })
+        res.status(200).json({ messages: result.reverse() });
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error' })
-
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-}
+};
 
 const getGMessage = async (req: Request, res: Response) => {
     try {
-        const { group } = req.params
-        const groupData = await model.Group.findById(group)
-
+        const { group } = req.params;
+        const phase = parseInt(req.query.phase as string) || 0;
+        const groupData = await model.Group.findById(group).select('groupName aesKey iv');
         if (!groupData) {
-            res.status(400).json({ message: 'Group not found' })
-            return
+            res.status(400).json({ message: 'Group not found' });
+            return;
         }
-
 
         const messages = await model.GMessage.find({ group })
             .populate([
                 { path: 'replying' },
                 { path: 'sender', select: '-privateKey -publicKey -password' }
-            ]) as unknown[] as GroupMessage[]
+            ])
+            .sort({ createdAt: -1 })
+            .skip(phase * 10)
+            .limit(10) as unknown as GroupMessage[];
 
         if (messages.length <= 0) {
-            res.status(200).json({ messages: [] })
-            return
+            res.status(200).json({ messages: [] });
+            return;
         }
 
+        const result = await Promise.all(messages.map(async m => {
+            if (m.type === 'text') {
+                const decryptedMessage = decryptGroupMessage({
+                    iv: groupData.iv,
+                    privateKey: groupData.aesKey, // Using aesKey as symmetric key
+                    message: m.message,
+                });
+                m.message = decryptedMessage || 'Error decrypting group message';
+            }
+            return m;
+        }));
 
-        res.status(200).json({ messages: messages })
+        res.status(200).json({ messages: result });
     } catch (error) {
-        console.error(error)
-        res.status(500).json({ message: 'Internal server error' })
-
+        console.error(error);
+        res.status(500).json({ message: 'Internal server error' });
     }
-}
-
-
+};
 
 export default {
     getMessage,
     getGMessage,
-}
+};
