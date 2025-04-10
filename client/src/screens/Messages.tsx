@@ -150,7 +150,7 @@ export default function Messages({
 
     if (isLoading) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+            <div className="h-full flex flex-col items-center justify-center shadow-inner">
                 <svg className="animate-spin h-12 w-12 text-blue-500" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
@@ -162,14 +162,14 @@ export default function Messages({
 
     if (!componentId) {
         return (
-            <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
+            <div className="h-full flex flex-col items-center justify-center ">
                 <span className="text-gray-300 text-lg font-medium">Select a friend or group to view messages</span>
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 bg-gray-950/95 rounded-2xl shadow-inner">
+        <div className="h-full w-full overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 ">
             {sessionType === 'chat' ? (
                 <UserMessages
                     onDeleteMessage={handleDeleteMessage}

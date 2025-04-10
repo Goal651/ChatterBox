@@ -115,13 +115,13 @@ const ChatScreen = ({
     };
 
     if (!component) return (
-        <div className="flex items-center justify-center w-full h-full bg-gray-950/95 rounded-2xl">
+        <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
             <div className="text-gray-300 text-lg font-medium">Select a friend or group to start chatting</div>
         </div>
     );
 
     return (
-        <div className="flex flex-col h-full w-full">
+        <div className="flex flex-col h-full w-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
             <CallComponent
                 users={users}
                 isVideoCall={callType}
@@ -134,7 +134,7 @@ const ChatScreen = ({
             />
 
             {/* Header */}
-            <div className="flex justify-between items-center border-b border-gray-700/50 pb-4 px-4 bg-gray-900/90 shadow-md">
+            <div className="flex justify-between items-center border-b border-gray-700/50 pb-4 px-4 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
                 <div className="flex items-center space-x-4">
                     {(mediaType.isMobile || mediaType.isTablet) && (
                         <FaArrowLeft
@@ -184,7 +184,7 @@ const ChatScreen = ({
             </div>
 
             {/* Chat Area */}
-            <div className="flex flex-col flex-1 space-y-6 overflow-hidden py-6 px-4 bg-gray-950/95 rounded-b-2xl shadow-inner">
+            <div className="flex flex-col flex-1 space-y-6 overflow-hidden py-6 bg-transparent">
                 <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                     <Messages
                         component={component}
