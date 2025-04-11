@@ -97,7 +97,7 @@ export default function UserGroupList({
     );
 
     return (
-        <div className="bg-gray-950/95 p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-2xl shadow-inner">
+        <div className="bg-transparent p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-2xl shadow-inner">
             {combinedList.map((item) => {
                 const isGroup = item.isGroup;
                 const id = item._id;
