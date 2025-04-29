@@ -109,7 +109,7 @@ export interface UserGroupListProps {
 }
 
 
-export interface FormData {
+export interface FormDataSignUp {
     names: string;
     username: string;
     email: string;
