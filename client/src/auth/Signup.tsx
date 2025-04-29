@@ -21,7 +21,6 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [isFormReadyToSubmit, setIsFormReadyToSubmit] = useState<boolean>(false)
     const [imagePreview, setImagePreview] = useState<string | null>(null)
-    const [file, setFile] = useState<File | null>(null)
     const [theme, setTheme] = useState<'dark' | 'light'>('dark')
 
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -51,7 +50,7 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
         if (type === 'file' && files) {
             const file = files[0]
             if (file && file.type.startsWith('image/')) {
-                setFile(file)
+
                 setFormData((prevData) => ({ ...prevData, image: file.name }))
                 setImagePreview(URL.createObjectURL(file))
             } else {
@@ -82,7 +81,7 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
         setIsLoading(true)
         try {
             const response = await axios.post(`${serverUrl}/signUp`, formData, {
-                headers: {'Content-Type':'application/json'},
+                headers: { 'Content-Type': 'application/json' },
             })
 
             if (response.status === 200) {
@@ -357,7 +356,7 @@ export default function SignUp({ serverUrl }: { serverUrl: string }) {
                             type="submit"
                             className={`btn-gradient btn btn-lg border-0 text-white rounded-xl px-12 py-3 ${!isFormReadyToSubmit || isLoading ? 'opacity-75 cursor-not-allowed' : ''
                                 }`}
-                                
+
                             disabled={!isFormReadyToSubmit || isLoading}
                             aria-label={isLoading ? 'Signing up' : 'Sign Up'}
                         >
