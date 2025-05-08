@@ -3,7 +3,7 @@ import { GroupMessage, Message, MessageProps } from "../interfaces/interfaces";
 import { useParams } from "react-router-dom";
 import { getGroupMessagesApi, getMessagesApi } from "../api/MessageApi";
 import UserMessages from "../components/UserMessages";
-import GroupMessages from "../components/GroupMessages";
+import GroupMessages from "../components/shared/GroupMessages";
 
 export default function Messages({
     serverUrl,

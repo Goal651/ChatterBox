@@ -1,4 +1,4 @@
-import { User } from "../interfaces/interfaces";
+import { User } from "../../interfaces/interfaces";
 
 interface NotifierProps {
     from: string

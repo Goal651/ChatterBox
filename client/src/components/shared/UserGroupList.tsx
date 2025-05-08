@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
+import ProfilePicturePreview from "./ProfilePicturePreview";
 import { Message, UserGroupListProps,User, Group, GroupMessage } from "../interfaces/interfaces";
 
 export default function UserGroupList({

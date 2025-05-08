@@ -2,7 +2,7 @@ import * as iconsFa from "react-icons/fa";
 import { useEffect, useState } from "react";
 import { Photos, User } from "../interfaces/interfaces";
 import { editUserPassword } from "../api/AuthApi";
-import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
+import ProfilePicturePreview from "../components/shared/ProfilePicturePreview";
 import { updateUserApi } from "../api/UserApi";
 
 interface ProfileDataType {

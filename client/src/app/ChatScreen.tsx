@@ -1,11 +1,11 @@
 import { FaArrowLeft, FaEllipsisV, FaPhone, FaVideo } from "react-icons/fa";
 import Messages from "./Messages";
-import Sender from "./Sender";
+import Sender from "../components/shared/Sender";
 import { ChatScreenProps, GroupMessage, GroupUser, Message, SocketMessageProps } from "../interfaces/interfaces";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
-import CallComponent from "../components/CallComponent";
+import ProfilePicturePreview from "../components/shared/ProfilePicturePreview";
+import CallComponent from "../components/shared/CallComponent";
 
 const ChatScreen = ({
     socket,

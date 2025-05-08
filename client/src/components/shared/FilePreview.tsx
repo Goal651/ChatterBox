@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getFile } from "../api/FileApi";
+import { getFile } from "../../api/FileApi";
 import Modal from "react-modal";
 import { FaArrowLeft, FaArrowRight, FaTimes } from "react-icons/fa";
 

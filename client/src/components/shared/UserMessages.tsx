@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { Message, User } from "../interfaces/interfaces";
-import FilePreview from "../utilities/FilePreview";
+import FilePreview from "./FilePreview";
 import { useCallback, useEffect, useRef } from "react";
 
 interface UserMessagesProps {

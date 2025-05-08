@@ -1,20 +1,20 @@
-import Navigator from "../screens/Navigator";
+import Navigator from "./Navigator";
 import { getProfileApi, getUsersApi } from "../api/UserApi";
 import { useEffect, useState } from "react";
 import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User } from "../interfaces/interfaces";
-import ChatScreen from "../screens/ChatScreen";
-import Notifier from "../utilities/Notifier";
+import ChatScreen from "./ChatScreen";
+import Notifier from "../components/shared/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
-import Setting from "../screens/Settings";
-import CreateGroup from "../screens/CreateGroup";
-import Notifications from "../screens/Notifications";
+import Setting from "./Settings";
+import CreateGroup from "./CreateGroup";
+import Notifications from "../components/shared/Notifications";
 import PusherManager from '../config/PusherManager';
-import NotificationRequest from "../utilities/Permissions";
-import CallComponent from "../components/CallComponent";
+import NotificationRequest from "../components/Permissions";
+import CallComponent from "../components/shared/CallComponent";
 import { getGroupsApi } from "../api/GroupApi";
 import { getNotification } from "../api/NotificationApi";
-import GroupSetting from "../components/GroupSetting";
-import UserGroupList from "../screens/UserGroupList";
+import GroupSetting from "../components/shared/GroupSetting";
+import UserGroupList from "../components/UserGroupList";
 
 export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
     const navigate = useNavigate();

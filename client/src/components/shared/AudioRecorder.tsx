@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import RecordRTC from "recordrtc";
-import AudioWave from "../components/AudioWave";
+import AudioWave from "./AudioWave";
 
 interface AudioRecorderProps {
     onRecordingComplete: (audioBlob: Blob, audioUrl: string) => void;

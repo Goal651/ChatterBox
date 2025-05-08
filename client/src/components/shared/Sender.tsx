@@ -3,13 +3,13 @@ import { FaFaceLaugh } from "react-icons/fa6";
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 import { useEffect, useRef, useState } from "react";
-import FileMessagePreview from "../utilities/FileMessagePreview";
-import { GroupMessage, Message, SenderProps, User } from "../interfaces/interfaces";
-import FileUploader from "../utilities/FileUploader";
-import AudioRecorder from "../utilities/AudioRecorder";
-import StyledAudioPlayer from "../utilities/StyledAudioPlayer";
+import FileMessagePreview from "./FileMessagePreview";
+import { GroupMessage, Message, SenderProps, User } from "../../interfaces/interfaces";
+import FileUploader from "./FileUploader";
+import AudioRecorder from "./AudioRecorder";
+import StyledAudioPlayer from "./StyledAudioPlayer";
 import { useParams } from "react-router-dom";
-import PhotoCapture from "../utilities/PhotoCapture";
+import PhotoCapture from "./PhotoCapture";
 
 export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessage, messageInEdition }: SenderProps) {
     const user = sessionStorage.getItem('currentUser') || '';
@@ -112,7 +112,7 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
         setIsUploading(false);
         return audio ? audio : '';
     };
-    
+
 
     const handleVoiceRecorded = (data: Blob) => {
         setRecordedAudio(data);
@@ -171,7 +171,7 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
     };
 
     return (
-        <div className="flex w-full gap-4 items-center justify-center px-4 py-2 bg-gray-900/95 rounded-xl shadow-md">
+        <div className="flex w-full  items-center justify-center px-4 py-2 bg-gray-900/95 shadow-md">
             {isTakingPhoto && <PhotoCapture onPhotoCapture={handleCapturedPhoto} />}
 
             {/* Audio Recording State */}

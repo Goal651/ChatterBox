@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { User } from "../interfaces/interfaces";
+import { User } from "../../interfaces/interfaces";
 import { Socket } from "socket.io-client";
 import { useNavigate, useParams } from "react-router-dom";
 

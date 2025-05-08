@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileMessagePreviewProps } from "../interfaces/interfaces";
+import { FileMessagePreviewProps } from "../../interfaces/interfaces";
 
 
 

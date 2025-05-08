@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom";
-import { GroupMessagesProps, User } from "../interfaces/interfaces";
-import FilePreview from "../utilities/FilePreview";
+import { GroupMessagesProps, User } from "../../interfaces/interfaces";
+import FilePreview from "./FilePreview";
 import { useCallback, useEffect, useRef } from "react";
-import ProfilePicturePreview from "../utilities/ProfilePicturePreview";
+import ProfilePicturePreview from "./ProfilePicturePreview";
 
 export default function GroupMessages({ messages, mediaType, serverUrl, photos, images }: GroupMessagesProps) {
     const { componentId } = useParams();

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Notification } from "../interfaces/interfaces";
+import { Notification } from "../../interfaces/interfaces";
 
 export default function Notifications(data: { notification: Notification[] }) {
     const [notifications, setNotifications] = useState<Notification[]>(data.notification);
