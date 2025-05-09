@@ -1,13 +1,13 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { serverUrl } from "../constants/constant";
 
 interface LoginProps {
-  serverUrl: string;
   status: (data: boolean) => void;
 }
 
-export default function Login({ serverUrl, status }: LoginProps) {
+export default function Login({ status }: LoginProps) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errorMessage, setErrorMessage] = useState("");
@@ -34,7 +34,7 @@ export default function Login({ serverUrl, status }: LoginProps) {
       };
       checkUser();
     }
-  }, [token, serverUrl, navigate]);
+  }, [token, navigate]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

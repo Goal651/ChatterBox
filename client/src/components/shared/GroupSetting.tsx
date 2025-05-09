@@ -8,7 +8,7 @@ interface GroupMembers {
     role: string
 }
 
-export default function GroupSetting({ groups, users, serverUrl }: { groups: Group[]; users: User[]; serverUrl: string }) {
+export default function GroupSetting({ groups, users }: { groups: Group[]; users: User[]; }) {
     const [groupName, setGroupName] = useState('');
     const [description, setDescription] = useState('');
     const [members, setMembers] = useState<GroupMembers[]>([]);
@@ -55,7 +55,7 @@ export default function GroupSetting({ groups, users, serverUrl }: { groups: Gro
         e.preventDefault();
         try {
             const newMembersIds = newMembers.map(user => user._id);
-            const response = await updateGroup(serverUrl, componentId, { groupName, description, members: newMembersIds });
+            const response = await updateGroup(componentId, { groupName, description, members: newMembersIds });
             if (response.status === 200) {
                 const newMember = [...members, ...newMembers.map(user => ({ member: user, role: 'member' }))];
                 setMembers(newMember); // Update members state

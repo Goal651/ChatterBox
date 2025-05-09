@@ -11,7 +11,7 @@ import StyledAudioPlayer from "./StyledAudioPlayer";
 import { useParams } from "react-router-dom";
 import PhotoCapture from "./PhotoCapture";
 
-export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessage, messageInEdition }: SenderProps) {
+export default function Sender({ socket, sentMessage,  sentGroupMessage, messageInEdition }: SenderProps) {
     const user = sessionStorage.getItem('currentUser') || '';
     const selectedUser = sessionStorage.getItem('selectedUser') || '';
     const currentUser: User = user ? JSON.parse(user) : null;
@@ -93,7 +93,7 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
             return [];
         }
         const result = await Promise.all(fileData.map(async (file) => {
-            const data = await FileUploader({ fileToSend: file, serverUrl });
+            const data = await FileUploader({ fileToSend: file });
             return data;
         }));
         setIsUploading(false);
@@ -108,7 +108,7 @@ export default function Sender({ socket, sentMessage, serverUrl, sentGroupMessag
         }
         const fileName = `recording_${Date.now()}.mp3`;
         const audioFile = new File([recordedAudio], fileName, { type: recordedAudio.type });
-        const audio = await FileUploader({ fileToSend: audioFile, serverUrl });
+        const audio = await FileUploader({ fileToSend: audioFile});
         setIsUploading(false);
         return audio ? audio : '';
     };

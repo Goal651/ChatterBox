@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { serverUrl } from "../constants/constant";
 
-const NetworkChecker = ({ serverUrl }: { serverUrl: string }) => {
+const NetworkChecker = () => {
     const navigate = useNavigate();
     const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
     const [serverStatus, setServerStatus] = useState<"up" | "down" | "unknown">("unknown");

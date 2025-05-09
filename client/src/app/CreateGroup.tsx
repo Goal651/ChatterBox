@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createGroup } from "../api/GroupApi";
 import axios from "axios";
 
-export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
+export default function CreateGroup({ userList}: CreateGroupProps) {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [groupName, setGroupName] = useState("");
@@ -61,7 +61,7 @@ export default function CreateGroup({ userList, serverUrl }: CreateGroupProps) {
                 members: selectedMembers.map((member) => member._id),
             };
             setLoading(true);
-            const response = await createGroup(serverUrl, groupData);
+            const response = await createGroup( groupData);
             if (response.status === 200) {
                 navigate("/group/" + response.data.groupId);
             }

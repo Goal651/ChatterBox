@@ -1,4 +1,5 @@
 import axios from "axios";
+import { serverUrl } from "../constants/constant";
 
 
 axios.interceptors.response.use(
@@ -17,7 +18,7 @@ axios.interceptors.response.use(
 
 
 // Pinging server
-export async function pingServerApi(serverUrl: string) {
+export async function pingServerApi() {
     const response = await axios.get(serverUrl + '/ping');
     return response.data;
 }
@@ -26,13 +27,7 @@ export async function pingServerApi(serverUrl: string) {
 
 
 
-
-
-
-
-
-
-export async function subscribeToPush(serverUrl: string, subscription: object) {
+export async function subscribeToPush(subscription: object) {
     try {
         const response = await axios.post(serverUrl + '/webPusher/subscribe', subscription, {
             headers: {

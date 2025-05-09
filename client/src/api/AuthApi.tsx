@@ -1,7 +1,8 @@
 import axios from "axios"
+import { serverUrl } from "../constants/constant";
 
 
-export async function checkTokenApi(serverUrl: string) {
+export async function checkTokenApi() {
     const response = await axios.get(serverUrl + '/auth', {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -10,13 +11,13 @@ export async function checkTokenApi(serverUrl: string) {
     return response;
 }
 
-export async function loginApi(serverUrl: string, email: string, password: string) {
+export async function loginApi( email: string, password: string) {
     const response = await axios.post(serverUrl + '/login', { email, password });
     return response.data;
 }
 
 
-export async function editUserPassword(serverUrl: string, userData: object) {
+export async function editUserPassword( userData: object) {
     const response = await axios.put(serverUrl + '/editUserPassword', userData, {
         headers: {
             accesstoken: localStorage.getItem('token'),

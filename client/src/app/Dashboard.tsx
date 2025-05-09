@@ -9,14 +9,14 @@ import Setting from "./Settings";
 import CreateGroup from "./CreateGroup";
 import Notifications from "../components/shared/Notifications";
 import PusherManager from '../config/PusherManager';
-import NotificationRequest from "../components/Permissions";
 import CallComponent from "../components/shared/CallComponent";
 import { getGroupsApi } from "../api/GroupApi";
 import { getNotification } from "../api/NotificationApi";
 import GroupSetting from "../components/shared/GroupSetting";
-import UserGroupList from "../components/UserGroupList";
+import NotificationRequest from "../components/shared/Permissions";
+import UserGroupList from "../components/shared/UserGroupList";
 
-export default function Dashboard({ serverUrl, mediaType, socket }: DashboardProps) {
+export default function Dashboard({ mediaType, socket }: DashboardProps) {
     const navigate = useNavigate();
     const [users, setUsers] = useState<User[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
@@ -36,10 +36,10 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
         const fetchInitialData = async () => {
             try {
                 setLoading(true);
-                const usersData = await getUsersApi(serverUrl);
-                const currentUserData = await getProfileApi(serverUrl);
-                const initialGroups = await getGroupsApi(serverUrl);
-                const initialNotifications = await getNotification(serverUrl);
+                const usersData = await getUsersApi();
+                const currentUserData = await getProfileApi();
+                const initialGroups = await getGroupsApi();
+                const initialNotifications = await getNotification();
                 const sortedUsers = sortUsersByLatestMessage(usersData);
                 const sortedGroups = sortGroupsByLatestMessage(initialGroups.groups);
                 setUsers(sortedUsers);
@@ -57,7 +57,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
             }
         };
         fetchInitialData();
-    }, [serverUrl]);
+    }, []);
 
     useEffect(() => {
         if (!socket) return;
@@ -239,7 +239,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
     function chattingScreen() {
         return (
             <>
-                <PusherManager serverUrl={serverUrl} />
+                <PusherManager />
                 <NotificationRequest />
                 {!hideUsers() && (
                     <div className={`${mediaType.isMobile || mediaType.isTablet ? 'w-full' : 'w-1/3'} bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900  flex flex-col p-2 space-y-6 h-full shadow-lg transition-all duration-300`}>
@@ -257,7 +257,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
                             navigate={navigate}
-                            serverUrl={serverUrl}
                             imageLoaded={storePhotos}
                             photos={photos}
                         />
@@ -269,14 +268,13 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                             <GroupSetting
                                 groups={groups}
                                 users={users}
-                                serverUrl={serverUrl}
+
                             />
                         ) : (
                             <ChatScreen
                                 socket={socket}
                                 groups={groups}
                                 users={filteredUsers}
-                                serverUrl={serverUrl}
                                 sentMessage={updateUsers}
                                 onlineUsers={onlineUsers}
                                 mediaType={mediaType}
@@ -299,7 +297,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                 return chattingScreen();
             case 'setting':
                 return <Setting
-                    serverUrl={serverUrl}
+
                     userData={currentUser}
                     loadedImage={storePhotos}
                     photos={photos} />;
@@ -308,7 +306,7 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     socket={socket}
                     userList={filteredUsers}
                     mediaType={mediaType}
-                    serverUrl={serverUrl}
+
                 />;
             case 'notification':
                 return <Notifications
@@ -335,7 +333,6 @@ export default function Dashboard({ serverUrl, mediaType, socket }: DashboardPro
                     socket={socket}
                     initialCurrentUser={currentUser}
                     mediaType={mediaType}
-                    serverUrl={serverUrl}
                     loadedImage={storePhotos}
                     photos={photos}
                 />

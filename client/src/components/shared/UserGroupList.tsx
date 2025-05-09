@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import ProfilePicturePreview from "./ProfilePicturePreview";
-import { Message, UserGroupListProps,User, Group, GroupMessage } from "../interfaces/interfaces";
+import { Message, UserGroupListProps,User, Group, GroupMessage } from "../../interfaces/interfaces";
 
 export default function UserGroupList({
     filteredUsers,
@@ -12,7 +12,6 @@ export default function UserGroupList({
     handleSetUnreads,
     loading,
     navigate,
-    serverUrl,
     imageLoaded,
     photos,
 }: UserGroupListProps) {
@@ -115,7 +114,6 @@ export default function UserGroupList({
                                     <div className="w-12 h-12">
                                         <ProfilePicturePreview
                                             profilePicture={item.image}
-                                            serverUrl={serverUrl}
                                             loadedImage={imageLoaded}
                                             photos={photos}
                                             username={name}

@@ -1,11 +1,11 @@
 import axios from 'axios';
+import { serverUrl } from '../../constants/constant';
 
 interface FileUploaderProps {
-    serverUrl: string;
     fileToSend?: File | null;
 }
 
-export default async function FileUploader({ fileToSend, serverUrl }: FileUploaderProps): Promise<string> {
+export default async function FileUploader({ fileToSend}: FileUploaderProps): Promise<string> {
     const accessToken = localStorage.getItem('token');
 
     const MAX_RETRIES = 3;

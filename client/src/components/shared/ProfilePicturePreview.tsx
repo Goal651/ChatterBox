@@ -11,7 +11,6 @@ Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
     profilePicture?: string;
-    serverUrl: string;
     loadedImage: (data: Photos) => void;
     photos: Photos[];
     username: string;
@@ -19,7 +18,7 @@ interface ProfilePicturePreviewProps {
     className?: string; // Added for external styling (e.g., from parent components)
 }
 
-export default function ProfilePicturePreview({ profilePicture, serverUrl, loadedImage, photos, username, textSize, className }: ProfilePicturePreviewProps) {
+export default function ProfilePicturePreview({ profilePicture, loadedImage, photos, username, textSize, className }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -38,7 +37,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
                         setImageSrc(isPhotoAvailable.photo);
                         return;
                     }
-                    const response = await getFile(serverUrl, profilePicture);
+                    const response = await getFile(profilePicture);
                     setImageSrc(response.file);
                     const newProfilePic: Photos = {
                         key: profilePicture,
@@ -52,7 +51,7 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         };
 
         fetchProfilePicture();
-    }, [profilePicture, serverUrl, photos, loadedImage]);
+    }, [profilePicture, photos, loadedImage]);
 
     useEffect(() => {
         setAllowedToEdit(sessionType === "setting");
@@ -83,9 +82,9 @@ export default function ProfilePicturePreview({ profilePicture, serverUrl, loade
         if (newProfilePicture) {
             try {
                 setIsSubmitting(true);
-                const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture, serverUrl });
+                const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture});
                 if (uploadedFileName) {
-                    await editUserProfilePicture(serverUrl, uploadedFileName);
+                    await editUserProfilePicture( uploadedFileName);
                     setImageSrc(previewSrc);
                 }
             } catch (err) {

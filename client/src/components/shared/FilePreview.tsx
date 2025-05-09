@@ -12,7 +12,6 @@ interface FilePreviewData {
 
 interface FilePreviewProps {
     files: string; // Comma-separated file names
-    serverUrl: string;
     mediaType: {
         isDesktop: boolean;
         isTablet: boolean;
@@ -20,7 +19,7 @@ interface FilePreviewProps {
     };
 }
 
-export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
+export default function FilePreview({ files }: FilePreviewProps) {
     const [filePreviews, setFilePreviews] = useState<FilePreviewData[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
@@ -33,7 +32,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
                 const fileList = files.includes(",") ? files.split(",").map((file) => file.trim()) : [files];
                 const fetchedFiles = await Promise.all(
                     fileList.map(async (file) => {
-                        const response = await getFile(serverUrl, file);
+                        const response = await getFile( file);
                         return { file: response.file as string, type: response.fileType as string };
                     })
                 );
@@ -46,7 +45,7 @@ export default function FilePreview({ files, serverUrl }: FilePreviewProps) {
             }
         };
         fetchFiles();
-    }, [files, serverUrl]);
+    }, [files]);
 
     const openModal = (index: number) => {
         setCurrentIndex(index);

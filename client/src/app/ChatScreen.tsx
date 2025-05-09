@@ -10,7 +10,6 @@ import CallComponent from "../components/shared/CallComponent";
 const ChatScreen = ({
     socket,
     users,
-    serverUrl,
     sentMessage,
     sentGroupMessage,
     onlineUsers,
@@ -31,7 +30,7 @@ const ChatScreen = ({
     const [isUserCalling, setIsUserCalling] = useState(false);
 
     useEffect(() => {
-        let result;
+        let result: GroupUser | null = null;
         if (sessionType === 'chat') {
             result = users.find((user) => user._id === componentId) as GroupUser;
         } else if (sessionType === 'group') {
@@ -145,7 +144,6 @@ const ChatScreen = ({
                     <div className="relative group w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full">
                         <ProfilePicturePreview
                             profilePicture={component?.image}
-                            serverUrl={serverUrl}
                             loadedImage={loadedImage}
                             photos={photos}
                             username={sessionType === 'chat' ? component.username || 'U' : component.groupName || ''}
@@ -188,7 +186,6 @@ const ChatScreen = ({
                 <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
                     <Messages
                         component={component}
-                        serverUrl={serverUrl}
                         sentMessages={message}
                         sentGroupMessage={groupMessage}
                         socketMessage={socketMessage}
@@ -204,7 +201,6 @@ const ChatScreen = ({
                         socket={socket}
                         sentMessage={handleSentMessage}
                         sentGroupMessage={handleSentGroupMessage}
-                        serverUrl={serverUrl}
                         messageInEdition={messageInEdition}
                     />
                 </div>

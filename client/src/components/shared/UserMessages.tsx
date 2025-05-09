@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Message, User } from "../interfaces/interfaces";
+import { Message, User } from "../../interfaces/interfaces";
 import FilePreview from "./FilePreview";
 import { useCallback, useEffect, useRef } from "react";
 
@@ -12,10 +12,9 @@ interface UserMessagesProps {
         isTablet: boolean;
         isMobile: boolean;
     };
-    serverUrl: string;
 }
 
-export default function UserMessages({ messages, mediaType, serverUrl, onDeleteMessage, onEditMessage }: UserMessagesProps) {
+export default function UserMessages({ messages, mediaType,onDeleteMessage, onEditMessage }: UserMessagesProps) {
     const { componentId } = useParams();
     const endMessageRef = useRef<HTMLDivElement | null>(null);
     const currentUserData = sessionStorage.getItem('currentUser');
@@ -46,7 +45,7 @@ export default function UserMessages({ messages, mediaType, serverUrl, onDeleteM
                                             <div className="text-gray-100 text-sm">{message.message}</div>
                                         ) : (
                                             <div className={`${message.message.split(".").pop() === "mp3" ? "h-12 w-full" : "max-w-xs"} bg-transparent rounded-xl`}>
-                                                <FilePreview files={message.message} serverUrl={serverUrl} mediaType={mediaType} />
+                                                <FilePreview files={message.message} mediaType={mediaType} />
                                             </div>
                                         )}
                                     </div>

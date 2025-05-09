@@ -2,11 +2,11 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { GroupMessage, Message, MessageProps } from "../interfaces/interfaces";
 import { useParams } from "react-router-dom";
 import { getGroupMessagesApi, getMessagesApi } from "../api/MessageApi";
-import UserMessages from "../components/UserMessages";
+
 import GroupMessages from "../components/shared/GroupMessages";
+import UserMessages from "../components/shared/UserMessages";
 
 export default function Messages({
-    serverUrl,
     sentMessages,
     onEditMessage,
     sentGroupMessage,
@@ -29,7 +29,7 @@ export default function Messages({
         try {
             setIsLoading(true);
             if (sessionType === 'chat') {
-                const result = await getMessagesApi(serverUrl, componentId, 0);
+                const result = await getMessagesApi( componentId, 0);
                 const resultMessages: Message[] | null = result.messages;
                 if (resultMessages) {
                     setUserMessages(resultMessages);
@@ -37,7 +37,7 @@ export default function Messages({
                     setLastMessage(resultMessages[resultMessages.length - 1] || null);
                 }
             } else {
-                const result2 = await getGroupMessagesApi(serverUrl, componentId);
+                const result2 = await getGroupMessagesApi(componentId);
                 if (result2) {
                     setGroupMessages(result2.messages);
                 }
@@ -47,7 +47,7 @@ export default function Messages({
         } finally {
             setIsLoading(false);
         }
-    }, [componentId, serverUrl, sessionType]);
+    }, [componentId,  sessionType]);
 
     useEffect(() => {
         if (sentMessages) {
@@ -176,13 +176,11 @@ export default function Messages({
                     onEditMessage={onEditMessage}
                     mediaType={mediaType}
                     messages={userMessages}
-                    serverUrl={serverUrl}
                 />
             ) : (
                 <GroupMessages
                     mediaType={mediaType}
                     messages={groupMessages}
-                    serverUrl={serverUrl}
                     photos={photos}
                     images={images}
                 />

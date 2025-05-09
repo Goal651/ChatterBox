@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { NavigatorProps } from "../interfaces/interfaces";
 import ProfilePicturePreview from "../components/shared/ProfilePicturePreview";
 
-export default function Navigator({ initialCurrentUser, socket, mediaType, serverUrl, loadedImage, photos }: NavigatorProps) {
+export default function Navigator({ initialCurrentUser, socket, mediaType,  loadedImage, photos }: NavigatorProps) {
     const navigate = useNavigate();
     const isMobile = mediaType.isMobile;
 
@@ -18,7 +18,6 @@ export default function Navigator({ initialCurrentUser, socket, mediaType, serve
             {/* Profile Picture */}
             <div className="flex justify-center w-12 h-12 md:w-20 md:h-20 lg:w-28 lg:h-28 xl:w-40 xl:h-40 rounded-full group relative">
                 <ProfilePicturePreview
-                    serverUrl={serverUrl}
                     profilePicture={initialCurrentUser?.image || ''}
                     loadedImage={loadedImage}
                     photos={photos}

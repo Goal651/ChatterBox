@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
+import { serverUrl } from "../constants/constant";
 
-const VerifyEmail = ({ serverUrl }: { serverUrl: string }) => {
+const VerifyEmail = () => {
     const { token } = useParams();
     const [status, setStatus] = useState("Verifying...");
 
@@ -22,7 +23,7 @@ const VerifyEmail = ({ serverUrl }: { serverUrl: string }) => {
             }
         };
         verifyEmail();
-    }, [token, serverUrl]);
+    }, [token]);
 
     return (
         <div className="flex items-center justify-center h-screen bg-slate-800">

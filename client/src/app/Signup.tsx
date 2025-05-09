@@ -3,8 +3,9 @@ import { useEffect, useState, useRef } from 'react'
 import { ClipLoader } from 'react-spinners'
 import axios from 'axios'
 import { FormDataSignUp } from '../interfaces/interfaces'
+import { serverUrl } from '../constants/constant'
 
-export default function SignUp({ serverUrl }: { serverUrl: string }) {
+export default function SignUp() {
     const [formData, setFormData] = useState<FormDataSignUp>({
         names: '',
         username: '',

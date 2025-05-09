@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaUsers, FaEnvelope, FaClock, FaSyncAlt } from "react-icons/fa";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { serverUrl } from "../../constants/constant";
 
-export default function Dashboard({ serverUrl }: { serverUrl: string }) {
+export default function Dashboard() {
     const [stats, setStats] = useState<{ users: number; messages: number; uptime: string; activeUsers: number; newMessages: number; usersInfo: { username: string; lastActiveTime: string }[] } | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -21,7 +22,7 @@ export default function Dashboard({ serverUrl }: { serverUrl: string }) {
             }
         }
         fetchStats();
-    }, [serverUrl]);
+    }, []);
 
     return (
         <div className="p-6">

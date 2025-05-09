@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import LoadingPage from "../LoadingPage";
+import { serverUrl } from "../../constants/constant";
 
-export default function Auth({ serverUrl }: { serverUrl: string }) {
+export default function Auth() {
     const savedToken = localStorage.getItem("token");
     const [token, setToken] = useState(savedToken);
     const [loading, setLoading] = useState(true);
@@ -68,7 +69,7 @@ export default function Auth({ serverUrl }: { serverUrl: string }) {
         };
 
         checkAuth();
-    }, [token, navigate, serverUrl]);
+    }, [token, navigate]);
 
     return (
         <div>

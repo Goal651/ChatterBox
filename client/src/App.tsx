@@ -5,6 +5,7 @@ import { useMediaQuery } from 'react-responsive';
 import LoadingPage from './app/LoadingPage';
 import useSocketConfig from './config/SocketConfig';
 import ErrorBoundary from './components/shared/ErrorBoundary';
+import Layout from './app/layout';
 
 const Dashboard = lazy(() => import('./app/Dashboard'));
 const AdminDashboard = lazy(() => import('./app/admin/Dashboard'));
@@ -14,8 +15,8 @@ const LoginPage = lazy(() => import('./app/Login'));
 const SignUpPage = lazy(() => import('./app/Signup'));
 const FileUploaderTest = lazy(() => import('./test/Tester'));
 const PageNotFound = lazy(() => import('./error/PageNotFound'));
-const VerifyEmail = lazy(() => import('./services/VerifyEmail'));
-const EmailSent = lazy(() => import('./services/EmailSent'));
+const VerifyEmail = lazy(() => import('./utils/VerifyEmail'));
+const EmailSent = lazy(() => import('./utils/EmailSent'));
 
 //https://chatterbox-production-b137.up.railway.app
 
@@ -26,9 +27,7 @@ export default function App() {
     isMobile: useMediaQuery({ maxWidth: 767 })
   };
   const [status, setStatus] = useState(false);
-  const host: string = "https://chatterbox-production-b137.up.railway.app";
-  const socket = useSocketConfig({ serverUrl: host, status });
-  const serverUrl = host + '/api';
+  const socket = useSocketConfig({ status });
 
   const handleLogin = (data: boolean) => setStatus(data);
 
@@ -36,21 +35,23 @@ export default function App() {
     <Router>
       <ErrorBoundary>
         <Suspense fallback={<LoadingPage />}>
-          <Routes>
-            <Route path="/" element={<Auth serverUrl={serverUrl} />} />
-            <Route path="/verify/:token" element={<VerifyEmail serverUrl={serverUrl} />} />
-            <Route path="/email-sent" element={<EmailSent />} />
-            <Route path="/no-internet" element={<NetworkChecker serverUrl={serverUrl} />} />
-            <Route path="/login" element={<LoginPage serverUrl={serverUrl} status={handleLogin} />} />
-            <Route path="/signup" element={<SignUpPage serverUrl={serverUrl} />} />
-            <Route path="/test" element={<FileUploaderTest />} />
-            <Route path="/admin/:page" element={<AdminDashboard serverUrl={serverUrl} />} />
-            <Route path="/:sessionType/:componentId" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-            <Route path="/:sessionType/:componentId/:setting" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-            <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} serverUrl={serverUrl} />} />
-            <Route path="/:sessionType/*" element={<PageNotFound />} />
-            <Route path="*" element={<PageNotFound />} />
-          </Routes>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Auth />} />
+              <Route path="/verify/:token" element={<VerifyEmail />} />
+              <Route path="/email-sent" element={<EmailSent />} />
+              <Route path="/no-internet" element={<NetworkChecker />} />
+              <Route path="/login" element={<LoginPage status={handleLogin} />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/test" element={<FileUploaderTest />} />
+              <Route path="/admin/:page" element={<AdminDashboard />} />
+              <Route path="/:sessionType/:componentId" element={<Dashboard socket={socket} mediaType={deviceType} />} />
+              <Route path="/:sessionType/:componentId/:setting" element={<Dashboard socket={socket} mediaType={deviceType} />} />
+              <Route path="/:sessionType/" element={<Dashboard socket={socket} mediaType={deviceType} />} />
+              <Route path="/:sessionType/*" element={<PageNotFound />} />
+              <Route path="*" element={<PageNotFound />} />
+            </Routes>
+          </Layout>
         </Suspense>
       </ErrorBoundary>
     </Router>

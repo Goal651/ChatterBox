@@ -1,13 +1,14 @@
 import axios from "axios"
 import { User } from "../interfaces/interfaces";
+import { serverUrl } from "../constants/constant";
 
-export async function signupApi(serverUrl: string, userData: object) {
+export async function signupApi( userData: object) {
     const response = await axios.post(serverUrl + '/signup', userData);
     return response.data;
 }
 
 
-export async function getUserByEmailApi(serverUrl: string, email: string) {
+export async function getUserByEmailApi( email: string) {
     const response = await axios.get(serverUrl + '/getUser/' + email, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -16,7 +17,7 @@ export async function getUserByEmailApi(serverUrl: string, email: string) {
     return response.data;
 }
 
-export async function getProfileApi(serverUrl: string) {
+export async function getProfileApi() {
     const response = await axios.get(serverUrl + '/getUserProfile', {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -28,7 +29,7 @@ export async function getProfileApi(serverUrl: string) {
 
 }
 
-export async function getUsersApi(serverUrl: string) {
+export async function getUsersApi() {
     const response = await axios.get(serverUrl + '/getUsers', {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -39,7 +40,7 @@ export async function getUsersApi(serverUrl: string) {
     return users
 }
 
-export async function editUserProfileApi(serverUrl: string, profileData: object) {
+export async function editUserProfileApi(profileData: object) {
     const response = await axios.put(serverUrl + '/editUserProfile', profileData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -48,7 +49,7 @@ export async function editUserProfileApi(serverUrl: string, profileData: object)
     return response.data;
 }
 
-export async function updateUserApi(serverUrl: string, userData: object) {
+export async function updateUserApi(userData: object) {
     const response = await axios.put(serverUrl + '/editUser/', userData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -60,7 +61,7 @@ export async function updateUserApi(serverUrl: string, userData: object) {
 
 
 
-export async function editUserProfilePicture(serverUrl: string, finalFileName: string) {
+export async function editUserProfilePicture( finalFileName: string) {
     const response = await axios.put(serverUrl + '/editUserProfilePicture', { finalFileName }, {
         headers: {
             accesstoken: localStorage.getItem('token'),

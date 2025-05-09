@@ -12,7 +12,7 @@ interface ProfileDataType {
     profilePicture: string;
 }
 
-export default function Setting({ userData, serverUrl, loadedImage, photos }: { userData: User | null; serverUrl: string, loadedImage: (data: Photos) => void, photos: Photos[] }) {
+export default function Setting({ userData, loadedImage, photos }: { userData: User | null;  loadedImage: (data: Photos) => void, photos: Photos[] }) {
     const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
@@ -78,7 +78,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
         };
         setIsSubmitting(true);
         try {
-            await updateUserApi(serverUrl, submitObject);
+            await updateUserApi(submitObject);
             handleNotification("Profile updated successfully!", "success");
             setIsSubmitting(false);
         } catch (error) {
@@ -91,7 +91,7 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
     const handlePasswordEdition = async () => {
         try {
             setIsSubmittingPassword(true);
-            await editUserPassword(serverUrl, passwordData);
+            await editUserPassword( passwordData);
             handleNotification("Password updated successfully!", "success");
             setIsSubmittingPassword(false);
         } catch (error) {
@@ -131,7 +131,6 @@ export default function Setting({ userData, serverUrl, loadedImage, photos }: { 
                             <div className="relative group w-60 h-60">
                                 <ProfilePicturePreview
                                     profilePicture={profileData.profilePicture}
-                                    serverUrl={serverUrl}
                                     loadedImage={loadedImage}
                                     photos={photos}
                                     username={profileData.username}
