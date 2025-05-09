@@ -55,8 +55,6 @@ export interface UserGroupListProps {
     handleSetUnreads: (newUnreads: Message[]) => void
     loading: boolean
     navigate: (path: string) => void
-    imageLoaded: (data: Photos) => void
-    photos: Photos[]
 }
 
 export interface GroupMessage {
@@ -101,8 +99,6 @@ export interface UserGroupListProps {
     handleSetUnreads: (newUnreads: Message[]) => void
     loading: boolean
     navigate: (path: string) => void
-    imageLoaded: (data: Photos) => void
-    photos: Photos[]
 }
 
 
@@ -152,8 +148,6 @@ export interface ChatScreenProps {
         isTablet: boolean
         isMobile: boolean
     }
-    loadedImage: (data: Photos) => void
-    photos: Photos[]
 }
 
 export interface SocketMessageProps {
@@ -194,8 +188,6 @@ export interface FriendContentProps {
     typingUsers: string[]
     socket: Socket,
     setUnreads: (data: Message[]) => void
-    images: (data: Photos) => void
-    photos: Photos[]
     loading: boolean
 }
 
@@ -203,8 +195,6 @@ export interface GroupContentProps {
     loading: boolean
     groups: Group[]
     socket: Socket,
-    images: (data: Photos) => void
-    photos: Photos[]
 }
 
 export interface MessageProps {
@@ -218,8 +208,6 @@ export interface MessageProps {
         isTablet: boolean
         isMobile: boolean
     }
-    photos: Photos[]
-    images: (data: Photos) => void
     onEditMessage: (message: Message) => void
 }
 
@@ -231,8 +219,6 @@ export interface GroupMessagesProps {
         isTablet: boolean
         isMobile: boolean
     }
-    photos: Photos[]
-    images: (data: Photos) => void
 }
 
 
@@ -244,8 +230,6 @@ export interface NavigatorProps {
         isTablet: boolean
         isMobile: boolean
     }
-    loadedImage: (data: Photos) => void
-    photos: Photos[]
 }
 
 export interface Notification {

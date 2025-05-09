@@ -1,7 +1,7 @@
 import Navigator from "./Navigator";
 import { getProfileApi, getUsersApi } from "../api/UserApi";
 import { useEffect, useState } from "react";
-import { DashboardProps, Group, GroupMessage, Message, Notification, Photos, User } from "../interfaces/interfaces";
+import { DashboardProps, Group, GroupMessage, Message, Notification,  User } from "../interfaces/interfaces";
 import ChatScreen from "./ChatScreen";
 import Notifier from "../components/shared/Notifier";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,7 +27,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const { componentId, sessionType, setting } = useParams();
     const [loading, setLoading] = useState(true);
-    const [photos, setPhotos] = useState<Photos[]>([]);
     const [isOutgoingCall, setIsOutgoingCall] = useState(false);
     const [isIncomingCall, setIsIncomingCall] = useState(false);
     const [isVideoCall, setIsVideoCall] = useState(false);
@@ -140,7 +139,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
     };
 
     const updateUsers = (message: Message) => {
-        if (!message) return;
         setUsers(prevUsers =>
             sortUsersByLatestMessage(prevUsers.map(user =>
                 user._id === message.receiver ? { ...user, latestMessage: message } : user
@@ -216,15 +214,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
         else return false;
     };
 
-    const storePhotos = (data: Photos) => {
-        setPhotos((prev): Photos[] => {
-            if (prev.length <= 0) return [data];
-            const doesPhotoExists = prev.filter(photo => photo.key === data.key)[0];
-            if (doesPhotoExists) return prev;
-            return [...prev, data];
-        });
-    };
-
     const handleCallCancellation = () => {
         setIsIncomingCall(false);
         setIsOutgoingCall(false);
@@ -257,8 +246,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
                             handleSetUnreads={handleSetUnreads}
                             loading={loading}
                             navigate={navigate}
-                            imageLoaded={storePhotos}
-                            photos={photos}
                         />
                     </div>
                 )}
@@ -278,8 +265,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
                                 sentMessage={updateUsers}
                                 onlineUsers={onlineUsers}
                                 mediaType={mediaType}
-                                loadedImage={storePhotos}
-                                photos={photos}
                                 sentGroupMessage={updateGroups}
                             />
                         )}
@@ -296,11 +281,7 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
             case 'group':
                 return chattingScreen();
             case 'setting':
-                return <Setting
-
-                    userData={currentUser}
-                    loadedImage={storePhotos}
-                    photos={photos} />;
+                return <Setting userData={currentUser} />;
             case 'create-group':
                 return <CreateGroup
                     socket={socket}
@@ -333,8 +314,6 @@ export default function Dashboard({ mediaType, socket }: DashboardProps) {
                     socket={socket}
                     initialCurrentUser={currentUser}
                     mediaType={mediaType}
-                    loadedImage={storePhotos}
-                    photos={photos}
                 />
             </div>
             <div className={`overflow-hidden w-full flex h-full`}>

@@ -14,8 +14,6 @@ const ChatScreen = ({
     sentGroupMessage,
     onlineUsers,
     mediaType,
-    loadedImage,
-    photos,
     groups
 }: ChatScreenProps) => {
     const [component, setComponent] = useState<GroupUser | null>(null);
@@ -144,8 +142,6 @@ const ChatScreen = ({
                     <div className="relative group w-12 h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-full">
                         <ProfilePicturePreview
                             profilePicture={component?.image}
-                            loadedImage={loadedImage}
-                            photos={photos}
                             username={sessionType === 'chat' ? component.username || 'U' : component.groupName || ''}
                             textSize="text-3xl"
                             className="rounded-full border-2 border-gray-700 transition-transform duration-300 group-hover:scale-105 group-hover:border-blue-500"
@@ -191,8 +187,6 @@ const ChatScreen = ({
                         socketMessage={socketMessage}
                         socket={socket}
                         mediaType={mediaType}
-                        photos={photos}
-                        images={loadedImage}
                         onEditMessage={handleEditMessage}
                     />
                 </div>

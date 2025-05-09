@@ -12,8 +12,6 @@ export default function Messages({
     sentGroupMessage,
     socketMessage,
     socket,
-    photos,
-    images,
     mediaType,
     component
 }: MessageProps) {
@@ -181,8 +179,6 @@ export default function Messages({
                 <GroupMessages
                     mediaType={mediaType}
                     messages={groupMessages}
-                    photos={photos}
-                    images={images}
                 />
             )}
         </div>

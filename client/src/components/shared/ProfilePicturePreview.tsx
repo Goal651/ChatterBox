@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import Modal from "react-modal";
 import { useParams } from "react-router-dom";
 import FileUploader from "./FileUploader";
-import { Photos } from "../../interfaces/interfaces";
 import { getFile } from "../../api/FileApi";
 import { editUserProfilePicture } from "../../api/UserApi";
 import { FaTimes } from "react-icons/fa";
@@ -11,14 +10,12 @@ Modal.setAppElement("#root");
 
 interface ProfilePicturePreviewProps {
     profilePicture?: string;
-    loadedImage: (data: Photos) => void;
-    photos: Photos[];
     username: string;
     textSize: string;
     className?: string; // Added for external styling (e.g., from parent components)
 }
 
-export default function ProfilePicturePreview({ profilePicture, loadedImage, photos, username, textSize, className }: ProfilePicturePreviewProps) {
+export default function ProfilePicturePreview({ profilePicture, username, textSize, className }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [isEditing, setIsEditing] = useState<boolean>(false);
@@ -32,18 +29,9 @@ export default function ProfilePicturePreview({ profilePicture, loadedImage, pho
         const fetchProfilePicture = async () => {
             try {
                 if (profilePicture) {
-                    const isPhotoAvailable = photos.find((photo) => photo.key === profilePicture);
-                    if (isPhotoAvailable) {
-                        setImageSrc(isPhotoAvailable.photo);
-                        return;
-                    }
+
                     const response = await getFile(profilePicture);
                     setImageSrc(response.file);
-                    const newProfilePic: Photos = {
-                        key: profilePicture,
-                        photo: response.file
-                    };
-                    loadedImage(newProfilePic);
                 }
             } catch (err) {
                 console.error("Error fetching profile picture:", err);
@@ -51,7 +39,7 @@ export default function ProfilePicturePreview({ profilePicture, loadedImage, pho
         };
 
         fetchProfilePicture();
-    }, [profilePicture, photos, loadedImage]);
+    }, [profilePicture]);
 
     useEffect(() => {
         setAllowedToEdit(sessionType === "setting");
@@ -82,9 +70,9 @@ export default function ProfilePicturePreview({ profilePicture, loadedImage, pho
         if (newProfilePicture) {
             try {
                 setIsSubmitting(true);
-                const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture});
+                const uploadedFileName = await FileUploader({ fileToSend: newProfilePicture });
                 if (uploadedFileName) {
-                    await editUserProfilePicture( uploadedFileName);
+                    await editUserProfilePicture(uploadedFileName);
                     setImageSrc(previewSrc);
                 }
             } catch (err) {

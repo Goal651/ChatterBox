@@ -12,8 +12,6 @@ export default function UserGroupList({
     handleSetUnreads,
     loading,
     navigate,
-    imageLoaded,
-    photos,
 }: UserGroupListProps) {
     const [friends, setFriends] = useState(filteredUsers);
     const [unreadMessages, setUnreadMessages] = useState<Message[]>(currentUser?.unreads || []);
@@ -114,8 +112,6 @@ export default function UserGroupList({
                                     <div className="w-12 h-12">
                                         <ProfilePicturePreview
                                             profilePicture={item.image}
-                                            loadedImage={imageLoaded}
-                                            photos={photos}
                                             username={name}
                                             textSize="text-2xl"
                                             className="shadow-md"

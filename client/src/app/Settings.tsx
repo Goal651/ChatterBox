@@ -1,6 +1,6 @@
 import * as iconsFa from "react-icons/fa";
 import { useEffect, useState } from "react";
-import { Photos, User } from "../interfaces/interfaces";
+import { User } from "../interfaces/interfaces";
 import { editUserPassword } from "../api/AuthApi";
 import ProfilePicturePreview from "../components/shared/ProfilePicturePreview";
 import { updateUserApi } from "../api/UserApi";
@@ -12,7 +12,7 @@ interface ProfileDataType {
     profilePicture: string;
 }
 
-export default function Setting({ userData, loadedImage, photos }: { userData: User | null;  loadedImage: (data: Photos) => void, photos: Photos[] }) {
+export default function Setting({ userData}: { userData: User | null;  }) {
     const [isProfileOpen, setIsProfileOpen] = useState(true);
     const [isAccountOpen, setIsAccountOpen] = useState(false);
     const [profileData, setProfileData] = useState<ProfileDataType>({
@@ -131,8 +131,6 @@ export default function Setting({ userData, loadedImage, photos }: { userData: U
                             <div className="relative group w-60 h-60">
                                 <ProfilePicturePreview
                                     profilePicture={profileData.profilePicture}
-                                    loadedImage={loadedImage}
-                                    photos={photos}
                                     username={profileData.username}
                                     textSize="text-7xl"
                                     className="rounded-full border-4 border-gray-700 transition-transform duration-300 group-hover:scale-105 group-hover:border-blue-500"

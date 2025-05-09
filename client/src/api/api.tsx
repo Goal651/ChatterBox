@@ -23,10 +23,6 @@ export async function pingServerApi() {
     return response.data;
 }
 
-
-
-
-
 export async function subscribeToPush(subscription: object) {
     try {
         const response = await axios.post(serverUrl + '/webPusher/subscribe', subscription, {
