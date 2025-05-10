@@ -8,11 +8,17 @@ export default function ChatFooter() {
     const [message, setMessage] = useState('')
 
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
-    const handleEmojiSelect = (data: { native: string }) => {
-        setMessage((prev) => (prev + data.native));
-    };
+    const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
+
+    const handleOnSendMessage = (e: ChangeEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        setMessage('')
+        setShowEmojiPicker(false)
+    }
+    
     return (
-        <div className="flex border-2 border-gray-300 rounded-lg h-[10%] items-center justify-between px-4 gap-x-4">
+        <form className="flex border-2 border-gray-300 rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"
+            onSubmit={handleOnSendMessage}>
             <div className="flex gap-x-2">
                 <div className="btn btn-square border-0 shadow shadow-gray-500 bg-white">
                     <FaLink color="black" />
@@ -38,8 +44,9 @@ export default function ChatFooter() {
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                     <FaRegFaceLaugh color="black" />
                 </div>
-                <div 
-                className="btn btn-square border-0 shadow shadow-gray-500 bg-white">
+                <div
+                    className="btn btn-square border-0 shadow shadow-gray-500 bg-white"
+                    onClick={handleOnSendMessage}>
                     <FaPaperPlane color="black" />
                 </div>
 
@@ -53,6 +60,6 @@ export default function ChatFooter() {
                 />
             </div>)}
 
-        </div>
+        </form>
     )
 }
