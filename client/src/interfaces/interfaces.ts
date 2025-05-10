@@ -46,15 +46,8 @@ export interface Group {
 }
 
 export interface UserGroupListProps {
-    filteredUsers: User[]
-    groups: Group[]
-    currentUser: User | null
-    onlineUsers: string[]
-    typingUsers: string[]
-    socket: Socket
-    handleSetUnreads: (newUnreads: Message[]) => void
-    loading: boolean
-    navigate: (path: string) => void
+    users: User[]
+    groups:Group[]
 }
 
 export interface GroupMessage {
@@ -89,17 +82,7 @@ export interface DashboardProps {
     socket: Socket
 }
 
-export interface UserGroupListProps {
-    filteredUsers: User[]
-    groups: Group[]
-    currentUser: User | null
-    onlineUsers: string[],
-    typingUsers: string[],
-    socket: Socket,
-    handleSetUnreads: (newUnreads: Message[]) => void
-    loading: boolean
-    navigate: (path: string) => void
-}
+
 
 
 export interface FormDataSignUp {

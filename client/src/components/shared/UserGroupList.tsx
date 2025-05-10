@@ -1,109 +1,61 @@
-import { useEffect, useState } from "react";
-import ProfilePicturePreview from "./ProfilePicturePreview";
-import { Message, UserGroupListProps,User, Group, GroupMessage } from "../../interfaces/interfaces";
+import { useEffect, useState } from "react"
+import ProfilePicturePreview from "./ProfilePicturePreview"
+import { UserGroupListProps, User, Group, GroupMessage } from "../../interfaces/interfaces"
+import MainStorage from "../../data/Storage"
 
-export default function UserGroupList({
-    filteredUsers,
-    groups,
-    currentUser,
-    onlineUsers,
-    typingUsers,
-    socket,
-    handleSetUnreads,
-    loading,
-    navigate,
-}: UserGroupListProps) {
-    const [friends, setFriends] = useState(filteredUsers);
-    const [unreadMessages, setUnreadMessages] = useState<Message[]>(currentUser?.unreads || []);
+export default function UserGroupList({ users, groups }: UserGroupListProps) {
+    const [friends, setFriends] = useState(users)
+    const currentUser = MainStorage().loggedInUserInfo
 
     useEffect(() => {
-        setFriends(filteredUsers);
-        setUnreadMessages(currentUser?.unreads || []);
-    }, [filteredUsers, currentUser]);
+        setFriends(users)
+    }, [users])
 
-    const handleItemClick = (id: string, isGroup: boolean) => {
-        if (isGroup) {
-            socket.emit('connectGroup', { groupId: id });
-            navigate(`/group/${id}`);
-        } else {
-            navigate(`/chat/${id}`);
-            if (!unreadMessages.length) return;
-            const unread = unreadMessages.filter(m => m.sender === id);
-            if (unread.length > 0) {
-                setUnreadMessages(prev => prev.filter(dm => dm.sender !== id));
-                handleSetUnreads(unreadMessages.filter(dm => dm.sender !== id));
-                socket.emit('markMessageAsRead', unread.map(m => m._id));
-            }
-        }
-    };
 
-    const findNumberOfUnreads = (id: string): number => {
-        return unreadMessages.filter(m => m.sender === id).length;
-    };
 
     const renderStatus = (item: User | Group, isGroup: boolean) => {
-        if (isGroup) return null;
+        if (isGroup) return null
 
-        const friend = item as User;
-        const unreadCount = findNumberOfUnreads(friend._id);
-        if (unreadCount === 0) {
-            if (friend?.latestMessage?.receiver === friend._id) {
-                return friend.latestMessage.isMessageSent ? (
-                    <div className="flex flex-col items-end text-2xl leading-none">
-                        <span className={`${friend.latestMessage.isMessageSeen ? 'text-blue-400' : 'text-gray-400'}`}>✓</span>
-                        {friend.latestMessage.isMessageReceived && <span className={`${friend.latestMessage.isMessageSeen ? 'text-blue-400' : 'text-gray-400'} -mt-2`}>✓</span>}
-                    </div>
-                ) : (
-                    <span className="text-red-400 text-xl">✗</span>
-                );
-            }
-        } else {
-            return (
-                <div className="flex justify-end">
-                    <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-semibold shadow-md">
-                        {unreadCount}
-                    </div>
+        const friend = item as User
+        if (friend?.latestMessage?.receiver === friend._id) {
+            return friend.latestMessage.isMessageSent ? (
+                <div className="flex flex-col items-end text-2xl leading-none">
+                    <span className={`${friend.latestMessage.isMessageSeen ? 'text-blue-400' : 'text-gray-400'}`}>✓</span>
+                    {friend.latestMessage.isMessageReceived && <span className={`${friend.latestMessage.isMessageSeen ? 'text-blue-400' : 'text-gray-400'} -mt-2`}>✓</span>}
                 </div>
-            );
+            ) : (
+                <span className="text-red-400 text-xl">✗</span>
+            )
         }
-    };
+    }
 
     const combinedList = [
         ...friends.map(f => ({ ...f, isGroup: false })),
         ...groups.map(g => ({ ...g, isGroup: true })),
     ].sort((a, b) => {
-        const aTime = a.latestMessage ? new Date(a.latestMessage.createdAt).getTime() : 0;
-        const bTime = b.latestMessage ? new Date(b.latestMessage.createdAt).getTime() : 0;
-        return bTime - aTime; // Sort by latest message time, descending
-    });
+        const aTime = a.latestMessage ? new Date(a.latestMessage.createdAt).getTime() : 0
+        const bTime = b.latestMessage ? new Date(b.latestMessage.createdAt).getTime() : 0
+        return bTime - aTime // Sort by latest message time, descending
+    })
 
-    if (loading) return (
-        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
-            <svg className="animate-spin h-12 w-12 text-blue-500" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-16 0z" />
-            </svg>
-            <span className="mt-4 text-gray-300 text-lg font-medium">Loading...</span>
-        </div>
-    );
+
 
     if (combinedList.length === 0) return (
-        <div className="h-full flex flex-col items-center justify-center bg-gray-950/95 rounded-2xl shadow-inner">
-            <span className="text-gray-300 text-lg font-medium">No friends or groups available</span>
+        <div className="h-full flex flex-col items-center justify-center rounded-2xl shadow-inner">
+            <span className="text-gray-800 text-lg font-medium">No friends or groups available</span>
         </div>
-    );
+    )
 
     return (
-        <div className="bg-transparent p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-2xl shadow-inner">
+        <div className=" p-4 flex flex-col space-y-4 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 rounded-2xl shadow-inner">
             {combinedList.map((item) => {
-                const isGroup = item.isGroup;
-                const id = item._id;
-                const name = isGroup ? (item as Group).groupName : (item as User).username;
+                const isGroup = item.isGroup
+                const id = item._id
+                const name = isGroup ? (item as Group).groupName : (item as User).username
 
                 return (
                     <div
                         key={id}
-                        onClick={() => handleItemClick(id, isGroup)}
                         className="w-full py-3 px-2 rounded-lg hover:bg-gray-900/80 transition-all duration-200 cursor-pointer"
                     >
                         <div className="flex justify-between items-center">
@@ -117,9 +69,6 @@ export default function UserGroupList({
                                             className="shadow-md"
                                         />
                                     </div>
-                                    {!isGroup && onlineUsers.includes(id) && (
-                                        <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-950" />
-                                    )}
                                 </div>
                                 <div className="max-w-xs">
                                     <div className="text-gray-200 font-semibold text-lg truncate">{name}</div>
@@ -136,8 +85,6 @@ export default function UserGroupList({
                                                 </span>
                                             ) : 'Say hey to your new group'}
                                         </div>
-                                    ) : typingUsers.includes(id) ? (
-                                        <div className="text-green-400 text-sm truncate">Typing...</div>
                                     ) : (
                                         <div className="text-gray-400 text-sm truncate">
                                             {item.latestMessage ? (
@@ -159,8 +106,8 @@ export default function UserGroupList({
                             </div>
                         </div>
                     </div>
-                );
+                )
             })}
         </div>
-    );
+    )
 }
