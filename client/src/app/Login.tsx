@@ -1,7 +1,13 @@
 import { FaApple, FaGoogle, FaXTwitter } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
+import { notify } from '../utils/NotificationService'
 
 export default function LoginPage() {
+
+  const onLogin = () => {
+    notify("Login successful", "success")
+  }
+
   return (
     <div className="bg-[#0f0f0f] h-screen w-screen flex items-center justify-center">
       <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl'>
@@ -21,7 +27,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form */}
-        <form className='flex flex-col gap-y-4 w-full mb-6'>
+        <form onSubmit={onLogin} className='flex flex-col gap-y-4 w-full mb-6'>
           {/* Email input */}
           <label className="input border-0  bg-[#0e0e0e] w-full rounded-lg  outline-0 focus-within:outline-0">
             <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -59,7 +65,7 @@ export default function LoginPage() {
           </label>
 
           {/* Submit button */}
-          <div className='btn bg-blue-600 rounded-lg'>
+          <div onClick={onLogin} className='btn bg-blue-600 rounded-lg'>
             Login
           </div>
 

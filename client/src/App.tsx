@@ -5,6 +5,7 @@ import LoadingPage from './app/LoadingPage';
 import ErrorBoundary from './error/ErrorBoundary';
 import Layout from './app/layout';
 import Home from './app/Home';
+import Notification from './components/shared/Notification';
 
 
 const Auth = lazy(() => import('./app/auth/Auth'));
@@ -18,27 +19,30 @@ export default function App() {
   const handleLogin = (data: boolean) => setStatus(data);
 
   return (
-    <Router>
-      <ErrorBoundary>
-        <Suspense fallback={<LoadingPage />}>
-          <Routes>
-            <Route path="/login" element={<LoginPage status={handleLogin} />} />
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="*" element={
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  {/* <Route path="/verify/:token" element={<VerifyEmail />} />
+    <>
+      <Notification />
+      <Router>
+        <ErrorBoundary>
+          <Suspense fallback={<LoadingPage />}>
+            <Routes>
+              <Route path="/login" element={<LoginPage status={handleLogin} />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="*" element={
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    {/* <Route path="/verify/:token" element={<VerifyEmail />} />
                   <Route path="/email-sent" element={<EmailSent />} />
                   <Route path="/no-internet" element={<NetworkChecker />} />
                   <Route path="/admin/" element={<AdminDashboard />} /> */}
-                  {/* <Route path="*" element={<PageNotFound />} /> */}
-                </Routes>
-              </Layout>
-            } />
-          </Routes>
-        </Suspense>
-      </ErrorBoundary>
-    </Router>
+                    {/* <Route path="*" element={<PageNotFound />} /> */}
+                  </Routes>
+                </Layout>
+              } />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
+      </Router>
+    </>
   );
 }

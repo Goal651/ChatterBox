@@ -12,7 +12,7 @@ export default function SignUpPage() {
 
                 {/* Header */}
                 <div className='flex flex-col gap-y-2 text-center mb-8'>
-                    <div className='text-white text-lg font-bold'>Welcome Back</div>
+                    <div className='text-white text-lg font-bold'>Sign Up</div>
                     <div className='flex gap-x-2'>
                         <span>Already have account ?</span>
                         <Link to={'/login'}
@@ -33,11 +33,11 @@ export default function SignUpPage() {
                                 fill="none"
                                 stroke="currentColor"
                             >
-                                <rect width="20" height="16" x="2" y="4" rx="2"></rect>
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
                             </g>
                         </svg>
-                        <input type="email" className="" placeholder="email address" />
+                        <input type="email" className="" placeholder="Username" />
                     </label>
 
                     {/* Email input */}
@@ -97,7 +97,7 @@ export default function SignUpPage() {
 
                     {/* Submit button */}
                     <div className='btn bg-blue-600 rounded-lg'>
-                        Login
+                        Sign up
                     </div>
 
                 </form>

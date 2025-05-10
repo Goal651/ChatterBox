@@ -6,13 +6,13 @@ import { useNavigate } from "react-router-dom";
 export default function Home() {
     const router = useNavigate()
 
-    useEffect(() => {
-        const checkUser = () => {
-            const token = localStorage.getItem('token')
-            if (!token) router('/login')
-        }
-        checkUser()
-    }, [router])
+    // useEffect(() => {
+    //     const checkUser = () => {
+    //         const token = localStorage.getItem('token')
+    //         if (!token) router('/login')
+    //     }
+    //     checkUser()
+    // }, [router])
 
     return (
         <div className="flex w-full">

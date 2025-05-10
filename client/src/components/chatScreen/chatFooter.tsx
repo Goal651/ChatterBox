@@ -1,7 +1,7 @@
 import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
 export default function ChatFooter() {
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
@@ -10,12 +10,12 @@ export default function ChatFooter() {
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
 
-    const handleOnSendMessage = (e: ChangeEvent<HTMLFormElement>) => {
+    const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         setMessage('')
         setShowEmojiPicker(false)
     }
-    
+
     return (
         <form className="flex border-2 border-gray-300 rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"
             onSubmit={handleOnSendMessage}>
@@ -44,11 +44,11 @@ export default function ChatFooter() {
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
                     <FaRegFaceLaugh color="black" />
                 </div>
-                <div
+                <button
                     className="btn btn-square border-0 shadow shadow-gray-500 bg-white"
-                    onClick={handleOnSendMessage}>
+                    type="submit">
                     <FaPaperPlane color="black" />
-                </div>
+                </button>
 
             </div>
 
