@@ -1,8 +1,10 @@
 import { UserGroupListProps } from "../../interfaces/interfaces"
 import { useEffect } from "react"
+import UserComponent from "../shared/userGroup/User"
+import GroupComponent from "../shared/userGroup/Group"
 
-export default function UserGroupList({ users, groups ,tab}: UserGroupListProps) {
-    
+export default function UserGroupList({ users, groups, tab }: UserGroupListProps) {
+
     useEffect(() => {
         console.log('user group' + tab)
     }, [tab])
@@ -22,10 +24,21 @@ export default function UserGroupList({ users, groups ,tab}: UserGroupListProps)
         )
     }
 
-
-    return (
-        <div className="flex flex-col space-y-4 overflow-y-auto h-full">
-
-        </div>
-    )
+    if (tab == 'users') {
+        return (
+            <div className="flex flex-col gap-y-1 overflow-y-auto h-full">
+                {users.map((user) => (
+                    <UserComponent user={user} />
+                ))}
+            </div>
+        )
+    } else {
+        return (
+            <div className="flex flex-col gap-y-2 overflow-y-auto h-full">
+                {groups.map((group) => (
+                    <GroupComponent group={group} />
+                ))}
+            </div>
+        )
+    }
 }

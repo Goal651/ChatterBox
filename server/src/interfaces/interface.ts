@@ -1,7 +1,6 @@
 interface User {
     _id: string,
     username: string,
-    names: string,
     email: string,
     password: string,
     image: string,

@@ -1,14 +1,14 @@
 import axios from "axios"
 
 interface EmailSenderProps {
-    name: string;
+    username: string;
     email: string;
     verificationToken: string
     title: string;
 }
 
-const sendEmail = async ({ name, email, verificationToken, title }: EmailSenderProps): Promise<string> => {
-    if (!name || !email || !verificationToken) {
+const sendEmail = async ({ username, email, verificationToken, title }: EmailSenderProps): Promise<string> => {
+    if (!username || !email || !verificationToken) {
         throw new Error("All fields are required.");
     }
 
@@ -19,7 +19,7 @@ const sendEmail = async ({ name, email, verificationToken, title }: EmailSenderP
             user_id: process.env.EMAILJS_PUBLIC_KEY,
             template_params: {
                 to_email: email,
-                to_name: name,
+                to_name: username,
                 verification_link: 'https://chatter-box-three.vercel.app/verify/' + verificationToken,
                 message_title: title,
             },

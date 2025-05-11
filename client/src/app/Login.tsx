@@ -1,11 +1,32 @@
 import { FaApple, FaGoogle, FaXTwitter } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { loginApi } from '../api/AuthApi'
 import { notify } from '../utils/NotificationService'
 
 export default function LoginPage() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const onLogin = () => {
-    notify("Login successful", "success")
+  const onLogin = async () => {
+    try {
+      setIsLoading(true)
+      const response = await loginApi(email, password)
+      const isError = response.isError
+      if (isError) {
+        notify(response.message, "error")
+        setPassword('')
+      } else {
+        notify('Logged in successfully', "success")
+        localStorage.setItem('loggedIn', 'true')
+        localStorage.setItem('token', response.token)
+      }
+      setIsLoading(false)
+    } catch (error) {
+      console.error(error)
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -42,7 +63,9 @@ export default function LoginPage() {
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
               </g>
             </svg>
-            <input type="email" className="" placeholder="email address" />
+            <input type="email" className="" placeholder="email address"
+              onChange={(e) => setEmail(e.target.value)}
+              value={email} />
           </label>
 
           {/* password input */}
@@ -61,13 +84,16 @@ export default function LoginPage() {
                 <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
               </g>
             </svg>
-            <input type="password" className="grow" placeholder="Password" />
+            <input type="password" className="grow" placeholder="Password"
+              onChange={(e) => setPassword(e.target.value)}
+              value={password} />
           </label>
 
           {/* Submit button */}
-          <div onClick={onLogin} className='btn bg-blue-600 rounded-lg'>
-            Login
-          </div>
+          <button onClick={onLogin} className={`btn bg-blue-600 rounded-lg ${isLoading && 'bg-blue-700'}`}
+            disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Sign In'}
+          </button>
 
         </form>
 
