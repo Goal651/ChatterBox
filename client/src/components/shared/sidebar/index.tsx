@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import SideBarLocations from "./Locations";
 import SideBarSetting from "./Setting";
-import { User } from "../../interfaces/interfaces";
+import { User } from "../../../interfaces/interfaces";
 
 export default function SideBar() {
     const [initialCurrentUser, setInitialCurrentUser] = useState<User>({
@@ -32,12 +32,10 @@ export default function SideBar() {
     })
     useEffect(() => {
         const user = localStorage.getItem('user')
-        if (user) {
-            setInitialCurrentUser(JSON.parse(user))
-        }
+        if (user) setInitialCurrentUser(JSON.parse(user))
     }, [])
     return (
-        <div className="flex flex-col h-full max-w-24 justify-between p-4 border-r-2 border-gray-200">
+        <div className="flex flex-col h-full max-w-24 justify-between p-4 border-r-2 border-[#252525] bg-[#0f0f0f]">
             <SideBarLocations />
             <SideBarSetting initialCurrentUser={initialCurrentUser} />
         </div>

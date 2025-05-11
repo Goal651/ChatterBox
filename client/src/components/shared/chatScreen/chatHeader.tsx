@@ -1,10 +1,10 @@
 import { FaPhone, FaVideo } from "react-icons/fa6";
-import ProfilePicturePreview from "../shared/ProfilePicturePreview";
+import ProfilePicturePreview from "../../common/ProfilePicturePreview";
 
 export default function ChatHeader() {
 
     return (
-        <div className="flex justify-between text-black w-full items-center">
+        <div className="flex justify-between text-gray-300 w-full items-center p-2">
             {/* Profile section */}
 
             <div className="flex gap-x-4 items-center">
@@ -24,12 +24,12 @@ export default function ChatHeader() {
 
             {/* calling components */}
             <div className="flex gap-x-4">
-                <div className="btn btn-square border-0 shadow shadow-gray-500 bg-white">
-                    <FaPhone color="black" />
+                <div className="btn btn-square border-0 shadow  bg-[#252525] ">
+                    <FaPhone color="white" />
                 </div>
-                <div className="btn btn-square  border-0 shadow shadow-gray-500 bg-white">
+                <div className="btn btn-square  border-0 shadow  bg-[#252525] ">
                     <FaVideo
-                        color="black"
+                        color="white"
                     />
                 </div>
             </div>

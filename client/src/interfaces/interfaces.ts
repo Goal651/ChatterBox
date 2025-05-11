@@ -48,6 +48,7 @@ export interface Group {
 export interface UserGroupListProps {
     users: User[]
     groups:Group[]
+    tab:'users'|'groups'
 }
 
 export interface GroupMessage {

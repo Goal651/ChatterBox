@@ -1,23 +1,18 @@
 import './App.css';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense} from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoadingPage from './app/LoadingPage';
 import ErrorBoundary from './error/ErrorBoundary';
 import Layout from './app/layout';
 import Home from './app/Home';
-import Notification from './components/shared/Notification';
+import Notification from './components/common/Notification';
 
 
-const Auth = lazy(() => import('./app/auth/Auth'));
 const LoginPage = lazy(() => import('./app/Login'));
 const SignUpPage = lazy(() => import('./app/Signup'));
 
 
 export default function App() {
-  const [status, setStatus] = useState(false);
-
-  const handleLogin = (data: boolean) => setStatus(data);
-
   return (
     <>
       <Notification />
@@ -25,7 +20,7 @@ export default function App() {
         <ErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
-              <Route path="/login" element={<LoginPage status={handleLogin} />} />
+              <Route path="/login" element={<LoginPage  />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="*" element={
                 <Layout>

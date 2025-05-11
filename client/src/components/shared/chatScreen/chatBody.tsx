@@ -15,7 +15,7 @@ export default function ChatBody() {
         },
     ]
     return (
-        <div className="border-2 border-gray-400 h-[90%]">
+        <div className="h-[90%] bg-[#252525]">
             <div></div>
         </div>
     )

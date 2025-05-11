@@ -1,7 +1,7 @@
 import * as iconsFa from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { NavigatorProps } from "../interfaces/interfaces";
-import ProfilePicturePreview from "../components/shared/ProfilePicturePreview";
+import ProfilePicturePreview from "../components/common/ProfilePicturePreview";
 
 export default function Navigator({ initialCurrentUser, socket, mediaType,  loadedImage, photos }: NavigatorProps) {
     const navigate = useNavigate();

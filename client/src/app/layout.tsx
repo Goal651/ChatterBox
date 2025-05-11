@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import SideBar from '../components/sidebar';
+import SideBar from '../components/shared/sidebar';
 type LayoutProps = { children: ReactNode }
 
 const Layout = ({ children }: LayoutProps) => {

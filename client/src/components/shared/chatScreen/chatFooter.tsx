@@ -17,14 +17,14 @@ export default function ChatFooter() {
     }
 
     return (
-        <form className="flex border-2 border-gray-300 rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"
+        <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"
             onSubmit={handleOnSendMessage}>
             <div className="flex gap-x-2">
-                <div className="btn btn-square border-0 shadow shadow-gray-500 bg-white">
-                    <FaLink color="black" />
+                <div className="btn btn-square border-0 shadow  bg-[#252525]">
+                    <FaLink color="white" />
                 </div>
-                <div className="btn btn-square border-0 shadow shadow-gray-500 bg-white">
-                    <FaCamera color="black" />
+                <div className="btn btn-square border-0 shadow  bg-[#252525]">
+                    <FaCamera color="white" />
                 </div>
             </div>
 
@@ -34,20 +34,20 @@ export default function ChatFooter() {
                     placeholder="Type a message..."
                     value={message}
                     onChange={handleMessageInputChange}
-                    className="flex-1 px-4 py-2 bg-gray-300/80 text-gray-800 rounded-lg border border-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200 placeholder-gray-600"
+                    className="flex-1 px-4 py-2 bg-[#252525] text-gray-300 rounded-lg border border-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition-all duration-200 placeholder-gray-600"
                 />
             </div>
 
             <div className="flex gap-x-2">
                 <div
-                    className="btn btn-square border-0 shadow shadow-gray-500 bg-white"
+                    className="btn btn-square border-0 shadow bg-[#252525]"
                     onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-                    <FaRegFaceLaugh color="black" />
+                    <FaRegFaceLaugh color="white" />
                 </div>
                 <button
-                    className="btn btn-square border-0 shadow shadow-gray-500 bg-white"
+                    className="btn btn-square border-0 shadow bg-[#252525]"
                     type="submit">
-                    <FaPaperPlane color="black" />
+                    <FaPaperPlane color="white" />
                 </button>
 
             </div>
@@ -55,7 +55,7 @@ export default function ChatFooter() {
             {showEmojiPicker && (<div className="absolute bottom-40 left-50 z-50 " >
                 <Picker
                     data={data}
-                    theme="light"
+                    theme="dark"
                     onEmojiSelect={handleEmojiSelect}
                 />
             </div>)}
