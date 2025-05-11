@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { subscribeToPush } from '../api/api';
+import { vapidKey } from '../constants/constant';
 
-const PushNotifications = ({ serverUrl }: { serverUrl: string }) => {
+const PushNotifications = () => {
     useEffect(() => {
         async function setupPushNotifications() {
             if ('serviceWorker' in navigator && 'PushManager' in window) {
@@ -9,7 +10,7 @@ const PushNotifications = ({ serverUrl }: { serverUrl: string }) => {
                     const registration = await navigator.serviceWorker.register('/sw.js');
                     const subscription = await subscribeUserToPush(registration);
                     if (subscription) {
-                        await subscribeToPush(serverUrl, subscription);
+                        await subscribeToPush(subscription);
                     }
                 } catch (error) {
                     console.error('Failed to set up push notifications:', error);
@@ -17,14 +18,13 @@ const PushNotifications = ({ serverUrl }: { serverUrl: string }) => {
             }
         }
         setupPushNotifications();
-    }, [serverUrl]);
+    }, []);
 
     const subscribeUserToPush = async (registration: ServiceWorkerRegistration) => {
         try {
-            const publicVapidKey = 'BEFnyePPNoUMVOxzMQDy2J8OBmq7AHnks8vNchYeVcMrNOC21ZSuXqfl04fs6DPmUIBTgP9olyKehQgpfZcTqJ0';
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
-                applicationServerKey: urlBase64ToUint8Array(publicVapidKey),
+                applicationServerKey: urlBase64ToUint8Array(vapidKey),
             });
             return subscription;
         } catch (error) {

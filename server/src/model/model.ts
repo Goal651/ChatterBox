@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
     groups: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group',
-        default: ['67c6e55934bb5d3f0b0b40fe']
+        default: []
     }],
     unreads: [{
         type: mongoose.Schema.Types.ObjectId,

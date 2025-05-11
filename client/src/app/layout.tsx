@@ -1,0 +1,14 @@
+import type { ReactNode } from 'react';
+import SideBar from '../components/shared/sidebar';
+type LayoutProps = { children: ReactNode }
+
+const Layout = ({ children }: LayoutProps) => {
+    return (
+        <div className="flex bg-white h-screen w-screen">
+            <SideBar />
+            <main>{children}</main>
+        </div>
+    );
+};
+
+export default Layout;

@@ -22,9 +22,7 @@ body {
 .scrollbar-thumb-gray-700 {
     scrollbar-color: #4B5563 #1F2937;
 }
-.scrollbar-track-gray-900 {
-    /* Works in Firefox */
-}
+
 @supports (-webkit-overflow-scrolling: touch) {
     .scrollbar-thin::-webkit-scrollbar {
         width: 8px;

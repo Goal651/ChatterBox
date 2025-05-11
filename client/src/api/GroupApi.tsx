@@ -1,8 +1,9 @@
 import axios from "axios"
+import { serverUrl } from "../constants/constant";
 
 
 
-export async function createGroupApi(serverUrl: string, groupData: object) {
+export async function createGroupApi( groupData: object) {
     const response = await axios.post(serverUrl + '/create-group', groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -13,7 +14,7 @@ export async function createGroupApi(serverUrl: string, groupData: object) {
 
 // Getting users and groups
 
-export async function getGroupsApi(serverUrl: string) {
+export async function getGroupsApi() {
     const response = await axios.get(serverUrl + '/getGroups', {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -22,7 +23,7 @@ export async function getGroupsApi(serverUrl: string) {
     return response.data;
 }
 
-export async function getGroupByNameApi(serverUrl: string, name: string) {
+export async function getGroupByNameApi( name: string) {
     const response = await axios.get(serverUrl + '/getGroup/' + name, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -31,7 +32,7 @@ export async function getGroupByNameApi(serverUrl: string, name: string) {
     return response.data;
 }
 
-export async function editGroupProfileApi(serverUrl: string, group: string, groupData: object) {
+export async function editGroupProfileApi( group: string, groupData: object) {
     const response = await axios.put(serverUrl + '/editGroupProfile/' + group, groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -40,7 +41,7 @@ export async function editGroupProfileApi(serverUrl: string, group: string, grou
     return response.data;
 }
 
-export async function addMemberApi(serverUrl: string, groupData: object) {
+export async function addMemberApi(groupData: object) {
     const response = await axios.post(serverUrl + '/addMember', groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -49,7 +50,7 @@ export async function addMemberApi(serverUrl: string, groupData: object) {
     return response.data;
 }
 
-export async function createGroup(serverUrl: string, groupData: {
+export async function createGroup( groupData: {
     groupName: string;
     description: string;
     members: string[];
@@ -62,7 +63,7 @@ export async function createGroup(serverUrl: string, groupData: {
     return response;
 }
 
-export async function updateGroup(serverUrl: string, group: string, groupData: object) {
+export async function updateGroup( group: string, groupData: object) {
     const response = await axios.put(serverUrl + '/updateGroup/' + group, groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),

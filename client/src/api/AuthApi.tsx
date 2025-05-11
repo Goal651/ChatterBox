@@ -1,26 +1,40 @@
 import axios from "axios"
+import { serverUrl } from "../constants/constant"
+import { GlobalApiErrorHandler } from "../error/ApiError"
 
 
-export async function checkTokenApi(serverUrl: string) {
-    const response = await axios.get(serverUrl + '/auth', {
-        headers: {
-            accesstoken: localStorage.getItem('token'),
-        }
-    });
-    return response;
+export async function checkTokenApi() {
+    try {
+        const response = await axios.get(serverUrl + '/checkToken', {
+            headers: {
+                accesstoken: localStorage.getItem('token'),
+            }
+        })
+        return response.data
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
 }
 
-export async function loginApi(serverUrl: string, email: string, password: string) {
-    const response = await axios.post(serverUrl + '/login', { email, password });
-    return response.data;
+export async function loginApi(email: string, password: string) {
+    try {
+        const response = await axios.post(serverUrl + '/login', { email, password })
+        return response.data
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
 }
 
 
-export async function editUserPassword(serverUrl: string, userData: object) {
-    const response = await axios.put(serverUrl + '/editUserPassword', userData, {
-        headers: {
-            accesstoken: localStorage.getItem('token'),
-        }
-    });
-    return response.data;
+export async function editUserPassword(userData: object) {
+    try {
+        const response = await axios.put(serverUrl + '/editUserPassword', userData, {
+            headers: {
+                accesstoken: localStorage.getItem('token'),
+            }
+        })
+        return response.data
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
 }

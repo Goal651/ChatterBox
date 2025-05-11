@@ -10,13 +10,13 @@ const checkToken = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const accessToken = req.headers['accesstoken'] as string | undefined;
         if (!accessToken) {
-            res.status(401).json({ message: 'Unauthorized: Access token is missing' });
+            res.status(401).json({ message: 'Redirecting to login...' });
             return
         }
 
         const decodedToken = jwt.decode(accessToken) as { id: string } | null;
         if (!decodedToken || !decodedToken.id) {
-            res.status(400).json({ message: 'Unauthorized: Invalid token' });
+            res.status(401).json({ message: 'Redirecting to login...' });
             return
         }
 
@@ -24,17 +24,17 @@ const checkToken = async (req: Request, res: Response, next: NextFunction) => {
             if (err) {
                 if (err.name === 'TokenExpiredError') {
                     const newToken = refreshToken(decodedToken.id);
-                    res.status(401).json({ message: 'Token expired', newToken });
+                    res.status(401).json({ message: 'Redirecting to login...' });
                     return
                 }
-                res.status(403).json({ message: 'Forbidden: Invalid token' });
+                res.status(401).json({ message: 'Redirecting to login...' });
                 return
             }
             res.locals.user = { userId: decodedToken?.id };
             next();
         });
     } catch (error) {
-        res.status(500).json({ message: 'Internal server error', error });
+        res.status(500).json({ message: 'Redirecting to login...' });
         return
     }
 };
@@ -44,16 +44,17 @@ const checkUser = async (req: Request, res: Response) => {
         const { userId } = res.locals.user
         const user = await model.User.findById(userId).select('_id')
         if (!user) {
-            res.status(404).json({ message: 'User not found' })
+            res.status(200).json({ message: 'Redirecting to login...' })
             return
         }
-        res.status(200).json({ message: 'User found' })
+        res.status(200).json({ message: 'Welcome back ' + user.username })
     } catch (error) {
         console.error(error)
-        res.status(500).json({ message: 'Server error' })
+        res.status(500).json({ message: 'Redirecting to login...' })
     }
 }
 
+// Verifying email after signup
 const verifyUser = async (req: Request, res: Response) => {
     try {
         const { token } = req.params as { token: string };
@@ -61,7 +62,7 @@ const verifyUser = async (req: Request, res: Response) => {
         await model.User.updateOne({ _id: decoded.userId }, { isVerified: true });
         res.json({ message: "Email verified successfully!" });
     } catch (error) {
-        res.status(404).json({ message: 'Invalid token' });
+        res.status(401).json({ message: 'Check your email and try again' });
     }
 }
 

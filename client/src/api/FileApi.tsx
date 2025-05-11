@@ -1,8 +1,9 @@
 import axios from "axios"
+import { serverUrl } from "../constants/constant";
 
 
 // File uploads
-export async function uploadFileApi(serverUrl: string, fileData: FormData) {
+export async function uploadFileApi(fileData: FormData) {
     const response = await axios.post(serverUrl + '/uploadFile', fileData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -12,7 +13,7 @@ export async function uploadFileApi(serverUrl: string, fileData: FormData) {
     return response.data;
 }
 
-export async function getFile(serverUrl: string, fileName: string) {
+export async function getFile(fileName: string) {
 
     const response = await axios.get(serverUrl + '/getFile/' + fileName, {
         headers: {
