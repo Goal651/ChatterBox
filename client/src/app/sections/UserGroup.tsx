@@ -1,17 +1,23 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import SearchInput from "../../components/shared/inputs/SearchInput"
 import UserGroupList from "../../components/common/UserGroupList"
 import { FaUser, FaUserGroup } from "react-icons/fa6"
 import { Group, User } from "../../interfaces/interfaces"
 
-export default function UserGroup() {
+export default function UserGroup({ loading }: { loading: boolean }) {
     const [searchTerm, setSearchTerm] = useState("")
     const [tab, setTab] = useState<'users' | 'groups'>('users')
-    const users: User[] = localStorage.getItem('users') ? JSON.parse(localStorage.getItem('users') as string) : []
-    const groups: Group[] = localStorage.getItem('groups') ? JSON.parse(localStorage.getItem('groups') as string) : []
-
+    const [users, setUsers] = useState<User[]>(localStorage.getItem('users') ? JSON.parse(localStorage.getItem('users') as string) : [])
+    const [groups, setGroups] = useState<Group[]>(localStorage.getItem('groups') ? JSON.parse(localStorage.getItem('groups') as string) : [])
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm))
     const filteredGroups = groups.filter(group => group.groupName.toLowerCase().includes(searchTerm))
+
+    useEffect(() => {
+        if (!loading) {
+            setUsers(JSON.parse(localStorage.getItem('users') as string))
+            setGroups(JSON.parse(localStorage.getItem('groups') as string))
+        }
+    }, [loading])
     return (
         <div className={`flex flex-col p-2 w-2xl h-screen gap-y-5`}>
             <SearchInput
@@ -34,6 +40,7 @@ export default function UserGroup() {
                 users={filteredUsers}
                 groups={filteredGroups}
                 tab={tab}
+                loading={loading}
             />
         </div>
     )
