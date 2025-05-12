@@ -76,15 +76,7 @@ const login = async (req: Request, res: Response) => {
         }
 
         if (!user.isVerified) {
-            const verificationToken = generateVerificationToken(user._id.toString());
-            const emailObject = {
-                title: "Email Verification",
-                email: email,
-                username: user.username,
-                verificationToken
-            }
-            emailService.sendEmail(emailObject)
-            res.status(200).json({ message: 'Email not verified check your inbox for verification link', isError: true })
+            res.status(200).json({ message: 'Account not activated! Check your email to activate it.', isError: true })
             return
         }
 
@@ -93,7 +85,7 @@ const login = async (req: Request, res: Response) => {
             res.status(200).json({ message: 'Internal server error', isError: true })
             return
         }
-        res.status(200).json({ token:accessToken, isError: false })
+        res.status(200).json({ token: accessToken, isError: false })
     } catch (err) {
         res.status(500).json({ message: 'Internal server error' })
         console.error(err)
