@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import SideBar from '../components/shared/sidebar';
 
-const Layout = ({ children }: { children: ReactNode }) => {
+export default function Layout({ children }: { children: ReactNode }) {
     return (
         <div className="flex bg-white h-screen w-screen">
             <SideBar />
@@ -9,5 +9,3 @@ const Layout = ({ children }: { children: ReactNode }) => {
         </div>
     );
 };
-
-export default Layout;
