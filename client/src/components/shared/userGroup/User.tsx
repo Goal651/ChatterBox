@@ -1,13 +1,15 @@
+import { useNavigate } from "react-router-dom";
 import { User } from "../../../interfaces/interfaces";
 import ProfilePicturePreview from "../../common/ProfilePicturePreview";
 
 
 export default function UserComponent({ user }: { user: User }) {
     const date = new Date(user.lastActiveTime)
+    const router = useNavigate()
 
     const onClick = () => {
         localStorage.setItem('selectedUser', JSON.stringify(user))
-        
+        router('/chat/'+user._id)
     }
 
     return (

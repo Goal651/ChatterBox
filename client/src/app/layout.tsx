@@ -1,12 +1,11 @@
 import type { ReactNode } from 'react';
 import SideBar from '../components/shared/sidebar';
-type LayoutProps = { children: ReactNode }
 
-const Layout = ({ children }: LayoutProps) => {
+const Layout = ({ children }: { children: ReactNode }) => {
     return (
         <div className="flex bg-white h-screen w-screen">
             <SideBar />
-            <main>{children}</main>
+            <main className='w-full h-full'>{children}</main>
         </div>
     );
 };

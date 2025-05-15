@@ -2,7 +2,7 @@ import UserMessage from "../messages/userMessage"
 import { Message, User } from "../../../interfaces/interfaces"
 import { useEffect, useRef } from "react"
 
-export default function ChatBody({ messages, user }: { messages: Message[] | null, user: User }) {
+export default function ChatBody({ messages, user, isLoading }: { messages: Message[] | null, user: User, isLoading: boolean }) {
     const messagesContainerRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         console.log('messages changed')
@@ -13,6 +13,14 @@ export default function ChatBody({ messages, user }: { messages: Message[] | nul
             })
         }
     }, [messages])
+
+    if (isLoading) return (
+        <div className="h-[90%] bg-[#252525] overflow-auto scroll-smooth overscroll-none">
+            <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">
+                Loading ...
+            </div>
+        </div>
+    )
 
     return (
         <div ref={messagesContainerRef}
