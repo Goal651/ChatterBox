@@ -8,6 +8,10 @@ import Home from './app/Home';
 import Notification from './components/common/Notification';
 import SettingsLayout from './app/settings/layout';
 import SettingsAccount from './components/shared/settings/Account';
+import { SettingsBlocklist } from './components/shared/settings/BlockList';
+import { SettingsNotifications } from './components/shared/settings/Notification';
+import SettingsPreferences from './components/shared/settings/Preferences';
+import { SettingsDangerZone } from './components/shared/settings/DangerZone';
 
 
 const LoginPage = lazy(() => import('./app/Login'));
@@ -31,6 +35,10 @@ export default function App() {
                       <SettingsLayout>
                         <Routes>
                           <Route path="/profile" element={<SettingsAccount />} />
+                          <Route path="/blocklist" element={<SettingsBlocklist />} />
+                          <Route path="/notifications" element={<SettingsNotifications />} />
+                          <Route path="/preferences" element={<SettingsPreferences />} />
+                          <Route path="/dangerzone" element={<SettingsDangerZone />} />
                         </Routes>
                       </SettingsLayout>
                     } />

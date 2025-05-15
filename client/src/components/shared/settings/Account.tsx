@@ -3,14 +3,14 @@ import ProfilePicturePreview from "../../common/ProfilePicturePreview";
 
 export default function SettingsAccount() {
     return (
-        <div className="flex flex-col gap-y-4 w-full h-full">
+        <div className="flex flex-col gap-y-10 w-full h-full">
             {/* Header */}
-            <div className="text-xl font-bold">Account</div>
+            <div className="text-2xl font-bold text-center">Account</div>
 
             {/* Profile Picture Section */}
             <div className="flex items-center gap-x-4">
-                <div className="btn btn-xl btn-square rounded-full bg-black">
-                    <ProfilePicturePreview username="username" textSize="3xl" />
+                <div className="btn btn-square rounded-full bg-black w-20 h-20">
+                    <ProfilePicturePreview username="username" textSize="5xl" />
                 </div>
                 <div className="flex flex-col gap-y-2">
                     <div className="font-semibold">Profile Picture</div>
