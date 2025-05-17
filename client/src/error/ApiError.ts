@@ -1,6 +1,7 @@
 import axios from "axios";
 import { notify } from "../utils/NotificationService";
 
+
 export function GlobalApiErrorHandler(error: unknown) {
     const isAxiosError = axios.isAxiosError(error);
     const isNormalError = error instanceof Error;
@@ -9,6 +10,14 @@ export function GlobalApiErrorHandler(error: unknown) {
         if (!error.response) {
             console.error("Network error: No internet connection.");
             notify("Network error: No internet connection.", "error")
+            return
+        }
+
+        if (error.response.status === 401) {
+            console.error("Authentication error. Please log in again.");
+            notify("Authentication error. Please log in again.", "error")
+            localStorage.clear()
+            window.location.href = '/login'
             return
         }
 

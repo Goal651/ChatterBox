@@ -8,10 +8,9 @@ interface ProfilePicturePreviewProps {
     profilePicture?: string;
     username: string;
     textSize: string;
-    className?: string; // Added for external styling (e.g., from parent components)
 }
 
-export default function ProfilePicturePreview({ profilePicture, username, textSize, className }: ProfilePicturePreviewProps) {
+export default function ProfilePicturePreview({ profilePicture, username, textSize,  }: ProfilePicturePreviewProps) {
     const [imageSrc, setImageSrc] = useState<string>("");
 
 

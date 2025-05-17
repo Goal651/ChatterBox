@@ -38,7 +38,7 @@ router.post('/addMember', auth.checkToken, groupController.addMember)
 
 //apis for messages
 router.get('/gmessage/:group', auth.checkToken, messageController.getGMessage)
-router.get('/message/:receiverId/:phase', auth.checkToken, messageController.getMessage)
+router.get('/message/:receiverId', auth.checkToken, messageController.getMessage)
 
 
 //apis for files

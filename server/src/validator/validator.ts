@@ -8,20 +8,19 @@ const loginSchema = Joi.object({
     }),
     password: Joi.string().required().messages({
         'any.required': 'Password is required',
+         'string.empty': 'Password is required'
     })
 })
 
 const registerSchema = Joi.object({
+    username: Joi.string().required().messages({
+        'any.required': 'Username is required',
+        'string.empty': 'Username is required'
+    }),
     email: Joi.string().email().required().empty('').messages({
         'string.email': 'Provide valid email',
         'any.required': 'Email is required',
-        'string.empty': ''
-    }),
-    names: Joi.string().required().messages({
-        'any.required': 'Names are required'
-    }),
-    username: Joi.string().required().messages({
-        'any.required': 'Username is required'
+        'string.empty': 'Email is required'
     }),
     password: Joi.string().required().min(4).messages({
         'string.min': 'Password must be at least 4 characters long',

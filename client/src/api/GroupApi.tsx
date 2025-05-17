@@ -3,7 +3,7 @@ import { serverUrl } from "../constants/constant";
 
 
 
-export async function createGroupApi( groupData: object) {
+export async function createGroupApi(groupData: object) {
     const response = await axios.post(serverUrl + '/create-group', groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -12,18 +12,16 @@ export async function createGroupApi( groupData: object) {
     return response.data;
 }
 
-// Getting users and groups
-
 export async function getGroupsApi() {
     const response = await axios.get(serverUrl + '/getGroups', {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
     });
-    return response.data;
+    localStorage.setItem('groups', JSON.stringify(response.data.groups))
 }
 
-export async function getGroupByNameApi( name: string) {
+export async function getGroupByNameApi(name: string) {
     const response = await axios.get(serverUrl + '/getGroup/' + name, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -32,7 +30,7 @@ export async function getGroupByNameApi( name: string) {
     return response.data;
 }
 
-export async function editGroupProfileApi( group: string, groupData: object) {
+export async function editGroupProfileApi(group: string, groupData: object) {
     const response = await axios.put(serverUrl + '/editGroupProfile/' + group, groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),
@@ -50,7 +48,7 @@ export async function addMemberApi(groupData: object) {
     return response.data;
 }
 
-export async function createGroup( groupData: {
+export async function createGroup(groupData: {
     groupName: string;
     description: string;
     members: string[];
@@ -63,7 +61,7 @@ export async function createGroup( groupData: {
     return response;
 }
 
-export async function updateGroup( group: string, groupData: object) {
+export async function updateGroup(group: string, groupData: object) {
     const response = await axios.put(serverUrl + '/updateGroup/' + group, groupData, {
         headers: {
             accesstoken: localStorage.getItem('token'),

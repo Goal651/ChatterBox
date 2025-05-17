@@ -1,11 +1,17 @@
 import './App.css';
-import { lazy, Suspense} from 'react';
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import LoadingPage from './app/LoadingPage';
 import ErrorBoundary from './error/ErrorBoundary';
 import Layout from './app/layout';
 import Home from './app/Home';
 import Notification from './components/common/Notification';
+import SettingsLayout from './app/settings/layout';
+import SettingsAccount from './components/shared/settings/Account';
+import { SettingsBlocklist } from './components/shared/settings/BlockList';
+import { SettingsNotifications } from './components/shared/settings/Notification';
+import SettingsPreferences from './components/shared/settings/Preferences';
+import { SettingsDangerZone } from './components/shared/settings/DangerZone';
 
 
 const LoginPage = lazy(() => import('./app/Login'));
@@ -20,17 +26,24 @@ export default function App() {
         <ErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
-              <Route path="/login" element={<LoginPage  />} />
+              <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="*" element={
                 <Layout>
                   <Routes>
-                    <Route path="/" element={<Home />} />
-                    {/* <Route path="/verify/:token" element={<VerifyEmail />} />
-                  <Route path="/email-sent" element={<EmailSent />} />
-                  <Route path="/no-internet" element={<NetworkChecker />} />
-                  <Route path="/admin/" element={<AdminDashboard />} /> */}
-                    {/* <Route path="*" element={<PageNotFound />} /> */}
+                    <Route path="/settings/*" element={
+                      <SettingsLayout>
+                        <Routes>
+                          <Route path="/profile" element={<SettingsAccount />} />
+                          <Route path="/blocklist" element={<SettingsBlocklist />} />
+                          <Route path="/notifications" element={<SettingsNotifications />} />
+                          <Route path="/preferences" element={<SettingsPreferences />} />
+                          <Route path="/dangerzone" element={<SettingsDangerZone />} />
+                        </Routes>
+                      </SettingsLayout>
+                    } />
+                    <Route path="/chat/:userId" element={<Home />} />
+                    <Route path="/*" element={<Home />} />
                   </Routes>
                 </Layout>
               } />

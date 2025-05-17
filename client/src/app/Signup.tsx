@@ -1,7 +1,40 @@
+import { FormEvent, useState } from "react";
 import { FaApple, FaGoogle, FaXTwitter } from "react-icons/fa6";
 import { Link } from "react-router-dom";
+import { signUpApi } from "../api/AuthApi";
+import { notify } from "../utils/NotificationService";
 
 export default function SignUpPage() {
+    const [username, setUsername] = useState('')
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmPassword, setConfirmPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
+
+    const onSignUp = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        try {
+            const formData = {
+                username,
+                email,
+                password,
+                confirmPassword
+            }
+            setIsLoading(true)
+            const response = await signUpApi(formData)
+            const isError = response.isError
+            if (isError) {
+                notify(response.message, "error")
+            } else {
+                notify(response.message, "success")
+            }
+            setIsLoading(false)
+        } catch (error) {
+            console.error(error)
+            setIsLoading(false)
+        }
+    }
+
     return (
         <div className="bg-[#0f0f0f] h-screen w-screen flex items-center justify-center">
             <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl'>
@@ -21,7 +54,7 @@ export default function SignUpPage() {
                 </div>
 
                 {/* Form */}
-                <form className='flex flex-col gap-y-4 w-full mb-6'>
+                <form onSubmit={onSignUp} className='flex flex-col gap-y-4 w-full mb-6'>
 
                     {/* Username */}
                     <label className="input border-0  bg-[#0e0e0e] w-full rounded-lg  outline-0 focus-within:outline-0">
@@ -37,7 +70,9 @@ export default function SignUpPage() {
                                 <circle cx="12" cy="7" r="4"></circle>
                             </g>
                         </svg>
-                        <input type="email" className="" placeholder="Username" />
+                        <input type="text" className="" placeholder="Username"
+                            onChange={(e) => setUsername(e.target.value)}
+                            value={username} />
                     </label>
 
                     {/* Email input */}
@@ -54,7 +89,9 @@ export default function SignUpPage() {
                                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                             </g>
                         </svg>
-                        <input type="email" className="" placeholder="email address" />
+                        <input type="email" className="" placeholder="email address"
+                            onChange={(e) => setEmail(e.target.value)}
+                            value={email} />
                     </label>
 
                     {/* password input */}
@@ -73,7 +110,9 @@ export default function SignUpPage() {
                                 <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
                             </g>
                         </svg>
-                        <input type="password" className="grow" placeholder="Password" />
+                        <input type="password" className="grow" placeholder="Password"
+                            onChange={(e) => setPassword(e.target.value)}
+                            value={password} />
                     </label>
 
                     {/* Confirm password */}
@@ -92,13 +131,16 @@ export default function SignUpPage() {
                                 <circle cx="16.5" cy="7.5" r=".5" fill="currentColor"></circle>
                             </g>
                         </svg>
-                        <input type="password" className="grow" placeholder="Confirm Password" />
+                        <input type="password" className="grow" placeholder="Confirm Password"
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            value={confirmPassword} />
                     </label>
 
                     {/* Submit button */}
-                    <div className='btn bg-blue-600 rounded-lg'>
-                        Sign up
-                    </div>
+                    <button type="submit" className={`btn bg-blue-600 rounded-lg ${isLoading && 'bg-blue-700 '}`}
+                        disabled={isLoading}>
+                        {isLoading ? 'Loading...' : 'Sign up'}
+                    </button>
 
                 </form>
 

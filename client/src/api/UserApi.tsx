@@ -3,7 +3,6 @@ import { serverUrl } from "../constants/constant";
 import { GlobalApiErrorHandler } from "../error/ApiError";
 
 
-
 export async function getUserByEmailApi(email: string) {
     try {
         const response = await axios.get(serverUrl + '/getUser/' + email, {
@@ -37,8 +36,8 @@ export async function getUsersApi() {
             headers: {
                 accesstoken: localStorage.getItem('token'),
             }
-        });
-        return response.data;
+        })
+        localStorage.setItem('users', JSON.stringify(response.data.users))
     } catch (error) {
         GlobalApiErrorHandler(error)
     }

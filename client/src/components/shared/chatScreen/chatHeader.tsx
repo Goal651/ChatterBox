@@ -1,7 +1,8 @@
 import { FaPhone, FaVideo } from "react-icons/fa6";
 import ProfilePicturePreview from "../../common/ProfilePicturePreview";
+import { User } from "../../../interfaces/interfaces";
 
-export default function ChatHeader() {
+export default function ChatHeader({ user }: { user: User }) {
 
     return (
         <div className="flex justify-between text-gray-300 w-full items-center p-2">
@@ -10,16 +11,16 @@ export default function ChatHeader() {
             <div className="flex gap-x-4 items-center">
                 <div className="btn-lg btn-square rounded-full bg-black flex items-center justify-center font-bold">
                     <ProfilePicturePreview
-                        username="test"
+                        username={user.username}
                         textSize="5xl"
                     />
                 </div>
                 <div>
-                    Username
+                    {user.username}
                 </div>
             </div>
             <div>
-                Active one hour ago
+                {new Date(user.lastActiveTime).toDateString()}
             </div>
 
             {/* calling components */}

@@ -25,6 +25,15 @@ export async function loginApi(email: string, password: string) {
     }
 }
 
+export async function signUpApi(userData: object) {
+    try {
+        const response = await axios.post(serverUrl + '/signup', userData)
+        return response.data
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
+}
+
 
 export async function editUserPassword(userData: object) {
     try {
