@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import SettingNavigation from "@/components/shared/settings/Navigation";
+import SettingNavigation from "@/components/settings/Navigation";
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
  

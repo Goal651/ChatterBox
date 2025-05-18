@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import SearchInput from "@/components/shared/inputs/SearchInput"
+import SearchInput from "@/components/inputs/SearchInput"
 import UserGroupList from "@/components/common/UserGroupList"
 import { FaUser, FaUserGroup } from "react-icons/fa6"
 import { Group, User } from "@/interfaces/interfaces"

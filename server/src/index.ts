@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import routes from './routes/routes'
-import SocketController from './controller/SocketController'
+import SocketController from './socket/SocketController'
 import { createRouteHandler } from 'uploadthing/express';
 import { uploadRouter } from './upload/uploadthing';
 

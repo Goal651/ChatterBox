@@ -1,7 +1,6 @@
 import { Request, Response } from 'express'
-import { Message, GroupMessage} from '@/interfaces/interface'
+import { Message, GroupMessage } from '@/interfaces/interface'
 import model from '@/model/model'
-import decryptController from '@/security/Decryption'
 
 
 const getMessage = async (req: Request, res: Response) => {
@@ -28,16 +27,10 @@ const getMessage = async (req: Request, res: Response) => {
             return
         }
 
-        const result = await Promise.all(messages.map(async m => {
-            const decryptedMessage = await decryptController.decryptMessage(m.sender.toString(), m.message)
-            m.message = decryptedMessage
-            return m
-        }))
-
-        res.status(200).json({ messages: result.reverse(), isError: false })
+        res.status(200).json({ messages: messages.reverse(), isError: false })
     } catch (error) {
         console.error(error)
-        res.status(500).json({ message: 'Reloading...' })
+        res.status(500).json({ message: 'Server error' })
     }
 }
 
@@ -56,7 +49,8 @@ const getGMessage = async (req: Request, res: Response) => {
             .populate([
                 { path: 'replying' },
                 { path: 'sender', select: '-privateKey -publicKey -password' }
-            ]) as unknown[] as GroupMessage[]
+            ])
+            .sort({ createdAt: -1 }) as unknown[] as GroupMessage[]
 
         if (messages.length <= 0) {
             res.status(200).json({ messages: [], isError: false })

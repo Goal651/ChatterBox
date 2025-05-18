@@ -1,7 +1,7 @@
 import { Socket, Server } from 'socket.io'
 import SocketAuthController from '@/auth/SocketAuthController'
 import model from '@/model/model'
-import WebPusherController from './WebPusherController'
+import WebPusherController from '@/controller/WebPusherController'
 import encryptionController from '@/security/Encryption'
 import {
     GroupMessageData,
@@ -9,21 +9,24 @@ import {
     DeleteMessageData,
     EditMessageData,
     ReactToMessageData
-} from '../interfaces/SocketEventInterfaces'
+} from '@/interfaces/SocketEventInterfaces'
+import { Message } from '@/interfaces/interface'
 
-interface SentMessages {
-    receiverId: string
-    message: string
-    messageType: string
-    messageId: string | number
-}
 
 const SocketController = (io: Server) => {
     try {
-        const userSockets: Record<string, string[]> = {}
+        const userSockets = new Map<string, Set<string>>()
 
         // Handle authorization
         SocketAuthController(io)
+
+        const emitToUserSockets = (userId: string, event: string, data: unknown) => {
+            const sockets = userSockets.get(userId)
+            console.log(sockets)
+            if (sockets) {
+                sockets.forEach(socketId => io.to(socketId).emit(event, data))
+            }
+        }
 
         io.on('connection', async (socket: Socket) => {
             if (!socket.data?.user?.userId) {
@@ -48,54 +51,43 @@ const SocketController = (io: Server) => {
             userGroups.forEach(element => socket.join(element))
             await model.User.findByIdAndUpdate(userId, { lastActiveTime: Date.now() })
 
-            userSockets[userId] = userSockets[userId] || []
-            userSockets[userId].push(socket.id)
+            // Add the user's socket to the map
+            if (!userSockets.has(userId)) userSockets.set(userId, new Set())
+            userSockets.get(userId)?.add(socket.id)
 
-            const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0)
+
+            const onlineUsers = Array.from(userSockets.keys())
             socket.broadcast.emit('onlineUsers', onlineUsers)
             io.to(socket.id).emit('onlineUsers', onlineUsers)
-            socket.broadcast.emit('onlineUsers', onlineUsers)
 
-            const emitToUserSockets = (userId: string, event: string, data: any) => {
-                if (userSockets[userId]) {
-                    userSockets[userId].forEach((id) => socket.to(id).emit(event, data))
-                }
-            }
-
-
-            socket.on('message', async (data: SentMessages) => {
+            socket.on('message', async (data: Message) => {
                 try {
-                    const { receiverId, message, messageType, messageId } = data
-                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
-                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
+                    // const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
 
                     const newMessage = new model.Message({
                         sender: userId,
-                        receiver: receiverId,
-                        message: encryptedMessage,
-                        type: messageType,
+                        receiver: data.receiver,
+                        message: data.message,
+                        type: data.type,
                     })
 
                     await newMessage.save()
 
                     const sentMessage = {
                         ...newMessage.toObject(),
-                        message,
-                        sender: userId,
-                        receiver: receiverId,
                     }
-                    io.to(socket.id).emit('messageSent', { messageId, sentMessage })
-                    emitToUserSockets(userId, 'receiveSentMessage', sentMessage)
 
-                    if (userSockets[receiverId]) {
-                        emitToUserSockets(receiverId, 'receiveMessage', { message: sentMessage, senderUserName: senderUserName.username })
-                        await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true })
-                        io.to(socket.id).emit('messageReceived', { messageId: newMessage._id })
-                        emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id })
-                    } else {
-                        await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } })
-                        await WebPusherController.sendDataToWebPush(senderUserName.username, data)
-                    }
+                    emitToUserSockets(userId, 'messageSent', sentMessage)
+
+                    // if (userSockets.has(receiverId)) {
+                    emitToUserSockets(sentMessage.receiver._id.toString(), 'receiveMessage', sentMessage)
+                    //     await model.Message.findByIdAndUpdate(newMessage._id, { isMessageSeen: true, isMessageReceived: true })
+                    //     io.to(socket.id).emit('messageReceived', { messageId: newMessage._id })
+                    //     emitToUserSockets(userId, 'messageReceived', { messageId: newMessage._id })
+                    // } else {
+                    //     await model.User.findByIdAndUpdate(receiverId, { $push: { unreads: newMessage._id } })
+                    //     await WebPusherController.sendDataToWebPush(senderUserName.username, data)
+                    // }
                 } catch (error) {
                     console.error(error)
                     socket.emit('messageError', 'Failed to send message')
@@ -156,7 +148,7 @@ const SocketController = (io: Server) => {
             socket.on('editMessage', async (data: EditMessageData) => {
                 try {
                     const { messageId, message, receiverId } = data
-                    const senderUserName = await model.User.findById(userId).select('username publicKey ') as unknown as { username: string, publicKey: string }
+                    const senderUserName = await model.User.findById(userId).select('username publicKey') as unknown as { username: string, publicKey: string }
                     const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
                     await model.Message.findByIdAndUpdate(messageId, { message: encryptedMessage, edited: true })
                     emitToUserSockets(receiverId, 'messageEdited', { messageId, message })
@@ -207,13 +199,11 @@ const SocketController = (io: Server) => {
             // Disconnect handling
             socket.on('disconnect', () => {
                 try {
-                    if (userSockets[userId]) {
-                        userSockets[userId] = userSockets[userId].filter((id) => id !== socket.id)
-                        if (userSockets[userId].length === 0) {
-                            delete userSockets[userId]
-                        }
+                    if (userSockets.has(userId)) {
+                        userSockets.get(userId)?.delete(socket.id)
+                        if (userSockets.get(userId)?.size === 0) userSockets.delete(userId)
                     }
-                    const onlineUsers = Object.keys(userSockets).filter(userId => userSockets[userId].length > 0)
+                    const onlineUsers = Array.from(userSockets.keys())
                     io.emit('onlineUsers', onlineUsers)
                 } catch (error) {
                     console.error(error)

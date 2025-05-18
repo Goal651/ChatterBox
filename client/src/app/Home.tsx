@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import UserGroup from "./sections/UserGroup";
-import { getGroupsApi } from "@/api/GroupApi";
-import { fetchAllUsers } from "@/api/UserApi";
 import ChatSection from "./sections/Chat";
+import { useSocket } from "@/context/SocketContext";
+import { fetchAllUsers } from "@/api/UserApi";
+import { getGroupsApi } from "@/api/GroupApi";
 
 export default function Home() {
+    const { socket } = useSocket()
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -21,6 +23,17 @@ export default function Home() {
         }
         fetchInitialData()
     }, [])
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("connect", () => { console.log('Connected') });
+            socket.on("connect_error", () => { console.log('Error') });
+            return () => {
+                socket.off("connect",)
+                socket.off("connect_error",);
+            };
+        }
+    }, [socket])
 
 
     return (

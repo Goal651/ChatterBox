@@ -1,9 +1,11 @@
 import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Message } from "@/interfaces/interfaces";
 import { notify } from "@/utils/NotificationService";
+import { SocketSendMessage } from "@/socket/Message";
+import { useSocket } from "@/context/SocketContext";
 
 interface ChatFooterParams {
     addNewMessage: (message: Message) => void,
@@ -17,12 +19,18 @@ export default function ChatFooter({
     receiver,
     sender
 }: ChatFooterParams) {
-
+    const { socket } = useSocket()
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
 
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
+
+    const socketSendMessage = (data: Message) => {
+        if (socket) {
+            socket.emit('message', data)
+        }
+    }
 
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -44,7 +52,20 @@ export default function ChatFooter({
             type: 'text'
         }
         addNewMessage(newMessage)
+        socketSendMessage(newMessage)
     }
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('receiveMessage', (data:Message) => {
+                console.log(data)
+                addNewMessage(data)
+            })
+            return () => {
+                socket.off('receiveMessage')
+            }
+        }
+    }, [])
 
     return (
         <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"

@@ -1,15 +1,8 @@
 import { UserGroupListProps } from "../../interfaces/interfaces"
-import { useEffect} from "react"
-import UserComponent from "../shared/userGroup/User"
-import GroupComponent from "../shared/userGroup/Group"
+import UserComponent from "../userGroup/User"
+import GroupComponent from "../userGroup/Group"
 
 export default function UserGroupList({ users, groups, tab, loading }: UserGroupListProps) {
-
-
-    useEffect(() => {
-        console.log('user group' + tab)
-    }, [tab])
-
 
     if (loading) {
         return (
@@ -18,9 +11,6 @@ export default function UserGroupList({ users, groups, tab, loading }: UserGroup
             </div>
         )
     }
-
-
-
     if (tab == 'users' && users.length == 0) {
         return (
             <div className="font-bold text-gray-200 text-lg text-center">
@@ -39,7 +29,7 @@ export default function UserGroupList({ users, groups, tab, loading }: UserGroup
         return (
             <div className="flex flex-col gap-y-1 overflow-y-auto h-full">
                 {users.map((user) => (
-                    <UserComponent user={user} />
+                    <UserComponent key={user._id} user={user} />
                 ))}
             </div>
         )

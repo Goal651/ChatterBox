@@ -5,7 +5,6 @@ import { User } from "@/interfaces/interface"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import keyController from "@/security/KeysController"
-import decryptionController from "@/security/Decryption"
 import emailService from "@/services/emailService"
 
 const generateVerificationToken = (userId: string) => {
@@ -112,11 +111,6 @@ const getUsers = async (req: Request, res: Response) => {
                     .sort({ createdAt: -1 })
                     .exec()
 
-                if (latestMessage) {
-                    const decryptedMessage = await decryptionController.decryptMessage(latestMessage.sender.toString(), latestMessage.message)
-                    latestMessage.message = decryptedMessage
-                }
-
                 return {
                     ...user.toObject(),
                     latestMessage: latestMessage || null,
@@ -146,11 +140,7 @@ const getUserProfile = async (req: Request, res: Response) => {
                 { sender: user._id, receiver: userId }
             ]
         }).sort({ createdAt: -1 }).exec()
-        if (latestMessage) {
-            const decryptedMessage = await decryptionController.decryptMessage(latestMessage.sender.toString(), latestMessage?.message)
-            latestMessage.message = decryptedMessage
 
-        }
         const userObject = {
             _id: user._id.toString(),
             username: user.username,

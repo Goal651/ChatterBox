@@ -1,4 +1,4 @@
-import UserMessage from "@/components/shared/messages/userMessage"
+import UserMessage from "@/components/messages/userMessage"
 import { Message, User } from "@/interfaces/interfaces"
 import { useEffect, useRef } from "react"
 

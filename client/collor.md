@@ -20,3 +20,26 @@ Here are the most common colors extracted from the login page image, along with 
 
 #131313 — Very dark gray
 
+
+
+
+src/
+├── api/
+├── app/
+├── assets/
+├── components/
+│   ├── Chat/
+│   ├── Sidebar/
+│   ├── Settings/
+│   └── Shared/
+├── config/
+├── constants/
+├── error/
+├── features/
+├── hooks/
+├── interfaces/ or types/
+├── lib/
+├── test/
+├── utils/
+├── main.tsx
+
