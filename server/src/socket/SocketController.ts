@@ -22,7 +22,6 @@ const SocketController = (io: Server) => {
 
         const emitToUserSockets = (userId: string, event: string, data: unknown) => {
             const sockets = userSockets.get(userId)
-            console.log(sockets)
             if (sockets) {
                 sockets.forEach(socketId => io.to(socketId).emit(event, data))
             }
@@ -58,7 +57,7 @@ const SocketController = (io: Server) => {
 
             const onlineUsers = Array.from(userSockets.keys())
             socket.broadcast.emit('onlineUsers', onlineUsers)
-            io.to(socket.id).emit('onlineUsers', onlineUsers)
+            emitToUserSockets(userId, 'onlineUsers', onlineUsers)
 
             socket.on('message', async (data: Message) => {
                 try {
