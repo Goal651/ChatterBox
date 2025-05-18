@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
-import { User } from "../../../interfaces/interfaces";
-import ProfilePicturePreview from "../../common/ProfilePicturePreview";
+import { User } from "@/interfaces/interfaces";
+import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 
 
 export default function UserComponent({ user }: { user: User }) {

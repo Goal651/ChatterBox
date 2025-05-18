@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { webSocketUrl } from "../constants/constant";
+import { webSocketUrl } from "@/constants/constant";
 
 export default function useSocketConfig({  status }: { status: boolean }): Socket {
     const socketRef = useRef<Socket | null>(null);

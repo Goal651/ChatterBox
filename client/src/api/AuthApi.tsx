@@ -13,6 +13,7 @@ export async function checkTokenApi() {
         return response.data
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }
 
@@ -22,6 +23,7 @@ export async function loginApi(email: string, password: string) {
         return response.data
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }
 
@@ -31,6 +33,7 @@ export async function signUpApi(userData: object) {
         return response.data
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }
 
@@ -45,5 +48,6 @@ export async function editUserPassword(userData: object) {
         return response.data
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }

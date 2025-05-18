@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 import LoadingPage from "../LoadingPage";
-import { serverUrl } from "../../constants/constant";
+import { serverUrl } from "@/constants/constant";
 
 export default function Auth() {
     const savedToken = localStorage.getItem("token");

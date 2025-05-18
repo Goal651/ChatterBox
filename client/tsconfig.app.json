@@ -25,6 +25,9 @@
     /* Type Checking */
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
 
   },
   "include": ["src"]

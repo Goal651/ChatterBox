@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
-import SearchInput from "../../components/shared/inputs/SearchInput"
-import UserGroupList from "../../components/common/UserGroupList"
+import SearchInput from "@/components/shared/inputs/SearchInput"
+import UserGroupList from "@/components/common/UserGroupList"
 import { FaUser, FaUserGroup } from "react-icons/fa6"
-import { Group, User } from "../../interfaces/interfaces"
+import { Group, User } from "@/interfaces/interfaces"
 
 export default function UserGroup({ loading }: { loading: boolean }) {
     const [searchTerm, setSearchTerm] = useState("")

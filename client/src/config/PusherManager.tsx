@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { subscribeToPush } from '../api/api';
-import { vapidKey } from '../constants/constant';
+import { subscribeToPush } from '@/api/api';
+import { vapidKey } from '@/constants/constant';
 
 const PushNotifications = () => {
     useEffect(() => {

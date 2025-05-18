@@ -1,7 +1,14 @@
 import { FaUpload } from "react-icons/fa6";
-import ProfilePicturePreview from "../../common/ProfilePicturePreview";
+import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
+import { useState } from "react";
+import { User } from "@/interfaces/interfaces";
 
 export default function SettingsAccount() {
+       const [user, setUser] = useState<User | null>(() => {
+        const storedUser = localStorage.getItem('authenticatedUser');
+        return storedUser ? JSON.parse(storedUser) : null;
+    })
+
     return (
         <div className="flex flex-col gap-y-10 w-full h-full">
             {/* Header */}
@@ -36,6 +43,7 @@ export default function SettingsAccount() {
                             className="input input-sm bg-[#252525] rounded-lg"
                             type="text"
                             placeholder="YourUsername"
+                            value={user?.username}
                         />
                     </div>
                     <div className="flex flex-col gap-y-2">
@@ -45,6 +53,7 @@ export default function SettingsAccount() {
                             className="input input-sm bg-[#252525] rounded-lg"
                             type="email"
                             placeholder="mail@site.com"
+                            value={user?.email}
                         />
                         <span className="text-xs text-gray-400">
                             Email change requires verification.

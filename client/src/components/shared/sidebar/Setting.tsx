@@ -1,6 +1,6 @@
 import { FaDoorOpen, FaGear } from "react-icons/fa6";
-import { User } from "../../../interfaces/interfaces";
-import ProfilePicturePreview from "../../common/ProfilePicturePreview";
+import { User } from "@/interfaces/interfaces";
+import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 import { useNavigate } from "react-router-dom";
 
 export default function SideBarSetting({ initialCurrentUser }: { initialCurrentUser: User }) {
@@ -11,15 +11,16 @@ export default function SideBarSetting({ initialCurrentUser }: { initialCurrentU
     };
     return (
         <div className="flex flex-col gap-y-2">
-            <div className="btn btn-square bg-[#252525] border-0 text-black font-bold shadow  rounded-lg">
+            <div className="btn btn-square bg-[#252525] border-0 text-black font-bold shadow  rounded-lg"
+            onClick={()=>navigate('/settings/profile')}>
                 <FaGear color="white" />
             </div>
-            <div className="btn btn-square rounded-full bg-black shadow shadow-gray-400 ">
+            <div className="btn btn-square rounded-full bg-black shadow shadow-gray-400 "
+            onClick={()=>navigate('/settings/profile')}>
                 <ProfilePicturePreview
                     profilePicture={initialCurrentUser?.image || ''}
                     username={initialCurrentUser?.username || 'U'}
                     textSize="text-2xl"
-                    className="rounded-full border-4 border-gray-700 transition-transform duration-300 group-hover:scale-105 group-hover:border-blue-500"
                 />
             </div>
 

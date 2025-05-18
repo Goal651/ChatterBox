@@ -33,11 +33,8 @@ const NetworkChecker = () => {
 
         // Set up a continuous ping every 5 seconds
         const interval = setInterval(() => {
-            if (navigator.onLine) {
-                checkServerStatus();
-            } else {
-                setServerStatus("unknown");
-            }
+            if (navigator.onLine) checkServerStatus();
+            else setServerStatus("unknown");
         }, 5000); // Adjust the interval time (in milliseconds) as needed
 
         // Handle online/offline events

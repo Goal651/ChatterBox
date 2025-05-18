@@ -1,5 +1,5 @@
-import UserMessage from "../messages/userMessage"
-import { Message, User } from "../../../interfaces/interfaces"
+import UserMessage from "@/components/shared/messages/userMessage"
+import { Message, User } from "@/interfaces/interfaces"
 import { useEffect, useRef } from "react"
 
 export default function ChatBody({ messages, user, isLoading }: { messages: Message[] | null, user: User, isLoading: boolean }) {
@@ -17,7 +17,7 @@ export default function ChatBody({ messages, user, isLoading }: { messages: Mess
     if (isLoading) return (
         <div className="h-[90%] bg-[#252525] overflow-auto scroll-smooth overscroll-none">
             <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">
-                Loading ...
+                Loading...
             </div>
         </div>
     )
@@ -25,7 +25,7 @@ export default function ChatBody({ messages, user, isLoading }: { messages: Mess
     return (
         <div ref={messagesContainerRef}
             className="h-[90%] bg-[#252525] overflow-auto scroll-smooth overscroll-none">
-            {messages?.length == 0 ? (
+            {messages?.length == 0||!messages ? (
                 <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">
                     No messages found
                 </div>

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { notify } from "../utils/NotificationService";
+import { notify } from "@/utils/NotificationService";
 
 
 export function GlobalApiErrorHandler(error: unknown) {

@@ -1,21 +1,21 @@
-import './App.css';
-import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LoadingPage from './app/LoadingPage';
-import ErrorBoundary from './error/ErrorBoundary';
-import Layout from './app/layout';
-import Home from './app/Home';
-import Notification from './components/common/Notification';
-import SettingsLayout from './app/settings/layout';
-import SettingsAccount from './components/shared/settings/Account';
-import { SettingsBlocklist } from './components/shared/settings/BlockList';
-import { SettingsNotifications } from './components/shared/settings/Notification';
-import SettingsPreferences from './components/shared/settings/Preferences';
-import { SettingsDangerZone } from './components/shared/settings/DangerZone';
+import './App.css'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
+import LoadingPage from './app/LoadingPage'
+import ErrorBoundary from './error/ErrorBoundary'
+import Layout from './app/layout'
+import Home from './app/Home'
+import Notification from './components/common/Notification'
+import SettingsLayout from './app/settings/layout'
+import SettingsAccount from './components/shared/settings/Account'
+import { SettingsBlocklist } from './components/shared/settings/BlockList'
+import { SettingsNotifications } from './components/shared/settings/Notification'
+import SettingsPreferences from './components/shared/settings/Preferences'
+import { SettingsDangerZone } from './components/shared/settings/DangerZone'
+import { Test } from './test/Tester'
 
-
-const LoginPage = lazy(() => import('./app/Login'));
-const SignUpPage = lazy(() => import('./app/Signup'));
+const LoginPage = lazy(() => import('./app/Login'))
+const SignUpPage = lazy(() => import('./app/Signup'))
 
 
 export default function App() {
@@ -26,6 +26,7 @@ export default function App() {
         <ErrorBoundary>
           <Suspense fallback={<LoadingPage />}>
             <Routes>
+              <Route path='/test' element={<Test />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/signup" element={<SignUpPage />} />
               <Route path="*" element={
@@ -42,6 +43,7 @@ export default function App() {
                         </Routes>
                       </SettingsLayout>
                     } />
+
                     <Route path="/chat/:userId" element={<Home />} />
                     <Route path="/*" element={<Home />} />
                   </Routes>
@@ -52,5 +54,5 @@ export default function App() {
         </ErrorBoundary>
       </Router>
     </>
-  );
+  )
 }

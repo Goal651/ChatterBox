@@ -2,8 +2,22 @@ import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6";
 import { ChangeEvent, FormEvent, useState } from "react";
+import { Message } from "@/interfaces/interfaces";
+import { notify } from "@/utils/NotificationService";
 
-export default function ChatFooter() {
+interface ChatFooterParams {
+    addNewMessage: (message: Message) => void,
+    sender: string | undefined,
+    receiver: string | null
+
+}
+
+export default function ChatFooter({
+    addNewMessage,
+    receiver,
+    sender
+}: ChatFooterParams) {
+
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
 
@@ -12,8 +26,24 @@ export default function ChatFooter() {
 
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (!sender || !receiver) return notify('Error Occured! Try reloading', 'error')
         setMessage('')
         setShowEmojiPicker(false)
+        const newMessage: Message = {
+            _id: new Date().getMilliseconds(),
+            sender,
+            receiver,
+            message,
+            isMessageSeen: false,
+            edited: false,
+            isMessageSent: false,
+            isMessageReceived: false,
+            reactions: [],
+            replying: null,
+            createdAt: new Date(),
+            type: 'text'
+        }
+        addNewMessage(newMessage)
     }
 
     return (

@@ -1,8 +1,8 @@
 import { FormEvent, useState } from "react";
 import { FaApple, FaGoogle, FaXTwitter } from "react-icons/fa6";
 import { Link } from "react-router-dom";
-import { signUpApi } from "../api/AuthApi";
-import { notify } from "../utils/NotificationService";
+import { signUpApi } from "@/api/AuthApi";
+import { notify } from "@/utils/NotificationService";
 
 export default function SignUpPage() {
     const [username, setUsername] = useState('')
@@ -139,7 +139,7 @@ export default function SignUpPage() {
                     {/* Submit button */}
                     <button type="submit" className={`btn bg-blue-600 rounded-lg ${isLoading && 'bg-blue-700 '}`}
                         disabled={isLoading}>
-                        {isLoading ? 'Loading...' : 'Sign up'}
+                        {isLoading ? 'Loading@.' : 'Sign up'}
                     </button>
 
                 </form>
