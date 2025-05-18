@@ -2,7 +2,7 @@ import { UserGroupListProps } from "../../interfaces/interfaces"
 import UserComponent from "../userGroup/User"
 import GroupComponent from "../userGroup/Group"
 
-export default function UserGroupList({ users, groups, tab, loading }: UserGroupListProps) {
+export default function UserGroupList({ users, groups, tab, loading, onlineUsers }: UserGroupListProps) {
 
     if (loading) {
         return (
@@ -29,7 +29,9 @@ export default function UserGroupList({ users, groups, tab, loading }: UserGroup
         return (
             <div className="flex flex-col gap-y-1 overflow-y-auto h-full">
                 {users.map((user) => (
-                    <UserComponent key={user._id} user={user} />
+                    <UserComponent key={user._id}
+                        onlineUsers={onlineUsers}
+                        user={user} />
                 ))}
             </div>
         )

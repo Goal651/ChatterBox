@@ -47,9 +47,10 @@ export interface Group {
 
 export interface UserGroupListProps {
     users: User[]
-    groups:Group[]
-    tab:'users'|'groups'
-    loading: boolean
+    groups: Group[]
+    tab: 'users' | 'groups'
+    loading: boolean,
+    onlineUsers: string[]
 }
 
 export interface GroupMessage {

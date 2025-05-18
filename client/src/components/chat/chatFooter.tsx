@@ -4,7 +4,6 @@ import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6"
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Message } from "@/interfaces/interfaces";
 import { notify } from "@/utils/NotificationService";
-import { SocketSendMessage } from "@/socket/Message";
 import { useSocket } from "@/context/SocketContext";
 
 interface ChatFooterParams {
@@ -29,6 +28,7 @@ export default function ChatFooter({
     const socketSendMessage = (data: Message) => {
         if (socket) {
             socket.emit('message', data)
+            
         }
     }
 
