@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FaMicrophone } from "react-icons/fa";
 import RecordRTC from "recordrtc";
-import AudioWave from "./AudioWave";
 
 interface AudioRecorderProps {
     onRecordingComplete: (audioBlob: Blob, audioUrl: string) => void;
@@ -88,13 +87,7 @@ export default function AudioRecorder({ onRecordingComplete, resetRecording }: A
         return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     };
 
-    if (recordedMedia?.audioBlob) {
-        return (
-            <div className="w-full">
-                <AudioWave audio={recordedMedia.audioBlob} audioUrl={recordedMedia.audioUrl} />
-            </div>
-        );
-    }
+
 
     return (
         <div className="flex items-center justify-center gap-4">

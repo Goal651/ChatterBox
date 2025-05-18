@@ -8,6 +8,7 @@ export default function SettingsAccount() {
         const storedUser = localStorage.getItem('authenticatedUser');
         return storedUser ? JSON.parse(storedUser) : null;
     })
+    
 
     return (
         <div className="flex flex-col gap-y-10 w-full h-full">
