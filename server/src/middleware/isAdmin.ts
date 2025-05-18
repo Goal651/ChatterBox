@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
-import model from "../model/model"
+import model from "@/model/model"
 
 export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
     try {

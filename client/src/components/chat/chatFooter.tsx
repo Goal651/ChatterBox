@@ -1,20 +1,71 @@
 import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { Message } from "@/interfaces/interfaces";
+import { notify } from "@/utils/NotificationService";
+import { useSocket } from "@/context/SocketContext";
 
-export default function ChatFooter() {
+interface ChatFooterParams {
+    addNewMessage: (message: Message) => void,
+    sender: string | undefined,
+    receiver: string | null
+
+}
+
+export default function ChatFooter({
+    addNewMessage,
+    receiver,
+    sender
+}: ChatFooterParams) {
+    const { socket } = useSocket()
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
 
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
 
+    const socketSendMessage = (data: Message) => {
+        if (socket) {
+            socket.emit('message', data)
+            
+        }
+    }
+
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        if (!sender || !receiver) return notify('Error Occured! Try reloading', 'error')
         setMessage('')
         setShowEmojiPicker(false)
+        const newMessage: Message = {
+            _id: new Date().getMilliseconds(),
+            sender,
+            receiver,
+            message,
+            isMessageSeen: false,
+            edited: false,
+            isMessageSent: false,
+            isMessageReceived: false,
+            reactions: [],
+            replying: null,
+            createdAt: new Date(),
+            type: 'text'
+        }
+        addNewMessage(newMessage)
+        socketSendMessage(newMessage)
     }
+
+    useEffect(() => {
+        if (socket) {
+            socket.on('receiveMessage', (data:Message) => {
+                console.log(data)
+                addNewMessage(data)
+            })
+            return () => {
+                socket.off('receiveMessage')
+            }
+        }
+    }, [])
 
     return (
         <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"

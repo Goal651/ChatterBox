@@ -7,7 +7,9 @@ import cookieParser from 'cookie-parser'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import routes from './routes/routes'
-import SocketController from './controller/SocketController'
+import SocketController from './socket/SocketController'
+import { createRouteHandler } from 'uploadthing/express';
+import { uploadRouter } from './upload/uploadthing';
 
 const app = express();
 
@@ -34,6 +36,9 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '5mb' }));
 app.use(bodyParser.json({ limit: '5mb' }));
 app.use(cookieParser());
 app.use('/api', routes)
+app.use("/api/uploadthing", createRouteHandler({
+    router: uploadRouter,
+}));
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI as string)

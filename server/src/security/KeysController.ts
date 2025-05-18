@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import model from '../model/model';
+import model from '@/model/model';
 
 const AES_KEY_LENGTH = 32;
 const generateKeyPair = async () => {

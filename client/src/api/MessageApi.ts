@@ -14,6 +14,7 @@ export async function getGroupMessagesApi(group: string) {
         return response.data;
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }
 
@@ -24,9 +25,10 @@ export async function getMessagesApi(receiverId: string) {
                 accesstoken: localStorage.getItem('token'),
             }
         });
-        
+
         return response.data as { messages: Message[] | null };
     } catch (error) {
         GlobalApiErrorHandler(error)
+        return undefined;
     }
 }

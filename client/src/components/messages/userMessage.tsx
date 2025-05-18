@@ -1,4 +1,4 @@
-import { Message, User } from "../../../interfaces/interfaces";
+import { Message, User } from "@/interfaces/interfaces";
 
 export default function UserMessage({ message, user }: { message: Message, user: User }) {
     const isUserSend = message.sender === user._id

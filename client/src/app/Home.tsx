@@ -1,28 +1,46 @@
 import { useEffect, useState } from "react";
-import ChatScreen from "./sections/Chat";
 import UserGroup from "./sections/UserGroup";
-import { getUsersApi } from "../api/UserApi";
-import { getGroupsApi } from "../api/GroupApi";
+import ChatSection from "./sections/Chat";
+import { useSocket } from "@/context/SocketContext";
+import { fetchAllUsers } from "@/api/UserApi";
+import { getGroupsApi } from "@/api/GroupApi";
 
 export default function Home() {
+    const { socket } = useSocket()
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
         const fetchInitialData = async () => {
-            setLoading(true)
-            await getUsersApi()
-            await getGroupsApi()
-            setLoading(false)
+            try {
+                setLoading(true)
+                await fetchAllUsers();
+                await getGroupsApi()
+                setLoading(false)
+            } catch (e) {
+                console.error(e)
+                setLoading(false)
+            }
         }
         fetchInitialData()
     }, [])
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("connect", () => { console.log('Connected') });
+            socket.on("connect_error", () => { console.log('Error') });
+            return () => {
+                socket.off("connect",)
+                socket.off("connect_error",);
+            };
+        }
+    }, [socket])
 
 
     return (
         <div className="flex w-full bg-[#0f0f0f]">
             <UserGroup loading={loading} />
             <div className="border-r-2 h-screen border-[#252525]" />
-            <ChatScreen />
+            <ChatSection />
         </div>
     );
 }

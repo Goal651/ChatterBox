@@ -1,5 +1,5 @@
-import { Group } from "../../../interfaces/interfaces";
-import ProfilePicturePreview from "../../common/ProfilePicturePreview";
+import { Group } from "@/interfaces/interfaces";
+import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 
 export default function GroupComponent({ group }: { group: Group }) {
 

@@ -1,8 +1,6 @@
 import axios from "axios"
 import { serverUrl } from "../constants/constant";
 
-
-
 export async function createGroupApi(groupData: object) {
     const response = await axios.post(serverUrl + '/create-group', groupData, {
         headers: {

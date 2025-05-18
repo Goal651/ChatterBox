@@ -23,7 +23,7 @@ interface Message {
     reactions: string[],
     replying: string,
     type: string,
-    timestamp: Date
+    createdAt: Date
 }
 
 interface Group {

@@ -1,8 +1,8 @@
 import { FaApple, FaGoogle, FaXTwitter } from 'react-icons/fa6'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
-import { loginApi } from '../api/AuthApi'
-import { notify } from '../utils/NotificationService'
+import { loginApi } from '@/api/AuthApi'
+import { notify } from '@/utils/NotificationService'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -92,7 +92,7 @@ export default function LoginPage() {
           {/* Submit button */}
           <button onClick={onLogin} className={`btn bg-blue-600 rounded-lg ${isLoading && 'bg-blue-700'}`}
             disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Sign In'}
+            {isLoading ? 'Loading@.' : 'Sign In'}
           </button>
 
         </form>

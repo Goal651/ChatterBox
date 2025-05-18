@@ -8,7 +8,7 @@ const loginSchema = Joi.object({
     }),
     password: Joi.string().required().messages({
         'any.required': 'Password is required',
-         'string.empty': 'Password is required'
+        'string.empty': 'Password is required'
     })
 })
 
