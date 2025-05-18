@@ -1,8 +1,8 @@
 import { Socket, Server } from 'socket.io'
-import SocketAuthController from '../auth/SocketAuthController'
-import model from '../model/model'
+import SocketAuthController from '@/auth/SocketAuthController'
+import model from '@/model/model'
 import WebPusherController from './WebPusherController'
-import encryptionController from '../security/Encryption'
+import encryptionController from '@/security/Encryption'
 import {
     GroupMessageData,
     MessageSeenData,

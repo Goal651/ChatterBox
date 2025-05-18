@@ -15,6 +15,7 @@ export default function ChatSection() {
         return storedUser ? JSON.parse(storedUser) : null
     })
 
+    
     const [loggedUser, setLoggedUser] = useState<User | null>(() => {
         const storedUser = localStorage.getItem('authenticatedUser')
         return storedUser ? JSON.parse(storedUser) : null

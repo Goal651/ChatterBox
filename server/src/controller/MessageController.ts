@@ -1,10 +1,7 @@
-import fs from 'fs'
-import path from 'path'
 import { Request, Response } from 'express'
-import crypto from 'crypto'
-import { Message, GroupMessage, User, Group } from '../interfaces/interface'
-import model from '../model/model'
-import decryptController from '../security/Decryption'
+import { Message, GroupMessage} from '@/interfaces/interface'
+import model from '@/model/model'
+import decryptController from '@/security/Decryption'
 
 
 const getMessage = async (req: Request, res: Response) => {
@@ -12,11 +9,10 @@ const getMessage = async (req: Request, res: Response) => {
         const { receiverId } = req.params as unknown as { receiverId: string }
         const { userId } = res.locals.user
 
-        if (!userId && !receiverId) {
+        if (!userId || !receiverId) {
             res.status(200).json({ message: 'Sender and receiver are required', isError: true })
             return
         }
-
 
         const messages = await model.Message
             .find({

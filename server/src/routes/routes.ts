@@ -1,13 +1,13 @@
 import express from 'express'
-import groupController from '../controller/GroupController'
-import userController from '../controller/UserController'
-import messageController from '../controller/MessageController'
-import auth from '../auth/AuthController'
-import mediaController from '../controller/MultimediaController'
-import webPusherController from '../controller/WebPusherController'
-import notificationController from '../controller/NotificationController'
-import adminController from '../admin/controller/userController'
-import { isAdmin } from '../middleware/isAdmin'
+import groupController from '@/controller/GroupController'
+import userController from '@/controller/UserController'
+import messageController from '@/controller/MessageController'
+import auth from '@/auth/AuthController'
+import mediaController from '@/controller/MultimediaController'
+import webPusherController from '@/controller/WebPusherController'
+import notificationController from '@/controller/NotificationController'
+import adminController from '@/admin/controller/userController'
+import { isAdmin } from '@/middleware/isAdmin'
 
 const router = express.Router()
 
@@ -20,7 +20,7 @@ router.get('/verifyEmail/:token',auth.verifyUser)
 router.get('/ping', groupController.ping)
 
 //apis for users
-router.get('/getUserProfile', auth.checkToken, userController.getUserProfile);
+router.get('/getProfile', auth.checkToken, userController.getUserProfile);
 router.get('/getUser/:email', auth.checkToken, userController.getUser)
 router.get('/getUsers', auth.checkToken, userController.getUsers)
 router.post('/signup', userController.signup)

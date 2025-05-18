@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import model from '../model/model';
+import model from '@/model/model';
 
 const refreshToken = (id: string): string => {
     return jwt.sign({ id }, process.env.JWT_SECRET as string, { expiresIn: '1h' });

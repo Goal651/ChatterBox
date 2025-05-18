@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import validator from '../validator/validator'
-import model from '../model/model'
-import { Group, GroupMember } from '../interfaces/interface'
-import keyController from '../security/KeysController'
+import validator from '@/validator/validator'
+import model from '@/model/model'
+import { Group, GroupMember } from '@/interfaces/interface'
+import keyController from '@/security/KeysController'
 
 
 const groupDetails = async (group: string) => {

@@ -1,6 +1,6 @@
-import webPush from '../config/WebPusher';
+import webPush from '@/config/WebPusher';
 import { Request, Response } from "express";
-import model from '../model/model';
+import model from '@/model/model';
 
 const webPusherController = async (req: Request, res: Response) => {
     try {

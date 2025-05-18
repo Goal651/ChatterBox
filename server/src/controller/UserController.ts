@@ -1,12 +1,12 @@
 import { Request, Response } from "express"
-import validator from "../validator/validator"
-import model from "../model/model"
-import { User } from "../interfaces/interface"
+import validator from "@/validator/validator"
+import model from "@/model/model"
+import { User } from "@/interfaces/interface"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import keyController from "../security/KeysController"
-import decryptionController from "../security/Decryption"
-import emailService from "../services/emailService"
+import keyController from "@/security/KeysController"
+import decryptionController from "@/security/Decryption"
+import emailService from "@/services/emailService"
 
 const generateVerificationToken = (userId: string) => {
     return jwt.sign({ userId }, process.env.JWT_SECRET as string, { expiresIn: "1h" })
@@ -194,7 +194,7 @@ const updateUser = async (req: Request, res: Response) => {
         if (error) {
             res.status(200).json({ error: error.details[0], isError: true })
             return
-        }
+        } 
         await model.User.findByIdAndUpdate(userId, { username: value.username, names: value.names, email: value.email })
         res.status(200).json({ message: 'user updated', isError: false })
     } catch (err) { res.status(500).json({ message: 'server error ', err }) }

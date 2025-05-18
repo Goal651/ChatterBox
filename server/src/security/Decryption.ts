@@ -1,5 +1,5 @@
 import crypto from 'crypto'
-import model from '../model/model'
+import model from '@/model/model'
 
 const getPrivateKey = async (id: string): Promise<string | undefined> => {
     try {

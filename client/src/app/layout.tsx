@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import SideBar from '../components/shared/sidebar';
 import { useNavigate } from 'react-router-dom';
-import { notify } from '../utils/NotificationService';
+import { notify } from '@/utils/NotificationService';
 import { fetchUserProfile } from '@/api/UserApi';
 
 export default function Layout({ children }: { children: ReactNode }) {
