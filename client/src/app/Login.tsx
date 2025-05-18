@@ -1,5 +1,5 @@
 import { FaApple, FaGoogle, FaXTwitter } from 'react-icons/fa6'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { loginApi } from '@/api/AuthApi'
 import { notify } from '@/utils/NotificationService'
@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const route=useNavigate()
 
   const onLogin = async () => {
     try {
@@ -21,6 +22,7 @@ export default function LoginPage() {
         notify('Logged in successfully', "success")
         localStorage.setItem('loggedIn', 'true')
         localStorage.setItem('token', response.token)
+        route('/')
       }
       setIsLoading(false)
     } catch (error) {
