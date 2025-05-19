@@ -35,7 +35,7 @@ export default function SideBar() {
         if (user) setInitialCurrentUser(JSON.parse(user))
     }, [])
     return (
-        <div className="flex flex-col h-full max-w-24 justify-between p-4 border-r-2 border-[#252525] bg-[#0f0f0f]">
+        <div className="flex flex-col h-full max-w-[10%] justify-between p-4 border-r-2 border-[#252525] bg-[#0f0f0f]">
             <SideBarLocations />
             <SideBarSetting initialCurrentUser={initialCurrentUser} />
         </div>

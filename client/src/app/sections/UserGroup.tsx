@@ -33,7 +33,7 @@ export default function UserGroup({ loading }: { loading: boolean }) {
         }
     }, [socket])
     return (
-        <div className={`flex flex-col p-2 w-2xl h-screen gap-y-5`}>
+        <div className={`flex flex-col p-2 w-[30%] h-screen gap-y-5`}>
             <SearchInput
                 searchTerm={searchTerm}
                 onSearchChange={(e) => setSearchTerm(e.target.value)}

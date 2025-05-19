@@ -62,7 +62,7 @@ export default function ChatSection() {
     }
 
     return (
-        <div className="flex flex-col h-screen w-6xl relative">
+        <div className="flex flex-col h-screen w-[70%] relative">
             {user && userId ? (
                 <>
                     <ChatHeader user={user} />
