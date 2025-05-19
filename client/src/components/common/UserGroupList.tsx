@@ -1,6 +1,6 @@
 import { UserGroupListProps } from "../../interfaces/interfaces"
-import UserComponent from "../userGroup/User"
-import GroupComponent from "../userGroup/Group"
+import UserComponent from "../user/User"
+import GroupComponent from "../group/Group"
 
 export default function UserGroupList({ users, groups, tab, loading, onlineUsers }: UserGroupListProps) {
 

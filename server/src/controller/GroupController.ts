@@ -2,7 +2,6 @@ import { Request, Response } from 'express'
 import validator from '@/validator/validator'
 import model from '@/model/model'
 import { Group, GroupMember } from '@/interfaces/interface'
-import keyController from '@/security/KeysController'
 
 
 const groupDetails = async (group: string) => {
@@ -35,12 +34,10 @@ const createGroup = async (req: Request, res: Response) => {
 
         const { groupName, description, members } = value as {
             groupName: string
-            image: string
+            image?: string
             description: string
-            members: string[]
+            members: Set<string>
         }
-
-
 
         // Check if group name is already taken
         const existingGroup = await model.Group.findOne({ groupName }).select('_id')
@@ -49,8 +46,9 @@ const createGroup = async (req: Request, res: Response) => {
             return
         }
 
-        // Ensure the creator is in the group and remove duplicates
-        const uniqueMembers = Array.from(new Set([...members, userId]))
+        // Ensure the creator is in the group 
+        members.add(userId)
+        const uniqueMembers = Array.from(members)
 
         // Assign roles (admin for creator, member for others)
         const membersToBeSaved = uniqueMembers.map((member) => ({
@@ -58,21 +56,11 @@ const createGroup = async (req: Request, res: Response) => {
             role: member === userId ? 'admin' : 'member',
         }))
 
-        // Generate cryptographic keys
-        const keys = keyController.generateGroupKeys()
-        if (!keys || !keys.aesKey || !keys.iv || !keys.encryptedPrivateKey) {
-            res.status(200).json({ message: 'Group creatioon failed please try again later', isError: true })
-            return
-        }
-
         // Create and save the new group
         const newGroup = new model.Group({
             groupName,
             description,
             members: membersToBeSaved,
-            aesKey: keys.aesKey.toString('hex'),
-            iv: keys.iv.toString('hex'),
-            encryptedPrivateKey: keys.encryptedPrivateKey,
         })
 
         await Promise.all([
@@ -83,8 +71,7 @@ const createGroup = async (req: Request, res: Response) => {
             ),
         ])
 
-        res.status(200).json({ message: 'Group created successfully', isError: false })
-
+        res.status(200).json({ group: newGroup.toObject(), isError: false })
     } catch (err) {
         console.error('Error creating group:', err)
         res.status(500).json({ message: 'An internal server error occurred' })
@@ -233,7 +220,7 @@ const updateGroup = async (req: Request, res: Response) => {
         const group = await model.Group.findById(groupId)
 
         if (!group) {
-            res.status(200).json({ message: 'Group not found. Please try again later',isError: true })
+            res.status(200).json({ message: 'Group not found. Please try again later', isError: true })
             return
         }
 
@@ -261,9 +248,9 @@ const updateGroup = async (req: Request, res: Response) => {
             { $addToSet: { groups: groupId } }
         )
 
-        res.status(200).json({ message: 'Group updated successfully',isError: false })
+        res.status(200).json({ message: 'Group updated successfully', isError: false })
     } catch (err) {
-        res.status(500).json({ message: 'Server error'})
+        res.status(500).json({ message: 'Server error' })
     }
 }
 

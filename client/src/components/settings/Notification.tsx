@@ -1,7 +1,20 @@
+import { ChangeEvent } from "react";
 import { FaMobileAlt } from "react-icons/fa";
-import { FaBell, FaEnvelope,} from "react-icons/fa6";
+import { FaBell, FaEnvelope, } from "react-icons/fa6";
 
 export function SettingsNotifications() {
+
+    const toogleNotification = (e: ChangeEvent<HTMLInputElement>) => {
+        const isEnabled = e.target.checked
+        if (isEnabled) {
+            Notification.requestPermission(() => {
+                new Notification('Test notification', {
+                    body: 'Notification working',
+                })
+            })
+        }
+    }
+
     return (
         <div className="flex flex-col gap-y-4 w-full h-full">
             <div className="text-xl font-bold">Notifications</div>
@@ -11,7 +24,7 @@ export function SettingsNotifications() {
                     <FaBell className="w-6 h-6" />
                     <div className="flex flex-col gap-y-1">
                         <div className="font-semibold">Push Notifications</div>
-                        <input type="checkbox" className="toggle toggle-success" />
+                        <input onChange={toogleNotification} type="checkbox" className="toggle toggle-success" />
                     </div>
                 </div>
 

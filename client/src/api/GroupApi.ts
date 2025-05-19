@@ -1,13 +1,20 @@
 import axios from "axios"
 import { serverUrl } from "../constants/constant";
+import { GlobalApiErrorHandler } from "@/error/ApiError";
+import { notify } from "@/utils/NotificationService";
 
 export async function createGroupApi(groupData: object) {
-    const response = await axios.post(serverUrl + '/create-group', groupData, {
-        headers: {
-            accesstoken: localStorage.getItem('token'),
-        }
-    });
-    return response.data;
+    try {
+        const response = await axios.post(serverUrl + '/createGroup', groupData, {
+            headers: {
+                accesstoken: localStorage.getItem('token'),
+            }
+        })
+        localStorage.setItem('group', response.data.group)
+        notify('Group created successfully', 'success')
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
 }
 
 export async function getGroupsApi() {
