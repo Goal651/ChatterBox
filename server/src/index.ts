@@ -41,7 +41,7 @@ app.use("/api/uploadthing", createRouteHandler({
 }));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URL as string)
+mongoose.connect(process.env.MONGO_URI as string)
     .then(async () => {
         server.listen(3001, () => {
             console.log('Server is running on port 3001');
