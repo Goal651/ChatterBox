@@ -1,8 +1,6 @@
 import { Socket, Server } from 'socket.io'
 import SocketAuthController from '@/auth/SocketAuthController'
 import model from '@/model/model'
-import WebPusherController from '@/controller/WebPusherController'
-import encryptionController from '@/security/Encryption'
 import {
     GroupMessageData,
     MessageSeenData,
@@ -92,35 +90,29 @@ const SocketController = (io: Server) => {
                     socket.emit('messageError', 'Failed to send message')
                 }
             })
+            
 
             socket.on("groupMessage", async (data: GroupMessageData) => {
+                console.log(data)
                 try {
-                    const { group, message, messageType, messageId, sender } = data
-                    const senderName = await model.User.findById(userId)
-                    const groupName = await model.Group.findById(group).select('groupName')
-
+                    const { group, message, type, sender } = data
                     const newMessage = new model.GMessage({
                         sender: userId,
                         group: group,
                         message: message,
-                        type: messageType,
+                        type
                     })
 
                     await newMessage.save()
 
-                    const sentMessage = {
-                        ...newMessage.toObject(),
-                        message,
-                        sender: sender,
-                        group: group,
-                    }
 
-                    socket.to(group).emit("receiveGroupMessage", { message: sentMessage, groupName: groupName?.groupName, senderName: senderName?.username })
+                    socket.to(group).emit("receiveGroupMessage", { message: newMessage })
                 } catch (error) {
                     console.error(error)
                     socket.emit('messageError', 'Failed to send message')
                 }
             })
+
 
             socket.on('messageSeen', async (data: MessageSeenData) => {
                 try {
@@ -147,9 +139,7 @@ const SocketController = (io: Server) => {
             socket.on('editMessage', async (data: EditMessageData) => {
                 try {
                     const { messageId, message, receiverId } = data
-                    const senderUserName = await model.User.findById(userId).select('username publicKey') as unknown as { username: string, publicKey: string }
-                    const encryptedMessage = await encryptionController.encryptMessage(senderUserName.publicKey, message)
-                    await model.Message.findByIdAndUpdate(messageId, { message: encryptedMessage, edited: true })
+                    await model.Message.findByIdAndUpdate(messageId, { message, edited: true })
                     emitToUserSockets(receiverId, 'messageEdited', { messageId, message })
                 } catch (error) {
                     console.error(error)

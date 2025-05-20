@@ -2,22 +2,22 @@ import Picker from "@emoji-mart/react";
 import data from '@emoji-mart/data';
 import { FaCamera, FaLink, FaPaperPlane, FaRegFaceLaugh } from "react-icons/fa6";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import { Message } from "@/interfaces/interfaces";
+import { GroupMessage, Message } from "@/types/interfaces";
 import { notify } from "@/utils/NotificationService";
 import { useSocket } from "@/context/SocketContext";
 
-interface ChatFooterParams {
-    addNewMessage: (message: Message) => void,
+interface GroupChatFooterParams {
+    addNewMessage: (message: GroupMessage) => void,
     sender: string | undefined,
-    receiver: string | null
+    group: string | null
 
 }
 
-export default function ChatFooter({
+export default function GroupChatFooter({
     addNewMessage,
-    receiver,
+    group,
     sender
-}: ChatFooterParams) {
+}: GroupChatFooterParams) {
     const { socket } = useSocket()
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
@@ -25,27 +25,25 @@ export default function ChatFooter({
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
 
-    const socketSendMessage = (data: Message) => {
+    const socketSendMessage = (data: GroupMessage) => {
         if (socket) {
-            socket.emit('message', data)
-            
+            socket.emit('groupMessage', data)
         }
     }
 
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        if (!sender || !receiver) return notify('Error Occured! Try reloading', 'error')
+        if (!sender || !group) return notify('Error Occured! Try reloading', 'error')
         setMessage('')
         setShowEmojiPicker(false)
-        const newMessage: Message = {
+        const newMessage: GroupMessage = {
             _id: new Date().getMilliseconds(),
             sender,
-            receiver,
+            group,
+            seen: [],
             message,
-            isMessageSeen: false,
             edited: false,
             isMessageSent: false,
-            isMessageReceived: false,
             reactions: [],
             replying: null,
             createdAt: new Date(),
@@ -57,12 +55,11 @@ export default function ChatFooter({
 
     useEffect(() => {
         if (socket) {
-            socket.on('receiveMessage', (data:Message) => {
-                console.log(data)
+            socket.on('receiveGroupMessage', (data: GroupMessage) => {
                 addNewMessage(data)
             })
             return () => {
-                socket.off('receiveMessage')
+                socket.off('receiveGroupMessage')
             }
         }
     }, [])

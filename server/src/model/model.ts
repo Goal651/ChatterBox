@@ -17,8 +17,8 @@ const userSchema = new mongoose.Schema({
         default: []
     }],
     isVerified: { type: Boolean, default: false },
-    publicKey: { type: String, required: true },
-    privateKey: { type: String, required: true },
+    // publicKey: { type: String, required: true },
+    // privateKey: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
 });
 
@@ -34,9 +34,9 @@ const groupSchema = new mongoose.Schema({
         role: { type: String, default: '' }
     }],
     description: { type: String, default: '' },
-    aesKey: { type: String, required: true },
-    iv: { type: String, required: true },
-    encryptedPrivateKey: { type: String, required: true },
+    // aesKey: { type: String, required: true },
+    // iv: { type: String, required: true },
+    // encryptedPrivateKey: { type: String, required: true },
     createdAt: { type: Date, default: Date.now, }
 });
 

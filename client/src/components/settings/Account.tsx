@@ -1,7 +1,7 @@
 import { FaUpload } from "react-icons/fa6";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 import { useState } from "react";
-import { User } from "@/interfaces/interfaces";
+import { User } from "@/types/interfaces";
 
 export default function SettingsAccount() {
        const [user, setUser] = useState<User | null>(() => {

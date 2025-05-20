@@ -4,7 +4,6 @@ import model from "@/model/model"
 import { User } from "@/interfaces/interface"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
-import keyController from "@/security/KeysController"
 import emailService from "@/services/emailService"
 
 const generateVerificationToken = (userId: string) => {
@@ -27,15 +26,12 @@ const signup = async (req: Request, res: Response) => {
             return
         }
 
-        const { publicKey, privateKey } = await keyController.generateKeyPair() as { publicKey: string, privateKey: string }
         const salt = await bcrypt.genSalt(10)
         const hash = await bcrypt.hash(password, salt)
         const newUser = new model.User({
             email,
             password: hash,
-            username,
-            publicKey,
-            privateKey,
+            username
         })
         const verificationToken = generateVerificationToken(newUser._id.toString())
         const emailObject = {

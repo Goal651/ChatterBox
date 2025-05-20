@@ -1,7 +1,7 @@
 export interface GroupMessageData {
     group: string;
     message: string;
-    messageType: string;
+    type: string;
     messageId: string;
     sender: string;
 }

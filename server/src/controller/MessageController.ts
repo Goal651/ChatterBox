@@ -46,10 +46,6 @@ const getGMessage = async (req: Request, res: Response) => {
 
 
         const messages = await model.GMessage.find({ group })
-            .populate([
-                { path: 'replying' },
-                { path: 'sender', select: '-privateKey -publicKey -password' }
-            ])
             .sort({ createdAt: -1 }) as unknown[] as GroupMessage[]
 
         if (messages.length <= 0) {
@@ -58,7 +54,7 @@ const getGMessage = async (req: Request, res: Response) => {
         }
 
 
-        res.status(200).json({ messages, isError: false })
+        res.status(200).json({ messages:messages.reverse(), isError: false })
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Reloading...' })

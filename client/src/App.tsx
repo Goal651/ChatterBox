@@ -13,6 +13,7 @@ import { SettingsNotifications } from './components/settings/Notification'
 import SettingsPreferences from './components/settings/Preferences'
 import { SettingsDangerZone } from './components/settings/DangerZone'
 import { Test } from './test/Tester'
+import NewGroup from './app/NewGroup'
 
 const LoginPage = lazy(() => import('./app/Login'))
 const SignUpPage = lazy(() => import('./app/Signup'))
@@ -43,9 +44,9 @@ export default function App() {
                         </Routes>
                       </SettingsLayout>
                     } />
-
-                    <Route path="/chat/:userId" element={<Home />} />
-                    <Route path="/*" element={<Home />} />
+                    <Route path='/newGroup' element={<NewGroup />} />
+                    <Route path="/c/:tab/:id" element={<Home />} />
+                    <Route path="*" element={<Home />} />
                   </Routes>
                 </Layout>
               } />

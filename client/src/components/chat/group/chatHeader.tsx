@@ -1,8 +1,8 @@
 import { FaPhone, FaVideo } from "react-icons/fa6";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
-import { User } from "@/interfaces/interfaces";
+import { Group} from "@/types/interfaces";
 
-export default function ChatHeader({ user }: { user: User }) {
+export default function GroupChatHeader({ group }: { group: Group }) {
 
     return (
         <div className="flex justify-between text-gray-300 w-full items-center p-2">
@@ -11,16 +11,16 @@ export default function ChatHeader({ user }: { user: User }) {
             <div className="flex gap-x-4 items-center">
                 <div className="btn-lg btn-square rounded-full bg-black flex items-center justify-center font-bold">
                     <ProfilePicturePreview
-                        username={user.username}
+                        username={group.groupName}
                         textSize="5xl"
                     />
                 </div>
                 <div>
-                    {user.username}
+                    {group.groupName}
                 </div>
             </div>
             <div>
-                {new Date(user.lastActiveTime).toDateString()}
+                {new Date().toDateString()}
             </div>
 
             {/* calling components */}

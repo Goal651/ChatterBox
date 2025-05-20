@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Group, User } from '../../interfaces/interfaces';
+import { Group, User } from '../../types/interfaces';
 import { useParams } from 'react-router-dom';
 import { updateGroup } from '../../api/GroupApi';
 
