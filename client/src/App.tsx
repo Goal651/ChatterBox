@@ -45,8 +45,8 @@ export default function App() {
                       </SettingsLayout>
                     } />
                     <Route path='/newGroup' element={<NewGroup />} />
-                    <Route path="/chat/:userId" element={<Home />} />
-                    <Route path="/*" element={<Home />} />
+                    <Route path="/c/:tab/:id" element={<Home />} />
+                    <Route path="*" element={<Home />} />
                   </Routes>
                 </Layout>
               } />

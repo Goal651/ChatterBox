@@ -48,14 +48,13 @@ export interface Group {
 export interface UserGroupListProps {
     users: User[]
     groups: Group[]
-    tab: 'users' | 'groups'
     loading: boolean,
     onlineUsers: string[]
 }
 
 export interface GroupMessage {
     _id: string | number,
-    sender: User,
+    sender: string,
     message: string,
     group: string,
     seen: [{

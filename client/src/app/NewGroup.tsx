@@ -1,11 +1,32 @@
+import { createGroup } from "@/api/GroupApi";
 import SelectableUsers from "@/components/user/groupCreation";
-import { useState } from "react";
-import { FaApple, FaGoogle, FaPeopleGroup, FaXTwitter } from "react-icons/fa6";
-import { Link } from "react-router-dom";
+import { FormEvent, useEffect, useState } from "react";
+import { FaPeopleGroup } from "react-icons/fa6";
 
 export default function NewGroup() {
     const [groupName, setGroupName] = useState('')
+    const [description, setDescription] = useState('')
+    const [members, setMembers] = useState<string[]>([])
     const [isLoading, setIsLoading] = useState(false)
+
+
+    const handleSelectedUsers = (data: string[]) => setMembers(data)
+
+    const onDataSubmit = async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        setIsLoading(true)
+
+        const formData = { groupName, description, members }
+        try {
+            await createGroup(formData)
+            setIsLoading(false)
+            setGroupName('')
+        
+        } catch (error) {
+            console.error(error)
+            setIsLoading(false)
+        }
+    }
 
     return (
         <div className="bg-[#0f0f0f] w-full h-full flex items-center justify-center">
@@ -21,7 +42,7 @@ export default function NewGroup() {
                 </div>
 
                 {/* Form */}
-                <form className='flex flex-col gap-y-4 w-full mb-6'>
+                <form onSubmit={onDataSubmit} className='flex flex-col gap-y-4 w-full mb-6'>
 
                     {/* Username */}
                     <label className="input border-0  bg-[#0e0e0e] w-full rounded-lg  outline-0 focus-within:outline-0">
@@ -37,7 +58,9 @@ export default function NewGroup() {
                                 <circle cx="12" cy="7" r="4"></circle>
                             </g>
                         </svg>
-                        <input type="text" className="" placeholder="Groop name"
+                        <input type="text" className="" placeholder="Group name"
+                            onChange={(e) => setGroupName(e.target.value)}
+                            value={groupName}
                         />
                     </label>
 
@@ -55,12 +78,14 @@ export default function NewGroup() {
                                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
                             </g>
                         </svg>
-                        <input type="email" className="" placeholder="details"
+                        <input type="text" className="" placeholder="description"
+                            onChange={(e) => setDescription(e.target.value)}
+                            value={description}
                         />
                     </label>
                     <div className="w-full h-96 pb-10">
                         <div className="font-semibold mb-4">Select members</div>
-                        <SelectableUsers />
+                        <SelectableUsers onSelectUsers={handleSelectedUsers} />
                     </div>
 
 
@@ -72,9 +97,6 @@ export default function NewGroup() {
                     </button>
 
                 </form>
-
-                {/* Diver */}
-                <div className="divider ">OR</div>
             </div>
         </div>
 

@@ -36,19 +36,21 @@ const createGroup = async (req: Request, res: Response) => {
             groupName: string
             image?: string
             description: string
-            members: Set<string>
+            members: string[]
         }
 
         // Check if group name is already taken
         const existingGroup = await model.Group.findOne({ groupName }).select('_id')
         if (existingGroup) {
-            res.status(400).json({ message: 'Group name is already taken', isError: true })
+            res.status(200).json({ message: 'Group name is already taken', isError: true })
             return
         }
 
+        const newMembers = new Set(members)
+
         // Ensure the creator is in the group 
-        members.add(userId)
-        const uniqueMembers = Array.from(members)
+        newMembers.add(userId)
+        const uniqueMembers = Array.from(newMembers)
 
         // Assign roles (admin for creator, member for others)
         const membersToBeSaved = uniqueMembers.map((member) => ({
@@ -62,13 +64,11 @@ const createGroup = async (req: Request, res: Response) => {
             description,
             members: membersToBeSaved,
         })
-
         await Promise.all([
             newGroup.save(),
-            model.User.updateMany(
-                { _id: { $in: uniqueMembers } },
-                { $addToSet: { groups: newGroup._id } }
-            ),
+            uniqueMembers.map(async (member) => {
+                await model.User.findByIdAndUpdate(member, { $push: { groups: newGroup._id } })
+            })
         ])
 
         res.status(200).json({ group: newGroup.toObject(), isError: false })
@@ -87,12 +87,7 @@ const getGroups = async (req: Request, res: Response) => {
             .select('groups')
             .populate({
                 path: 'groups',
-                select: 'groupName image members description',
-                populate: {
-                    path: 'members.member',
-                    select: 'username email image',
-                    model: 'User'
-                }
+                select: 'groupName image members description'
             })
 
         const groups = user?.toObject().groups as unknown as Group[]
@@ -112,7 +107,6 @@ const getGroups = async (req: Request, res: Response) => {
             const latestMessage = await model.GMessage.findOne({ group: group._id })
                 .populate('sender')
                 .sort({ createdAt: -1 })
-                .exec()
             return { ...group, files: details, latestMessage }
         }))
 

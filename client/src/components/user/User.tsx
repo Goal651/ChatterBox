@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { User } from "@/interfaces/interfaces";
+import { User } from "@/types/interfaces";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 
 
@@ -10,7 +10,7 @@ export default function UserComponent({ user, onlineUsers }: { user: User, onlin
 
     const onClick = () => {
         localStorage.setItem('selectedUser', JSON.stringify(user))
-        router('/chat/' + user._id)
+        router('/c/dm/' + user._id)
     }
 
     const isUserOnline = onlineUsers?.includes(user._id)

@@ -1,4 +1,4 @@
-import { FaCommentDots, FaPlus } from "react-icons/fa6";
+import { FaCommentDots, FaPlus, FaUserGroup } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 
@@ -17,8 +17,12 @@ export default function SideBarLocations() {
                 <FaPlus />
             </div>
             <div className="btn btn-square bg-[#252525] border-0 rounded-lg text-gray-200 font-bold shadow "
-                onClick={() => router('/chat')}  >
+                onClick={() => router('/c/dm/0')}  >
                 <FaCommentDots />
+            </div>
+            <div className="btn btn-square bg-[#252525] border-0 rounded-lg text-gray-200 font-bold shadow "
+                onClick={() => router('/c/grp/0')}  >
+                <FaUserGroup />
             </div>
 
         </div>

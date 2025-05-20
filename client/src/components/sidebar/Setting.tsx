@@ -1,5 +1,5 @@
 import { FaDoorOpen, FaGear } from "react-icons/fa6";
-import { User } from "@/interfaces/interfaces";
+import { User } from "@/types/interfaces";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 import { useNavigate } from "react-router-dom";
 

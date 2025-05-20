@@ -1,7 +1,7 @@
 import axios from "axios"
-import { serverUrl } from "../constants/constant";
-import { GlobalApiErrorHandler } from "@/error/ApiError";
-import { notify } from "@/utils/NotificationService";
+import { serverUrl } from "../constants/constant"
+import { GlobalApiErrorHandler } from "@/error/ApiError"
+import { notify } from "@/utils/NotificationService"
 
 export async function createGroupApi(groupData: object) {
     try {
@@ -22,7 +22,7 @@ export async function getGroupsApi() {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
-    });
+    })
     localStorage.setItem('groups', JSON.stringify(response.data.groups))
 }
 
@@ -31,8 +31,8 @@ export async function getGroupByNameApi(name: string) {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
-    });
-    return response.data;
+    })
+    return response.data
 }
 
 export async function editGroupProfileApi(group: string, groupData: object) {
@@ -40,8 +40,8 @@ export async function editGroupProfileApi(group: string, groupData: object) {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
-    });
-    return response.data;
+    })
+    return response.data
 }
 
 export async function addMemberApi(groupData: object) {
@@ -49,21 +49,27 @@ export async function addMemberApi(groupData: object) {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
-    });
-    return response.data;
+    })
+    return response.data
 }
 
 export async function createGroup(groupData: {
-    groupName: string;
-    description: string;
-    members: string[];
+    groupName: string
+    description: string
+    members: string[]
 }) {
-    const response = await axios.post(serverUrl + '/createGroup', groupData, {
-        headers: {
-            accesstoken: localStorage.getItem('token'),
-        }
-    });
-    return response;
+    try {
+        const response = await axios.post(serverUrl + '/createGroup', groupData, {
+            headers: {
+                accesstoken: localStorage.getItem('token'),
+            }
+        })
+        if (response.data.isError) {
+            notify(response.data.message, 'error')
+        }else notify('Group created successfully','success')
+    } catch (error) {
+        GlobalApiErrorHandler(error)
+    }
 }
 
 export async function updateGroup(group: string, groupData: object) {
@@ -71,6 +77,6 @@ export async function updateGroup(group: string, groupData: object) {
         headers: {
             accesstoken: localStorage.getItem('token'),
         }
-    });
-    return response;
+    })
+    return response
 }
