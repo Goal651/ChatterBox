@@ -63,6 +63,7 @@ export default function DmChatSection() {
 
     return (
         <div className="flex flex-col h-screen w-[70%] relative">
+            
             {user && userId ? (
                 <>
                     <DmChatHeader user={user} />

@@ -15,7 +15,9 @@ export default function DmChatBody({ messages, user, isLoading }: { messages: Me
     }, [messages])
 
     if (isLoading) return (
-        <div className="h-[90%] bg-[#252525] overflow-auto scroll-smooth overscroll-none">
+        <div className="h-[90%] bg-[#1b1a1a] overflow-auto scroll-smooth overscroll-none">
+            <img src='/bg/chat.png' className='absolute left-0 top-0 h-full w-full object-cover  opacity-1' />
+
             <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">
                 Loading...
             </div>
@@ -24,8 +26,10 @@ export default function DmChatBody({ messages, user, isLoading }: { messages: Me
 
     return (
         <div ref={messagesContainerRef}
-            className="h-[90%] bg-[#252525] overflow-auto scroll-smooth overscroll-none">
-            {messages?.length == 0||!messages ? (
+            className="h-[90%] bg-[#1b1a1a] overflow-auto scroll-smooth overscroll-none">
+            <img src='/bg/chat.png' className='absolute left-0 top-0 h-full w-full object-cover bg-transparent opacity-1' />
+
+            {messages?.length == 0 || !messages ? (
                 <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">
                     No messages found
                 </div>

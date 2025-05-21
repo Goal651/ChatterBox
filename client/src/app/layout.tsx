@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <SocketProvider status={true}>
             <div className="flex bg-[#0f0f0f] h-screen w-screen overflow-hidden">
                 <SideBar />
-                <main className='w-full h-full'>{children}</main>
+                <main className='w-full h-full relative'>{children}</main>
             </div>{/* Your app components here */}
         </SocketProvider>
     );

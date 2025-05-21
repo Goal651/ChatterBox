@@ -5,7 +5,7 @@ import { User } from "@/types/interfaces";
 export default function DmChatHeader({ user }: { user: User }) {
 
     return (
-        <div className="flex justify-between text-gray-300 w-full items-center p-2">
+        <div className="flex justify-between text-gray-300 w-full items-center p-2 bg-[#0f0f0f] z-5">
             {/* Profile section */}
 
             <div className="flex gap-x-4 items-center">

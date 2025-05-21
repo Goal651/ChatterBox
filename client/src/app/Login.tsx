@@ -51,8 +51,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-[#0f0f0f] h-screen w-screen flex items-center justify-center">
-      <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl'>
+    <div className="bg-[#0f0f0f]  h-screen w-screen flex items-center justify-center">
+      <img src='/bg/login.png' className='absolute left-0 top-o h-screen w-screen object-cover bg-transparent opacity-5'/>
+      <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl z-5'>
         {/* App icon */}
         <div className='btn btn-xl btn-square rounded-full mb-8'>
           <img src="/AppIcon.png" alt="" />

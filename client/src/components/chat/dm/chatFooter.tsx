@@ -68,7 +68,7 @@ export default function DmChatFooter({
     }, [])
 
     return (
-        <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4"
+        <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4 z-5 bg-[#0f0f0f]"
             onSubmit={handleOnSendMessage}>
             <div className="flex gap-x-2">
                 <div className="btn btn-square border-0 shadow  bg-[#252525]">
