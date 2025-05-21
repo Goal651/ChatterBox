@@ -2,6 +2,7 @@ import { getGroupMessagesApi } from "@/api/MessageApi"
 import GroupChatBody from "@/components/chat/group/chatBody"
 import GroupChatFooter from "@/components/chat/group/chatFooter"
 import GroupChatHeader from "@/components/chat/group/chatHeader"
+import GroupSetting from "@/components/group/groupSetting"
 import { Group, GroupMessage, User } from "@/types/interfaces"
 import { useEffect, useState } from "react"
 import { useParams } from "react-router-dom"
@@ -11,6 +12,7 @@ export default function GroupChatSection() {
     const params = useParams()
     const [groupId, setGroupId] = useState('')
     const [loadingMessages, setLoadingMessages] = useState(true)
+    const [showSetting, setShowSetting] = useState(false)
     const [group, setGroup] = useState<Group | null>(() => {
         const storedUser = localStorage.getItem('selectedGroup')
         return storedUser ? JSON.parse(storedUser) : null
@@ -35,7 +37,7 @@ export default function GroupChatSection() {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                 if(!loggedUser){
+                if (!loggedUser) {
                     const storedUser = localStorage.getItem('authenticatedUser')
                     setLoggedUser(storedUser ? JSON.parse(storedUser) : null)
                 }
@@ -65,14 +67,20 @@ export default function GroupChatSection() {
             return [...prev, message]
         })
     }
-    if (!loggedUser) return 
+    if (!loggedUser||!group) return
+
+    if (showSetting) return (
+        <div className="flex flex-col h-screen w-[70%] relative">
+            <GroupSetting closeSetting={()=> setShowSetting(false) } group={group}/>
+        </div>
+    )
 
 
     return (
         <div className="flex flex-col h-screen w-[70%] relative">
             {group && groupId ? (
                 <>
-                    <GroupChatHeader group={group} />
+                    <GroupChatHeader group={group} showSetting={(data) => setShowSetting(data)} />
                     <GroupChatBody
                         messages={messages}
                         user={loggedUser}

@@ -1,14 +1,15 @@
 import { FaPhone, FaVideo } from "react-icons/fa6";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
-import { Group} from "@/types/interfaces";
+import { Group } from "@/types/interfaces";
 
-export default function GroupChatHeader({ group }: { group: Group }) {
+export default function GroupChatHeader({ group, showSetting }: { group: Group, showSetting: (data: boolean) => void }) {
 
     return (
         <div className="flex justify-between text-gray-300 w-full items-center p-2 bg-[#0f0f0f] z-5">
             {/* Profile section */}
 
-            <div className="flex gap-x-4 items-center">
+            <div className="flex gap-x-4 items-center"
+            onClick={() => showSetting(true)}>
                 <div className="btn-lg btn-square rounded-full bg-black flex items-center justify-center font-bold">
                     <ProfilePicturePreview
                         username={group.groupName}
