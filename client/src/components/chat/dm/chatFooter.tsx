@@ -21,14 +21,16 @@ export default function DmChatFooter({
     const { socket } = useSocket()
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
-    const [messageSender, setMessageSender] = useState<string | null>(sender||'')
-    const [messageReceiver, setMessageReceiver] = useState<string | null>(receiver||'')
+    const [messageSender, setMessageSender] = useState<string | null>(sender || '')
+    const [messageReceiver, setMessageReceiver] = useState<string | null>(receiver || '')
 
     useEffect(() => {
         if (!sender || !receiver) return
         setMessageSender(sender)
         setMessageReceiver(receiver)
     }, [sender, receiver])
+
+
 
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
@@ -47,8 +49,8 @@ export default function DmChatFooter({
         setShowEmojiPicker(false)
         const newMessage: Message = {
             _id: new Date().getMilliseconds(),
-            sender:messageSender,
-            receiver:messageReceiver,
+            sender: messageSender,
+            receiver: messageReceiver,
             message,
             isMessageSeen: false,
             edited: false,
@@ -66,14 +68,14 @@ export default function DmChatFooter({
     useEffect(() => {
         if (socket) {
             socket.on('receiveMessage', (data: Message) => {
-                console.log(data.sender," ",messageReceiver)
+                        console.log('receiver', messageReceiver, "origin", receiver)
                 if (data.sender == messageReceiver) addNewMessage(data)
             })
             return () => {
                 socket.off('receiveMessage')
             }
         }
-    }, [])
+    }, [messageSender,messageReceiver])
 
     return (
         <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4 z-5 bg-[#0f0f0f]"
