@@ -56,7 +56,7 @@ export default function DmChatSection() {
             }
         }
         fetchMessages()
-    }, [userId])
+    }, [loggedUser, userId])
 
     const addNewMessage = (message: Message) => {
         setMessages((prev) => {

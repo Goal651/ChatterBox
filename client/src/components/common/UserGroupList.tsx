@@ -45,7 +45,7 @@ export default function UserGroupList({ users, groups, loading, onlineUsers }: U
         return (
             <div className="flex flex-col gap-y-2 overflow-y-auto h-full">
                 {groups.map((group) => (
-                    <GroupComponent group={group} />
+                    <GroupComponent key={group._id} group={group} />
                 ))}
             </div>
         )
