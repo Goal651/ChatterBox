@@ -10,7 +10,7 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
             <img src='/bg/all.png' className='absolute left-0 top-0 h-full w-full object-cover  opacity-1' />
 
             <SettingNavigation />
-            <div>{children}</div>
+            <div className="z-5">{children}</div>
         </div>
     )
 }

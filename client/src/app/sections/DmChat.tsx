@@ -26,6 +26,7 @@ export default function DmChatSection() {
         const { id } = params as { id: string }
         setUserId(id)
         const storedUser = localStorage.getItem('selectedUser')
+        console.log('storedUser', storedUser)
         setUser(storedUser ? JSON.parse(storedUser) : null)
     }, [params])
 

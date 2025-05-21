@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react"
 export default function DmChatBody({ messages, user, isLoading }: { messages: Message[] | null, user: User, isLoading: boolean }) {
     const messagesContainerRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
-        console.log('messages changed')
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTo({
                 top: messagesContainerRef.current.scrollHeight,
