@@ -3,7 +3,6 @@ import SideBar from '../components/sidebar';
 import { useNavigate } from 'react-router-dom';
 import { notify } from '@/utils/NotificationService';
 import { fetchUserProfile } from '@/api/UserApi';
-import { SocketProvider } from '@/context/SocketContext';
 
 export default function Layout({ children }: { children: ReactNode }) {
     const router = useNavigate()
@@ -23,13 +22,12 @@ export default function Layout({ children }: { children: ReactNode }) {
             router('/login')
         }
     }, [router])
-    
+
     return (
-        <SocketProvider status={true}>
-            <div className="flex bg-[#0f0f0f] h-screen w-screen overflow-hidden">
-                <SideBar />
-                <main className='w-full h-full relative'>{children}</main>
-            </div>{/* Your app components here */}
-        </SocketProvider>
+
+        <div className="flex bg-[#0f0f0f] h-screen w-screen overflow-hidden">
+            <SideBar />
+            <main className='w-full h-full relative'>{children}</main>
+        </div>
     );
 };

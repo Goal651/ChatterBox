@@ -34,6 +34,10 @@ export default function DmChatSection() {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
+                if(!loggedUser){
+                    const storedUser = localStorage.getItem('authenticatedUser')
+                    setLoggedUser(storedUser ? JSON.parse(storedUser) : null)
+                }
                 if (!userId||userId=='0') return
                 setMessages(null)
                 setLoadingMessages(true)

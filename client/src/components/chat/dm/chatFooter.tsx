@@ -34,7 +34,10 @@ export default function DmChatFooter({
 
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+                    console.log("sender",sender,"receiver",receiver)
+
         if (!sender || !receiver) return notify('Error Occured! Try reloading', 'error')
+            console.log("sender",sender,"receiver",receiver)
         setMessage('')
         setShowEmojiPicker(false)
         const newMessage: Message = {
