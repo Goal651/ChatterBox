@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function SettingNavigation() {
     return (
-        <div className="flex flex-col gap-y-4 overflow-auto scroll-smooth">
+        <div className="flex flex-col gap-y-4 overflow-auto scroll-smooth z-5">
 
             {/* Section: Your Account */}
             <div className="flex flex-col gap-y-4">

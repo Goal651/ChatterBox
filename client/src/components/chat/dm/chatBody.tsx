@@ -5,7 +5,6 @@ import { useEffect, useRef } from "react"
 export default function DmChatBody({ messages, user, isLoading }: { messages: Message[] | null, user: User, isLoading: boolean }) {
     const messagesContainerRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
-        console.log('messages changed')
         if (messagesContainerRef.current) {
             messagesContainerRef.current.scrollTo({
                 top: messagesContainerRef.current.scrollHeight,
@@ -26,8 +25,7 @@ export default function DmChatBody({ messages, user, isLoading }: { messages: Me
 
     return (
         <div ref={messagesContainerRef}
-            className="h-[90%] bg-[#1b1a1a] overflow-auto scroll-smooth overscroll-none">
-            <img src='/bg/chat.png' className='absolute left-0 top-0 h-full w-full object-cover bg-transparent opacity-1' />
+            className="h-[90%] bg-[#1b1a1a] overflow-auto scroll-smooth overscroll-none ">
 
             {messages?.length == 0 || !messages ? (
                 <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">

@@ -25,7 +25,6 @@ export default function GroupChatBody({ messages, user, isLoading }: { messages:
     return (
         <div ref={messagesContainerRef}
             className="h-[90%] bg-[#1b1a1a] overflow-auto scroll-smooth overscroll-none">
-            <img src='/bg/chat1.png' className='absolute left-0 top-0 h-full w-full object-cover  opacity-10' />
 
             {messages?.length == 0 || !messages ? (
                 <div className="flex font-bold text-gray-200 text-lg text-center h-full items-center justify-center">

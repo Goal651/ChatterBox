@@ -102,11 +102,16 @@ const getGroups = async (req: Request, res: Response) => {
             .select('groups')
             .populate({
                 path: 'groups',
-                select: 'groupName image members description'
+                select: 'groupName image members description',
+                populate:{
+                    path:'members.member',
+                    select: '-password -privateKey -publicKey -groups',
+                }
             })
 
         const groups = user?.toObject().groups as unknown as Group[]
 
+        console.log(groups[0].members)
         if (!groups) {
             res.status(200).json({ groups: [], isError: false })
             return

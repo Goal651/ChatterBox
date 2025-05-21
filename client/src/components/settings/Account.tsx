@@ -11,7 +11,7 @@ export default function SettingsAccount() {
     
 
     return (
-        <div className="flex flex-col gap-y-10 w-full h-full">
+        <div className="flex flex-col gap-y-10 w-full h-full ">
             {/* Header */}
             <div className="text-2xl font-bold text-center">Account</div>
 

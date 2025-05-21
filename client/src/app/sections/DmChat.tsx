@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
 import { Message, User } from "@/types/interfaces"
 import { getMessagesApi } from "@/api/MessageApi"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import DmChatHeader from "@/components/chat/dm/chatHeader"
 import DmChatBody from "@/components/chat/dm/chatBody"
 import DmChatFooter from "@/components/chat/dm/chatFooter"
 
 export default function DmChatSection() {
     const params = useParams()
+    const route = useNavigate()
     const [userId, setUserId] = useState('')
     const [loadingMessages, setLoadingMessages] = useState(true)
     const [user, setUser] = useState<User | null>(() => {
@@ -27,18 +28,18 @@ export default function DmChatSection() {
         setUserId(id)
         const storedUser = localStorage.getItem('selectedUser')
         setUser(storedUser ? JSON.parse(storedUser) : null)
-    }, [params])
+    }, [params, route])
 
     const [messages, setMessages] = useState<Message[] | null>(null)
 
     useEffect(() => {
         const fetchMessages = async () => {
             try {
-                if(!loggedUser){
+                if (!loggedUser) {
                     const storedUser = localStorage.getItem('authenticatedUser')
                     setLoggedUser(storedUser ? JSON.parse(storedUser) : null)
                 }
-                if (!userId||userId=='0') return
+                if (!userId || userId == '0') return
                 setMessages(null)
                 setLoadingMessages(true)
                 const messages = await getMessagesApi(userId)
@@ -67,7 +68,7 @@ export default function DmChatSection() {
 
     return (
         <div className="flex flex-col h-screen w-[70%] relative">
-            
+
             {user && userId ? (
                 <>
                     <DmChatHeader user={user} />

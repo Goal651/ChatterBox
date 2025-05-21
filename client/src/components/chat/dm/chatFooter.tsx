@@ -21,6 +21,16 @@ export default function DmChatFooter({
     const { socket } = useSocket()
     const [showEmojiPicker, setShowEmojiPicker] = useState(false)
     const [message, setMessage] = useState('')
+    const [messageSender, setMessageSender] = useState<string | null>(sender || '')
+    const [messageReceiver, setMessageReceiver] = useState<string | null>(receiver || '')
+
+    useEffect(() => {
+        if (!sender || !receiver) return
+        setMessageSender(sender)
+        setMessageReceiver(receiver)
+    }, [sender, receiver])
+
+
 
     const handleMessageInputChange = (e: ChangeEvent<HTMLInputElement>) => setMessage(e.target.value)
     const handleEmojiSelect = (data: { native: string }) => setMessage((prev) => (prev + data.native))
@@ -28,22 +38,19 @@ export default function DmChatFooter({
     const socketSendMessage = (data: Message) => {
         if (socket) {
             socket.emit('message', data)
-            
+
         }
     }
 
     const handleOnSendMessage = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-                    console.log("sender",sender,"receiver",receiver)
-
-        if (!sender || !receiver) return notify('Error Occured! Try reloading', 'error')
-            console.log("sender",sender,"receiver",receiver)
+        if (!messageSender || !messageReceiver) return notify('Error Occured! Try reloading', 'error')
         setMessage('')
         setShowEmojiPicker(false)
         const newMessage: Message = {
             _id: new Date().getMilliseconds(),
-            sender,
-            receiver,
+            sender: messageSender,
+            receiver: messageReceiver,
             message,
             isMessageSeen: false,
             edited: false,
@@ -60,15 +67,14 @@ export default function DmChatFooter({
 
     useEffect(() => {
         if (socket) {
-            socket.on('receiveMessage', (data:Message) => {
-                console.log(data)
-                addNewMessage(data)
+            socket.on('receiveMessage', (data: Message) => {
+                if (data.sender == messageReceiver) addNewMessage(data)
             })
             return () => {
                 socket.off('receiveMessage')
             }
         }
-    }, [])
+    }, [messageSender, messageReceiver])
 
     return (
         <form className="flex  rounded-lg h-[10%] items-center justify-between px-4 gap-x-4 z-5 bg-[#0f0f0f]"
