@@ -35,6 +35,10 @@ export default function GroupChatSection() {
     useEffect(() => {
         const fetchMessages = async () => {
             try {
+                 if(!loggedUser){
+                    const storedUser = localStorage.getItem('authenticatedUser')
+                    setLoggedUser(storedUser ? JSON.parse(storedUser) : null)
+                }
                 if (!groupId || groupId == '0') return
                 setMessages(null)
                 setLoadingMessages(true)
@@ -53,7 +57,7 @@ export default function GroupChatSection() {
             }
         }
         fetchMessages()
-    }, [groupId])
+    }, [groupId, loggedUser])
 
     const addNewMessage = (message: GroupMessage) => {
         setMessages((prev) => {

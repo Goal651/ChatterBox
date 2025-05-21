@@ -22,6 +22,7 @@ export const SocketProvider = ({ children, status }: SocketProviderProps) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [connected, setConnected] = useState(false);
 
+
   useEffect(() => {
     if (status && !socketRef.current) {
       const token = localStorage.getItem("token");
@@ -83,3 +84,4 @@ export const SocketProvider = ({ children, status }: SocketProviderProps) => {
 export const useSocket = () => {
   return useContext(SocketContext);
 };
+

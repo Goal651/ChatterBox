@@ -5,9 +5,7 @@ export interface User {
     username: string,
     names: string,
     email: string,
-    password: string,
     image: string,
-    imageData: string,
     lastActiveTime: Date,
     unreads: Message[],
     latestMessage: Message,
@@ -19,7 +17,6 @@ export interface Message {
     sender: string,
     message: string,
     receiver: string,
-    imageData?: string,
     isMessageSeen: boolean,
     edited: boolean,
     isMessageSent: boolean,
@@ -38,7 +35,7 @@ export interface Group {
     description: string
     members: [{
         member: User,
-        role: string
+        role: 'user'|'admin',
     }]
     messages: Message[]
     createdTime: Date
@@ -111,49 +108,12 @@ export interface InputProps {
     ref?: React.RefObject<HTMLInputElement>
 }
 
-export interface EmailInputProps {
-    value: string
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
-    isValid: boolean
-    emailError: string
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => void
-    onFocus: (e: React.FocusEvent<HTMLInputElement>) => void
-    ref: React.RefObject<HTMLInputElement>
-}
-
-export interface ChatScreenProps {
-    groups: Group[]
-    socket: Socket
-    users: User[]
-    sentMessage: (message: Message) => void
-    sentGroupMessage: (message: GroupMessage) => void
-    onlineUsers: string[]
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    }
-}
 
 export interface SocketMessageProps {
     sentMessage: Message
     messageId: string | number
 }
 
-export interface GroupUser {
-    _id: string,
-    username?: string,
-    names?: string,
-    email?: string,
-    image: string,
-    lastActiveTime?: Date,
-    groupName?: string
-    description?: string
-    members?: User[]
-    admins?: User[]
-    createdTime?: Date
-    latestMessage?: GroupMessage | Message | null
-}
 
 
 export interface CreateGroupProps {
@@ -182,20 +142,6 @@ export interface GroupContentProps {
     socket: Socket,
 }
 
-export interface MessageProps {
-    component: GroupUser
-    sentMessages: Message | null
-    sentGroupMessage: GroupMessage | null
-    socketMessage: { sentMessage: Message, messageId: string | number } | null
-    socket: Socket
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    }
-    onEditMessage: (message: Message) => void
-}
-
 
 export interface GroupMessagesProps {
     messages: GroupMessage[],
@@ -207,38 +153,10 @@ export interface GroupMessagesProps {
 }
 
 
-export interface NavigatorProps {
-    initialCurrentUser: User | null
-    socket: Socket
-    mediaType: {
-        isDesktop: boolean
-        isTablet: boolean
-        isMobile: boolean
-    }
-}
-
 export interface Notification {
     id: string
     title: string
-    message: string
-    timestamp: string
-    read: boolean
-}
-
-export interface SenderProps {
-    socket: Socket,
-    messageInEdition: Message | null
-    sentMessage: ({ message }: { message: Message }) => void
-    sentGroupMessage: ({ message }: { message: GroupMessage }) => void
-}
-
-export interface FileMessagePreviewProps {
-    key: number
-    data: File
-    cancelFile: (fileName: string) => void
-}
-
-export interface Photos {
-    photo: string
-    key: string
+    redirectUrl: string
+    isRead: boolean
+    timestamp: Date
 }
