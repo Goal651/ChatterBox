@@ -9,9 +9,7 @@ export default function SideBar() {
         username: '',
         names: '',
         email: '',
-        password: '',
         image: '',
-        imageData: '',
         lastActiveTime: new Date(),
         unreads: [],
         latestMessage: {
@@ -19,7 +17,6 @@ export default function SideBar() {
             sender: '',
             message: '',
             receiver: '',
-            imageData: '',
             isMessageSeen: false,
             edited: false,
             isMessageSent: false,
