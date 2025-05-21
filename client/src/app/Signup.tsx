@@ -24,9 +24,15 @@ export default function SignUpPage() {
             const response = await signUpApi(formData)
             const isError = response.isError
             if (isError) {
-                notify(response.message, "error")
+                notify('Error! '+response.message, "error")
+                 setPassword('')
+                setConfirmPassword('')
             } else {
                 notify(response.message, "success")
+                setUsername('')
+                setEmail('')
+                setPassword('')
+                setConfirmPassword('')
             }
             setIsLoading(false)
         } catch (error) {

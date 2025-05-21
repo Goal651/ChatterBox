@@ -125,6 +125,7 @@ const subscriptionSchema = new mongoose.Schema({
 
 const notificationSchema = new mongoose.Schema({
     title: { type: String, required: true },
+    redirectUrl: { type: String, required: true },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
