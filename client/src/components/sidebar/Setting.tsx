@@ -1,4 +1,4 @@
-import { FaDoorOpen, FaGear } from "react-icons/fa6";
+import { FaBell, FaDoorOpen, FaGear } from "react-icons/fa6";
 import { User } from "@/types/interfaces";
 import ProfilePicturePreview from "@/components/common/ProfilePicturePreview";
 import { useNavigate } from "react-router-dom";
@@ -12,11 +12,15 @@ export default function SideBarSetting({ initialCurrentUser }: { initialCurrentU
     return (
         <div className="flex flex-col gap-y-2">
             <div className="btn btn-square bg-[#252525] border-0 text-black font-bold shadow  rounded-lg"
-            onClick={()=>navigate('/settings/profile')}>
+                onClick={() => navigate('/notifications')}>
+                <FaBell color="white" />
+            </div>
+            <div className="btn btn-square bg-[#252525] border-0 text-black font-bold shadow  rounded-lg"
+                onClick={() => navigate('/settings/profile')}>
                 <FaGear color="white" />
             </div>
             <div className="btn btn-square rounded-full bg-black shadow shadow-gray-400 "
-            onClick={()=>navigate('/settings/profile')}>
+                onClick={() => navigate('/settings/profile')}>
                 <ProfilePicturePreview
                     profilePicture={initialCurrentUser?.image || ''}
                     username={initialCurrentUser?.username || 'U'}
@@ -31,7 +35,7 @@ export default function SideBarSetting({ initialCurrentUser }: { initialCurrentU
                 }}
                 className="btn btn-square bg-[#252525] border-0 text-black font-bold shadow  rounded-lg mt-8"
             >
-                <FaDoorOpen color="white"/>
+                <FaDoorOpen color="white" />
 
             </div>
 

@@ -125,12 +125,12 @@ const subscriptionSchema = new mongoose.Schema({
 
 const notificationSchema = new mongoose.Schema({
     title: { type: String, required: true },
+    redirectUrl: { type: String, required: true },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
         ref: 'User'
     },
-    details: { type: String, required: true },
     isRead: { type: Boolean, default: false },
     timestamp: { type: Date, default: Date.now }
 })

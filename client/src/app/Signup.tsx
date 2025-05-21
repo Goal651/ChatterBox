@@ -24,9 +24,15 @@ export default function SignUpPage() {
             const response = await signUpApi(formData)
             const isError = response.isError
             if (isError) {
-                notify(response.message, "error")
+                notify('Error! '+response.message, "error")
+                 setPassword('')
+                setConfirmPassword('')
             } else {
                 notify(response.message, "success")
+                setUsername('')
+                setEmail('')
+                setPassword('')
+                setConfirmPassword('')
             }
             setIsLoading(false)
         } catch (error) {
@@ -37,7 +43,9 @@ export default function SignUpPage() {
 
     return (
         <div className="bg-[#0f0f0f] h-screen w-screen flex items-center justify-center">
-            <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl'>
+                  <img src='/bg/bgImage.png' className='absolute left-0 top-0 h-screen w-screen object-cover bg-transparent opacity-5'/>
+
+            <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl z-0'>
                 {/* App icon */}
                 <div className='btn btn-xl btn-square rounded-full mb-8'>
                     <img src="/AppIcon.png" alt="" />

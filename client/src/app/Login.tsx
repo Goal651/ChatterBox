@@ -1,6 +1,6 @@
 import { FaApple, FaGoogle, FaXTwitter } from 'react-icons/fa6'
-import { Link, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { loginApi } from '@/api/AuthApi'
 import { notify } from '@/utils/NotificationService'
 
@@ -8,7 +8,26 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const route=useNavigate()
+  const route = useNavigate()
+  const param = useParams()
+
+  useEffect(() => {
+    const { verifyEmail } = param
+    const token = localStorage.getItem('token')
+    if (token) {
+      notify('Redirecting to home...', 'info')
+      route('/c/dm/0')
+      return
+    }
+
+
+    if (verifyEmail == 'error') notify('Email verification failed', 'error')
+    else if (verifyEmail == 'success') notify('Email verified successfully', 'success')
+    else if (verifyEmail == 'expired') notify('Email verification link expired', 'error')
+    else if (verifyEmail == 'already') notify('Email already verified', 'error')
+    else if (verifyEmail == 'notfound') notify('Email not found', 'error')
+
+  }, [param, route])
 
   const onLogin = async () => {
     try {
@@ -22,7 +41,7 @@ export default function LoginPage() {
         notify('Logged in successfully', "success")
         localStorage.setItem('loggedIn', 'true')
         localStorage.setItem('token', response.token)
-        route('/')
+        route('/c/dm/0')
       }
       setIsLoading(false)
     } catch (error) {
@@ -32,8 +51,9 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-[#0f0f0f] h-screen w-screen flex items-center justify-center">
-      <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl'>
+    <div className="bg-[#0f0f0f]  h-screen w-screen flex items-center justify-center">
+      <img src='/bg/login.png' className='absolute left-0 top-o h-screen w-screen object-cover bg-transparent opacity-5'/>
+      <div className='bg-[#1a1a1a] flex flex-col items-center justify-between   py-10 px-5 w-lg rounded-xl z-5'>
         {/* App icon */}
         <div className='btn btn-xl btn-square rounded-full mb-8'>
           <img src="/AppIcon.png" alt="" />

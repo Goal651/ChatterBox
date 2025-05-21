@@ -64,9 +64,24 @@ const createGroup = async (req: Request, res: Response) => {
             description,
             members: membersToBeSaved,
         })
+
+        //create notification
+
+        const newAdminNotification = new model.Notification({
+            title: 'Group created  ' + groupName,
+            userId: userId,
+            redirectUrl: `/c/grp/${newGroup._id}`,
+        })
+
         await Promise.all([
             newGroup.save(),
+            newAdminNotification.save(),
             uniqueMembers.map(async (member) => {
+                await new model.Notification({
+                    title: 'You have been added to the group ' + groupName,
+                    redirectUrl: `/c/grp/${newGroup._id}`,
+                    userId: member
+                }).save()
                 await model.User.findByIdAndUpdate(member, { $push: { groups: newGroup._id } })
             })
         ])
