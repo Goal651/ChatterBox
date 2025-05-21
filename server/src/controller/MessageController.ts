@@ -54,7 +54,7 @@ const getGMessage = async (req: Request, res: Response) => {
         }
 
 
-        res.status(200).json({ messages:messages.reverse(), isError: false })
+        res.status(200).json({ messages: messages.reverse(), isError: false })
     } catch (error) {
         console.error(error)
         res.status(500).json({ message: 'Reloading...' })

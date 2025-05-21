@@ -8,11 +8,7 @@ export default function UserGroupList({ users, groups, loading, onlineUsers }: U
     const param = useParams() as { tab: string }
     const [tab, setTab] = useState('')
 
-    useEffect(() => {
-        const  tab  = param
-        console.log(tab)
-        setTab(param.tab)
-    }, [param])
+    useEffect(() => { setTab(param.tab) }, [param])
 
     if (loading) {
         return (

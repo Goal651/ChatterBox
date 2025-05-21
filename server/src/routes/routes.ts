@@ -8,13 +8,14 @@ import webPusherController from '@/controller/WebPusherController'
 import notificationController from '@/controller/NotificationController'
 import adminController from '@/admin/controller/userController'
 import { isAdmin } from '@/middleware/isAdmin'
+import EmailVerifierController from '@/controller/EmailVerifierController'
 
 const router = express.Router()
 
 //Authentication
 router.get('/auth', auth.checkToken, auth.checkUser)
 router.post('/login', userController.login)
-router.get('/verifyEmail/:token',auth.verifyUser)
+router.get('/verifyEmail/:token',EmailVerifierController)
 
 //pinging server
 router.get('/ping', groupController.ping)
