@@ -20,7 +20,7 @@ const sendEmail = async ({ username, email, verificationToken, title }: EmailSen
             template_params: {
                 to_email: email,
                 to_name: username,
-                verification_link: 'https://chatter-box-three.vercel.app/verify/' + verificationToken,
+                verification_link: 'https://chatterbox-production-9404.up.railway.app/api/verify/' + verificationToken,
                 message_title: title,
             },
             accessToken: process.env.EMAILJS_PRIVATE_KEY
