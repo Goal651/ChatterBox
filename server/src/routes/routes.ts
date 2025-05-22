@@ -15,7 +15,7 @@ const router = express.Router()
 //Authentication
 router.get('/auth', auth.checkToken, auth.checkUser)
 router.post('/login', userController.login)
-router.get('/verifyEmail/:token',EmailVerifierController)
+router.get('/verify/:token',EmailVerifierController)
 
 //pinging server
 router.get('/ping', groupController.ping)
