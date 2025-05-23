@@ -111,7 +111,6 @@ const getGroups = async (req: Request, res: Response) => {
 
         const groups = user?.toObject().groups as unknown as Group[]
 
-        console.log(groups[0].members)
         if (!groups) {
             res.status(200).json({ groups: [], isError: false })
             return

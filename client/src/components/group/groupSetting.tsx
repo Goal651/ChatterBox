@@ -1,50 +1,104 @@
-import { Group } from "@/types/interfaces";
+import { Group, User } from "@/types/interfaces";
 import { FaTimes, } from "react-icons/fa";
+import { FaUser, FaUserGroup } from "react-icons/fa6";
+import GroupMember from "./member";
+import { useState } from "react";
 
 
 export default function GroupSetting({ closeSetting, group }: { closeSetting: () => void, group: Group }) {
-    console.log(group)
+    const [input, setInput] = useState("");
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    const [users, setUsers] = useState<User[] >(() => {
+        const storedUser = localStorage.getItem('users')
+        return storedUser ? JSON.parse(storedUser) : []
+    })
+
+    // Filter users based on input
+    const filteredUsers = users.filter(
+        (user) =>
+            input &&
+            user.username.toLowerCase().includes(input.toLowerCase())
+    );
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInput(e.target.value);
+        setShowSuggestions(true);
+    };
+
+    const handleSuggestionClick = (username: string) => {
+        setInput(username);
+        setShowSuggestions(false);
+    };
     return (
-        <div className='flex flex-col items-center justify-center p-20 bg-[#181818] w-full h-full relative'>
-            <div className='absolute top-2 left-2 btn btn-square rounded-full text-white bg-black'
-                onClick={() => closeSetting()}>
-                <FaTimes />
+        <div className='flex flex-col p-5 bg-[#181818] w-full h-full '>
+            <div className="btn btn-square rounded-full text-white bg-black ">
+                <FaTimes
+                    className="w-6 h-6 cursor-pointer"
+                    onClick={closeSetting}
+                />
             </div>
-            <div className="p-6 bg-[#070707] min-w-2xl rounded-lg shadow-lg  mt-8 text-gray-200">
-                <h2 className="text-2xl font-bold mb-2">{group.groupName}</h2>
-                <p className="mb-4 text-gray-400">{group.description}</p>
-                <div className="mb-4">
-                    <h3 className="text-lg font-semibold mb-1">Group Members</h3>
-                    <ul className="divide-y divide-gray-700">
-                        {group.members.map((member, idx) => (
-                            <li key={idx} className="py-2 flex justify-between items-center">
-                                <span>{member.member.username}</span>
-                                <span className={`px-2 py-1 rounded text-xs ${member.role === "admin" ? "bg-blue-600" : "bg-gray-700"}`}>
-                                    {member.role}
-                                </span>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-                <div className="mb-2">
-                    <h3 className="text-lg font-semibold mb-1">Group Settings</h3>
-                    <ul className="space-y-2">
-                        <li>
-                            <button className="w-full text-left px-3 py-2 bg-gray-700 rounded hover:bg-gray-600 transition">
-                                Change Group Name
-                            </button>
-                        </li>
-                        <li>
-                            <button className="w-full text-left px-3 py-2 bg-gray-700 rounded hover:bg-gray-600 transition">
-                                Add Member
-                            </button>
-                        </li>
-                        <li>
-                            <button className="w-full text-left px-3 py-2 bg-gray-700 rounded hover:bg-gray-600 transition">
-                                Leave Group
-                            </button>
-                        </li>
-                    </ul>
+            <div className="flex w-full items-center justify-center">
+                <div className="flex flex-col  gap-y-5 bg-[#070707] w-2xl rounded-lg py-4 px-10  justify-center m-20">
+                    <div className="flex flex-col items-center justify-center">
+                        <div className="btn btn-square rounded-full text-white bg-black">
+                            <FaUserGroup />
+                        </div>
+                        <div className="font-semibold text-lg ">
+                            {group.groupName}
+                        </div>
+                        <div className="text-sm text-gray-400">
+                            {group.description}
+                        </div>
+                    </div>
+                    <div className="flex flex-col justify-center gap-y-6 h-full">
+                        <div className="font-semibold">Members</div>
+
+                        <div className="">
+                            <div>Add member</div>
+                            <div className="flex flex-col gap-y-1">
+                                <div className="flex items-center gap-x-2">
+                                    <label className="input rounded-xl bg-[#252525] focus-within:outline-none  flex items-center gap-x-2">
+                                        <FaUser />
+                                        <input
+                                            type="text"
+                                            placeholder="Username"
+                                            value={input}
+                                            onChange={handleInputChange}
+                                            onFocus={() => setShowSuggestions(true)}
+                                            onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
+                                        />
+                                    </label>
+                                    <button className="btn  rounded-lg">Add</button>
+                                </div>
+                                {showSuggestions && filteredUsers.length > 0 && (
+                                    <div className="bg-[#252525] rounded-xl mt-1 shadow-lg z-10 absolute w-60 max-h-40 overflow-y-auto border border-gray-700">
+                                        {filteredUsers.map((user) => (
+                                            <div
+                                                key={user.username}
+                                                className="px-4 py-2 cursor-pointer hover:bg-[#333]"
+                                                onMouseDown={() => handleSuggestionClick(user.username)}
+                                            >
+                                                {user.username}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}</div>
+                            <div className="text-sm text-gray-400">
+                                Add members to the group by entering their username.
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col gap-y-4  h-96">
+                            <div className="font-semibold">Group Members</div>
+                            <div className="flex flex-col gap-y-2 overflow-y-scroll">
+                                {group.members.map((member, index) => (
+                                    <GroupMember member={member} key={index} />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
