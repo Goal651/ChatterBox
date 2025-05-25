@@ -2,14 +2,14 @@ import { Group, User } from "@/types/interfaces";
 import { FaTimes, } from "react-icons/fa";
 import { FaUser, FaUserGroup } from "react-icons/fa6";
 import GroupMember from "./member";
-import { useState } from "react";
+import {  MouseEvent, useState } from "react";
 
 
 export default function GroupSetting({ closeSetting, group }: { closeSetting: () => void, group: Group }) {
     const [input, setInput] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const [users, setUsers] = useState<User[] >(() => {
+    const [users, setUsers] = useState<User[]>(() => {
         const storedUser = localStorage.getItem('users')
         return storedUser ? JSON.parse(storedUser) : []
     })
@@ -30,6 +30,10 @@ export default function GroupSetting({ closeSetting, group }: { closeSetting: ()
         setInput(username);
         setShowSuggestions(false);
     };
+
+    const onAddNewUser = (e: MouseEvent<HTMLElement>) => {
+        e.preventDefault()
+    }
     return (
         <div className='flex flex-col p-5 bg-[#181818] w-full h-full '>
             <div className="btn btn-square rounded-full text-white bg-black ">
@@ -69,7 +73,10 @@ export default function GroupSetting({ closeSetting, group }: { closeSetting: ()
                                             onBlur={() => setTimeout(() => setShowSuggestions(false), 100)}
                                         />
                                     </label>
-                                    <button className="btn  rounded-lg">Add</button>
+                                    <button className="btn rounded-lg"
+                                        onClick={onAddNewUser}>
+                                        Add
+                                    </button>
                                 </div>
                                 {showSuggestions && filteredUsers.length > 0 && (
                                     <div className="bg-[#252525] rounded-xl mt-1 shadow-lg z-10 absolute w-60 max-h-40 overflow-y-auto border border-gray-700">
